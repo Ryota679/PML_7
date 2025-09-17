@@ -32,14 +32,14 @@ graph TD
 
     subgraph "Infrastruktur Server"
         B[RESTful API Server]
-        C[Database Server (PostgreSQL)]
-        D[Layanan Notifikasi (FCM)]
+        C["Database Server (PostgreSQL)"]
+        D["Layanan Notifikasi (FCM)"]
     end
 
-    A <-->|HTTPS (Request/Response)| B
-    B <-->|Koneksi Database| C
-    B -->|Trigger Notifikasi| D
-    D -->|Push Notification| A
+    A --> B
+    B --> C
+    B --> D
+    D --> A
 
 ```
 

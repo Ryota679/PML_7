@@ -81,5 +81,3 @@ gantt
 *   **Pengujian Terbatas:** Pengujian akan difokuskan pada "happy path" (alur normal). Waktu untuk pengujian kasus-kasus pinggiran (edge cases) dan UAT formal akan sangat terbatas.
 *   **Potensi Utang Teknis (Technical Debt):** Beberapa solusi mungkin akan diambil secara pragmatis untuk mengejar waktu, yang mungkin perlu diperbaiki (refactoring) di masa mendatang.
 *   **Ketergantungan Tinggi:** Tim front-end dan back-end harus bekerja dengan sangat sinkron. Keterlambatan di satu sisi akan secara langsung berdampak besar pada sisi lainnya.
-
-Timeline ini memungkinkan Anda memiliki produk yang berfungsi di akhir minggu ke-8, yang dapat didemonstrasikan dan digunakan untuk mendapatkan umpan balik awal.

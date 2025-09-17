@@ -1,4 +1,5 @@
 erDiagram
+
     users {
         UUID id PK "Primary Key"
         String full_name
@@ -45,7 +46,7 @@ erDiagram
         DECIMAL price_at_purchase "Historical price"
     }
 
-    users ||--|| tenants : "owns"
+    users ||--o{ tenants : "owns"
     users ||--o{ orders : "creates"
     tenants ||--o{ products : "sells"
     tenants ||--o{ orders : "receives"
