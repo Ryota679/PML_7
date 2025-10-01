@@ -1,0 +1,61 @@
+<!-- buyer/cart.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keranjang Anda - Kantin Digital</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="header">
+        <a href="javascript:history.back()">&larr; Kembali ke Menu</a>
+        <h1>Keranjang</h1>
+    </div>
+    <div class="container">
+        <div class="card">
+            <div class="product-list" id="cart-items-container">
+                <!-- Item keranjang akan dimuat di sini -->
+            </div>
+            <div style="border-top: 2px solid #eee; padding-top: 20px; margin-top: 20px; text-align: right;">
+                <h3>Total Belanja: <span id="total-price" class="price">Rp 0</span></h3>
+            </div>
+            <button class="btn btn-success" onclick="checkout()">Lanjutkan ke Checkout</button>
+        </div>
+    </div>
+    <script src="../app.js"></script>
+    <script>
+        // Data keranjang palsu
+        const FAKE_CART = [
+            { id: 102, name: "Soto Ayam Spesial", price: 20000, quantity: 1 },
+            { id: 103, name: "Es Teh Manis", price: 5000, quantity: 2 },
+        ];
+
+        const container = document.getElementById('cart-items-container');
+        let totalPrice = 0;
+
+        FAKE_CART.forEach(item => {
+            const subtotal = item.price * item.quantity;
+            totalPrice += subtotal;
+
+            container.innerHTML += `
+                <div class="product-item">
+                    <div class="info">
+                        <h4>${item.name}</h4>
+                        <p>Jumlah: ${item.quantity}</p>
+                        <span class="price">Rp ${subtotal.toLocaleString('id-ID')}</span>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="alert('Item dihapus!')">Hapus</button>
+                </div>
+            `;
+        });
+
+        document.getElementById('total-price').textContent = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+
+        function checkout() {
+            alert('Pesanan berhasil dibuat! Anda akan diarahkan ke halaman pelacakan.');
+            navigateTo('orders.html');
+        }
+    </script>
+</body>
+</html>

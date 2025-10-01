@@ -1,0 +1,41 @@
+<!-- buyer/orders.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesanan Saya - Kantin Digital</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="header">
+        <a href="home.html">&larr; Kembali ke Beranda</a>
+        <h1>Pesanan Saya</h1>
+    </div>
+    <div class="container">
+        <!-- Pesanan Aktif -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Pesanan Aktif</h3>
+            </div>
+            <div class="order-item">
+                <h4>Pesanan #ORD-003</h4>
+                <p>Dari: <b>Soto Ayam Pak Min</b></p>
+                <p>Status: <span class="order-status status-ready">Siap Diambil</span></p>
+                <p>Total: Rp 15.000</p>
+            </div>
+        </div>
+
+        <!-- Riwayat Pesanan -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Riwayat Pesanan</h3>
+            </div>
+            <p>Pesanan #ORD-001 - <b>Selesai</b></p>
+            <p>Pesanan #ORD-002 - <b>Selesai</b></p>
+            <button class="btn btn-secondary btn-sm" onclick="alert('Memesan ulang item dari pesanan #ORD-001')">Pesan Lagi</button>
+        </div>
+    </div>
+    <script src="../app.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Kantin Digital</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="card" style="width: 320px;">
+            <h1 style="text-align: center; color: var(--primary-color);">Kantin Digital</h1>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" value="user@example.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" value="password">
+            </div>
+            <p style="text-align: center; font-size: 0.9em;">Login sebagai:</p>
+            <button class="btn btn-primary" onclick="navigateTo('buyer/home.html')">Login Pembeli</button>
+            <button class="btn btn-success" onclick="navigateTo('tenant/dashboard.html')">Login Tenant</button>
+            <button class="btn btn-secondary" onclick="navigateTo('owner/dashboard.html')">Login Owner</button>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Kantin Digital</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="header">
+        <a href="home.html">&larr; Kembali</a>
+        <h1 id="tenant-name">Nama Tenant</h1>
+        <a href="cart.html" class="cart-icon">
+            🛒 <span class="cart-count">0</span>
+        </a>
+    </div>
+    <div class="container">
+        <div class="card">
+            <div class="product-list" id="product-list-container">
+                <!-- Data produk akan dimuat di sini -->
+            </div>
+        </div>
+    </div>
+    <script src="../app.js"></script>
+    <script>
+        const tenantId = getQueryParam('tenantId');
+        const tenant = FAKE_DATA.tenants.find(t => t.id == tenantId);
+        const products = FAKE_DATA.products[tenantId] || [];
+
+        document.getElementById('tenant-name').textContent = tenant.name;
+
+        const container = document.getElementById('product-list-container');
+        products.forEach(product => {
+            container.innerHTML += `
+                <div class="product-item">
+                    <div class="info">
+                        <h4>${product.name}</h4>
+                        <p>${product.desc}</p>
+                        <span class="price">Rp ${product.price.toLocaleString('id-ID')}</span>
+                    </div>
+                    <button class="btn btn-primary btn-sm" ${!product.available ? 'disabled' : ''} onclick="alert('Menambahkan ${product.name} ke keranjang!')">
+                        ${product.available ? 'Tambah' : 'Habis'}
+                    </button>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

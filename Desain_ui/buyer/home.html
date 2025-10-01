@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beranda - Kantin Digital</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Pilih Kantin</h1>
+        <a href="orders.html">Pesanan Saya</a>
+    </div>
+    <div class="container">
+        <div class="card">
+            <div class="tenant-list" id="tenant-list-container">
+                <!-- Data tenant akan dimuat di sini oleh JS -->
+            </div>
+        </div>
+    </div>
+    <script src="../app.js"></script>
+    <script>
+        const container = document.getElementById('tenant-list-container');
+        FAKE_DATA.tenants.forEach(tenant => {
+            container.innerHTML += `
+                <a href="menu.html?tenantId=${tenant.id}" style="text-decoration:none; color: inherit;">
+                    <div class="tenant-item">
+                        <img src="${tenant.logo}" alt="${tenant.name}">
+                        <div class="info">
+                            <h4>${tenant.name}</h4>
+                            <p>${tenant.description}</p>
+                        </div>
+                        <span class="status ${tenant.isOpen ? 'status-open' : 'status-closed'}">
+                            ${tenant.isOpen ? 'Buka' : 'Tutup'}
+                        </span>
+                    </div>
+                </a>
+            `;
+        });
+    </script>
+</body>
+</html>
