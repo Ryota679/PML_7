@@ -1,0 +1,79 @@
+import { Client, Users, Databases, ID, Permission, Role } from 'node-appwrite';
+
+export default async ({ req, res, log, error }) => {
+  const client = new Client();
+  client
+    .setEndpoint(process.env.APPWRITE_ENDPOINT)
+    .setProject(process.env.APPWRITE_PROJECT_ID)
+    .setKey(process.env.APPWRITE_API_KEY);
+
+  const users = new Users(client);
+  const databases = new Databases(client);
+
+  try {
+    // --- LANGKAH DIAGNOSTIK: LOG SEMUANYA ---
+    log('--- MEMULAI DIAGNOSTIK PERMINTAAN ---');
+    log('Tipe req.body:', typeof req.body, 'Isi:', JSON.stringify(req.body ?? null));
+    log('Tipe req.data:', typeof req.data, 'Isi:', JSON.stringify(req.data ?? null));
+    log('Tipe req.payload:', typeof req.payload, 'Isi:', JSON.stringify(req.payload ?? null));
+    log('Tipe req.bodyRaw:', typeof req.bodyRaw, 'Isi:', req.bodyRaw);
+    log('--- AKHIR DIAGNOSTIK ---');
+    // ------------------------------------------
+
+    let payload;
+    let rawData = req.bodyRaw || req.payload || req.data || '{}';
+
+    // Jika rawData sudah berupa object (bukan string), langsung gunakan.
+    if (typeof rawData === 'object' && rawData !== null) {
+      payload = rawData;
+    } else {
+      // Jika masih string, parse.
+      payload = JSON.parse(rawData);
+    }
+    
+    const { tenantName, tenantEmail, tenantPassword } = payload;
+    
+    log('Payload yang berhasil di-parse:', payload);
+
+    if (!tenantName || !tenantEmail || !tenantPassword) {
+      error('Payload tidak lengkap setelah di-parse.', payload);
+      return res.json({ success: false, message: 'Data yang dikirim tidak lengkap.'}, 400);
+    }
+
+    const businessOwnerId = req.headers['x-appwrite-user-id'];
+    if (!businessOwnerId) {
+      error('Tidak ada otorisasi dari Business Owner.');
+      return res.json({ success: false, message: 'Akses tidak diizinkan.' }, 401);
+    }
+
+    // Bagian ini sudah benar dan tidak perlu diubah
+    const newTenantUser = await users.create(ID.unique(), tenantEmail, null, tenantPassword, tenantName);
+    log(`User '${tenantName}' berhasil dibuat.`);
+    
+    await users.updateLabels(newTenantUser.$id, ['tenant']);
+    await users.updateVerification(newTenantUser.$id, true);
+    log(`User '${tenantName}' berhasil diverifikasi.`);
+
+    const tenantData = {
+      name: tenantName,
+      logoUrl: '',
+      owner_user_id: businessOwnerId,
+      description: `Tenant default untuk ${tenantName}`,
+      status: 'active',
+      userId: newTenantUser.$id,
+      qrCodeUrl: `https://aplikasi-anda.com/menu/${ID.unique()}`
+    };
+
+    const tenantDocument = await databases.createDocument(process.env.APPWRITE_DATABASE_ID, 'tenants', ID.unique(), tenantData);
+    log(`Dokumen tenant '${tenantName}' berhasil dibuat.`);
+
+    const updatedDocument = await databases.updateDocument(process.env.APPWRITE_DATABASE_ID, 'tenants', tenantDocument.$id, { qrCodeUrl: `https://aplikasi-anda.com/menu/${tenantDocument.$id}` });
+    log(`QR Code URL berhasil dibuat.`);
+
+    return res.json({ success: true, message: `Tenant ${tenantName} berhasil dibuat!`, data: updatedDocument });
+
+  } catch (e) {
+    error('Terjadi error fatal:', e);
+    return res.json({ success: false, message: e.message, }, 500);
+  }
+}

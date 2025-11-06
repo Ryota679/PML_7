@@ -1,0 +1,319 @@
+{
+    "projectId": "perojek-pml",
+    "endpoint": "https://fra.cloud.appwrite.io/v1",
+    "projectName": "perojek pml",
+    "settings": {
+        "services": {
+            "account": true,
+            "avatars": true,
+            "databases": true,
+            "locale": true,
+            "health": true,
+            "storage": true,
+            "teams": true,
+            "users": true,
+            "sites": true,
+            "functions": true,
+            "graphql": true,
+            "messaging": true
+        },
+        "auth": {
+            "methods": {
+                "jwt": true,
+                "phone": true,
+                "invites": true,
+                "anonymous": true,
+                "email-otp": true,
+                "magic-url": true,
+                "email-password": true
+            },
+            "security": {
+                "duration": 31536000,
+                "limit": 0,
+                "sessionsLimit": 10,
+                "passwordHistory": 0,
+                "passwordDictionary": false,
+                "personalDataCheck": false,
+                "sessionAlerts": false,
+                "mockNumbers": []
+            }
+        }
+    },
+    "tablesDB": [
+        {
+            "$id": "kantin-db",
+            "name": "kantin",
+            "enabled": true
+        }
+    ],
+    "tables": [
+        {
+            "$id": "categories",
+            "$permissions": [
+                "create(\"team:system_admins\")",
+                "read(\"team:system_admins\")",
+                "update(\"team:system_admins\")",
+                "delete(\"team:system_admins\")",
+                "create(\"team:busines_owner\")",
+                "read(\"team:busines_owner\")",
+                "update(\"team:busines_owner\")",
+                "delete(\"team:busines_owner\")",
+                "read(\"team:tenant_1\")",
+                "read(\"team:P1\")"
+            ],
+            "databaseId": "kantin-db",
+            "name": "categories",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 69,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "tenantId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 35,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "tenants",
+            "$permissions": [
+                "read(\"team:P1\")",
+                "read(\"team:tenant_1\")",
+                "create(\"team:busines_owner\")",
+                "read(\"team:busines_owner\")",
+                "update(\"team:busines_owner\")",
+                "delete(\"team:busines_owner\")",
+                "create(\"team:system_admins\")",
+                "read(\"team:system_admins\")",
+                "update(\"team:system_admins\")",
+                "delete(\"team:system_admins\")"
+            ],
+            "databaseId": "kantin-db",
+            "name": "tenants",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 30,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "logoUrl",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 30,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "ownerId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 35,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "products",
+            "$permissions": [
+                "create(\"team:tenant_1\")",
+                "read(\"team:tenant_1\")",
+                "update(\"team:tenant_1\")",
+                "delete(\"team:tenant_1\")",
+                "read(\"team:P1\")",
+                "read(\"team:busines_owner\")",
+                "create(\"team:system_admins\")",
+                "read(\"team:system_admins\")",
+                "update(\"team:system_admins\")",
+                "delete(\"team:system_admins\")"
+            ],
+            "databaseId": "kantin-db",
+            "name": "products",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "price",
+                    "type": "double",
+                    "required": true,
+                    "array": false,
+                    "min": 256,
+                    "max": 256,
+                    "default": null
+                },
+                {
+                    "key": "imageUrl",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "isAvailable",
+                    "type": "boolean",
+                    "required": true,
+                    "array": false,
+                    "default": null
+                },
+                {
+                    "key": "categoryId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "tenantId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "orders",
+            "$permissions": [
+                "create(\"team:P1\")",
+                "read(\"team:tenant_1\")",
+                "update(\"team:tenant_1\")",
+                "read(\"team:busines_owner\")",
+                "create(\"team:system_admins\")",
+                "read(\"team:system_admins\")",
+                "update(\"team:system_admins\")",
+                "delete(\"team:system_admins\")"
+            ],
+            "databaseId": "kantin-db",
+            "name": "orders",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "items",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "totalPrice",
+                    "type": "double",
+                    "required": true,
+                    "array": false,
+                    "min": 256,
+                    "max": 256,
+                    "default": null
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "tenantId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "customerName",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": []
+        }
+    ],
+    "teams": [
+        {
+            "$id": "system_admins",
+            "name": "System Administrators"
+        },
+        {
+            "$id": "busines_owner",
+            "name": "Business Owner"
+        },
+        {
+            "$id": "tenant_1",
+            "name": "Tenant"
+        },
+        {
+            "$id": "P1",
+            "name": "Publik"
+        }
+    ],
+    "functions": [
+        {
+            "$id": "createTenant",
+            "name": "createTenant",
+            "runtime": "node-18.0",
+            "specification": "s-0.5vcpu-512mb",
+            "execute": [
+                "any"
+            ],
+            "events": [],
+            "scopes": [
+                "users.read"
+            ],
+            "schedule": "",
+            "timeout": 15,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "path": "functions/createTenant"
+        }
+    ]
+}

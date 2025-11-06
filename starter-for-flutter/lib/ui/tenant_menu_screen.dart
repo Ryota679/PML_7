@@ -1,0 +1,81 @@
+import 'package:appwrite/appwrite.dart';
+import 'package:appwrite/models.dart';
+import 'package:kantin_app/data/cart_provider.dart';
+import 'package:kantin_app/data/repository/base_appwrite_repository.dart';
+import 'package:kantin_app/data/repository/tenant_repository.dart';
+import 'package:kantin_app/data/repository/product_repository.dart';
+import 'package:kantin_app/ui/cart_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class TenantMenuScreen extends ConsumerStatefulWidget {
+  final String tenantId;
+
+  const TenantMenuScreen({Key? key, required this.tenantId}) : super(key: key);
+
+  @override
+  _TenantMenuScreenState createState() => _TenantMenuScreenState();
+}
+
+class _TenantMenuScreenState extends ConsumerState<TenantMenuScreen> {
+  final TenantRepository _tenantRepository = TenantRepository(BaseAppwriteRepository().client);
+  final ProductRepository _productRepository = ProductRepository(BaseAppwriteRepository().client);
+  Document? _tenant;
+  List<Document> _products = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTenantAndProducts();
+  }
+
+  Future<void> _loadTenantAndProducts() async {
+    try {
+      final tenant = await _tenantRepository.getTenantById(widget.tenantId);
+      final products = await _productRepository.getProducts(widget.tenantId);
+      setState(() {
+        _tenant = tenant;
+        _products = products;
+      });
+    } on AppwriteException catch (e) {
+      print(e.message);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_tenant?.data['name'] ?? 'Menu'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_cart),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => CartScreen(tenantId: widget.tenantId),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      body: ListView.builder(
+        itemCount: _products.length,
+        itemBuilder: (context, index) {
+          final product = _products[index];
+          return ListTile(
+            title: Text(product.data['name']),
+            subtitle: Text('\$${product.data['price']}'),
+            trailing: IconButton(
+              icon: const Icon(Icons.add_shopping_cart),
+              onPressed: () {
+                ref.read(cartProvider.notifier).add(product);
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
