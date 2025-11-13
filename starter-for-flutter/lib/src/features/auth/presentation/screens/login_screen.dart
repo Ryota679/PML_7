@@ -43,7 +43,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Memberikan tipe 'Account' secara eksplisit untuk membantu analyzer.
       final Account account = ref.read(appwriteAccountProvider);
       
-      print('Mencoba login dengan email: ${_emailController.text.trim()}...');
+      debugPrint('Mencoba login dengan email: ${_emailController.text.trim()}...');
 
       // Kode ini sekarang seharusnya tidak error lagi.
       await account.createEmailPasswordSession(
@@ -51,7 +51,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   password: _passwordController.text,
     );
 
-      print('✅ Login Berhasil!');
+      debugPrint('✅ Login Berhasil!');
 
       if (mounted) {
         // Kode ini sekarang seharusnya tidak error lagi karena import sudah benar.
@@ -60,9 +60,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
       }
     } on AppwriteException catch (e) {
-      print('❌ TERJADI ERROR APPWRITE:');
-      print('Pesan Error: ${e.message}');
-      print('Kode Error: ${e.code}');
+      debugPrint('❌ TERJADI ERROR APPWRITE:');
+      debugPrint('Pesan Error: ${e.message}');
+      debugPrint('Kode Error: ${e.code}');
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -70,7 +70,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
       }
     } catch (e) {
-      print('❌ TERJADI ERROR UMUM: $e');
+      debugPrint('❌ TERJADI ERROR UMUM: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Terjadi kesalahan tak terduga: $e')),

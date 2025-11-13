@@ -11,7 +11,7 @@ class ProductRepository {
     final response = await _databases.listDocuments(
       databaseId: Environment.appwriteDatabaseId,
       collectionId: 'products',
-      queries: [Query.equal('tenantId', tenantId)],
+      queries: [Query.equal('tenant_id', tenantId)],
     );
     return response.documents;
   }
@@ -24,9 +24,9 @@ class ProductRepository {
       data: {
         'name': name,
         'price': price,
-        'categoryId': categoryId,
-        'tenantId': tenantId,
-        'isAvailable': true,
+        'category_id': categoryId,
+        'tenant_id': tenantId,
+        'is_available': true,
       },
     );
   }

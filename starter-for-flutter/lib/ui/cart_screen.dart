@@ -5,12 +5,25 @@ import 'package:kantin_app/ui/order_tracking_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CartScreen extends ConsumerWidget {
+class CartScreen extends ConsumerStatefulWidget {
   final String tenantId;
-  const CartScreen({Key? key, required this.tenantId}) : super(key: key);
+  const CartScreen({super.key, required this.tenantId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends ConsumerState<CartScreen> {
+  final TextEditingController _customerNameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _customerNameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
     final totalPrice = cart.fold<double>(
         0, (previousValue, element) => previousValue + element.data['price']);
@@ -39,9 +52,26 @@ class CartScreen extends ConsumerWidget {
               },
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextFormField(
+              controller: _customerNameController,
+              decoration: const InputDecoration(
+                labelText: 'Your Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
           Text('Total: \$${totalPrice.toStringAsFixed(2)}'),
           ElevatedButton(
             onPressed: () async {
+              if (_customerNameController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter your name')),
+                );
+                return;
+              }
+
               final items = cart
                   .map((product) => {
                         'productId': product.$id,
@@ -49,8 +79,14 @@ class CartScreen extends ConsumerWidget {
                         'price_at_purchase': product.data['price'],
                       })
                   .toList();
-              final order = await OrderRepository(BaseAppwriteRepository().client).createOrder(items, totalPrice, tenantId);
+              final order = await OrderRepository(BaseAppwriteRepository().client).createOrder(
+                items,
+                totalPrice,
+                widget.tenantId,
+                _customerNameController.text,
+              );
               ref.read(cartProvider.notifier).clear();
+              if (!context.mounted) return;
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => OrderTrackingScreen(orderId: order.$id),

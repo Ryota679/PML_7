@@ -6,10 +6,10 @@ import 'package:kantin_app/data/repository/tenant_repository.dart';
 import 'package:kantin_app/data/repository/category_repository.dart';
 
 class BusinessOwnerDashboard extends StatefulWidget {
-  const BusinessOwnerDashboard({Key? key}) : super(key: key);
+  const BusinessOwnerDashboard({super.key});
 
   @override
-  _BusinessOwnerDashboardState createState() => _BusinessOwnerDashboardState();
+  State<BusinessOwnerDashboard> createState() => _BusinessOwnerDashboardState();
 }
 
 class _BusinessOwnerDashboardState extends State<BusinessOwnerDashboard> {
@@ -30,11 +30,12 @@ class _BusinessOwnerDashboardState extends State<BusinessOwnerDashboard> {
   Future<void> _loadCategories() async {
     try {
       final categories = await _categoryRepository.getCategories();
+      if (!mounted) return;
       setState(() {
         _categories = categories;
       });
     } on AppwriteException catch (e) {
-      print(e.message);
+      debugPrint(e.message);
     }
   }
 
@@ -70,10 +71,12 @@ class _BusinessOwnerDashboardState extends State<BusinessOwnerDashboard> {
                 final name = _nameController.text;
                 final email = _emailController.text;
                 final password = _passwordController.text;
+                final messenger = ScaffoldMessenger.of(context); // Capture ScaffoldMessenger before async gap
                 try {
                   final success = await _tenantRepository.createTenant(name, email, password);
+                  if (!mounted) return;
                   if (success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       const SnackBar(content: Text('Tenant created successfully!')),
                     );
                     _nameController.clear();
@@ -81,21 +84,24 @@ class _BusinessOwnerDashboardState extends State<BusinessOwnerDashboard> {
                     _passwordController.clear();
                   } else {
                     // This 'else' might not be reached if createTenant throws an exception
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       const SnackBar(content: Text('Failed to create tenant.')),
                     );
                   }
                 } on AppwriteException catch (e) {
-                  print('Appwrite Error: ${e.message}'); // Detailed error log
-                  print('Appwrite Code: ${e.code}');
-                  print('Appwrite Response: ${e.response}');
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  debugPrint('Appwrite Error: ${e.message}'); // Detailed error log
+                  debugPrint('Appwrite Code: ${e.code}');
+                  debugPrint('Appwrite Response: ${e.response}');
+                  if (!mounted) return;
+                  messenger.showSnackBar(
                     SnackBar(content: Text('Error: ${e.message ?? "Failed to create tenant."}')),
                   );
                 } finally {
-                  setState(() {
-                    // _isLoading = false;
-                  });
+                  if (mounted) {
+                    setState(() {
+                      // _isLoading = false;
+                    });
+                  }
                 }
               },
               child: const Text('Create Tenant'),
@@ -121,6 +127,7 @@ class _BusinessOwnerDashboardState extends State<BusinessOwnerDashboard> {
               onPressed: () async {
                 final name = _categoryController.text;
                 await _categoryRepository.createCategory(name);
+                if (!mounted) return;
                 _categoryController.clear();
                 _loadCategories();
               },

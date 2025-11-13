@@ -54,21 +54,38 @@ export default async ({ req, res, log, error }) => {
     await users.updateVerification(newTenantUser.$id, true);
     log(`User '${tenantName}' berhasil diverifikasi.`);
 
+    // Data tenant disesuaikan dengan skema baru
     const tenantData = {
       name: tenantName,
-      logoUrl: '',
-      owner_user_id: businessOwnerId,
-      description: `Tenant default untuk ${tenantName}`,
+      business_owner_id: businessOwnerId,
       status: 'active',
-      userId: newTenantUser.$id,
-      qrCodeUrl: `https://aplikasi-anda.com/menu/${ID.unique()}`
+      subscription_plan: 'basic',
     };
 
-    const tenantDocument = await databases.createDocument(process.env.APPWRITE_DATABASE_ID, 'tenants', ID.unique(), tenantData);
-    log(`Dokumen tenant '${tenantName}' berhasil dibuat.`);
+    // Buat dokumen dengan data esensial dan izin yang benar
+    const tenantDocument = await databases.createDocument(
+      process.env.APPWRITE_DATABASE_ID, 
+      'tenants', 
+      ID.unique(), 
+      tenantData,
+      [
+        Permission.read(Role.user(businessOwnerId)),
+        Permission.update(Role.user(businessOwnerId)),
+        Permission.delete(Role.user(businessOwnerId)),
+        Permission.read(Role.user(newTenantUser.$id)),
+        Permission.update(Role.user(newTenantUser.$id)),
+      ]
+    );
+    log(`Dokumen tenant '${tenantName}' berhasil dibuat dengan izin.`);
 
-    const updatedDocument = await databases.updateDocument(process.env.APPWRITE_DATABASE_ID, 'tenants', tenantDocument.$id, { qrCodeUrl: `https://aplikasi-anda.com/menu/${tenantDocument.$id}` });
-    log(`QR Code URL berhasil dibuat.`);
+    // Update dokumen dengan ID-nya sendiri sebagai data QR code
+    const updatedDocument = await databases.updateDocument(
+      process.env.APPWRITE_DATABASE_ID, 
+      'tenants', 
+      tenantDocument.$id, 
+      { qr_code_data: tenantDocument.$id }
+    );
+    log(`QR Code data berhasil di-set.`);
 
     return res.json({ success: true, message: `Tenant ${tenantName} berhasil dibuat!`, data: updatedDocument });
 

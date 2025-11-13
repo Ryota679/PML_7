@@ -1,6 +1,7 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' show Document;
 import 'package:kantin_app/config/environment.dart';
+import 'package:flutter/foundation.dart'; // Added for debugPrint
 
 class TenantRepository {
   final Databases _databases;
@@ -17,7 +18,7 @@ class TenantRepository {
       );
       return true;
     } on AppwriteException catch (e) {
-      print(e.message);
+      debugPrint(e.message); // Replaced print with debugPrint
       return false;
     }
   }
@@ -26,7 +27,7 @@ class TenantRepository {
     final response = await _databases.listDocuments(
       databaseId: Environment.appwriteDatabaseId,
       collectionId: 'tenants',
-      queries: [Query.equal('owner_user_id', userId)],
+      queries: [Query.equal('business_owner_id', userId)],
     );
     if (response.documents.isNotEmpty) {
       return response.documents.first;

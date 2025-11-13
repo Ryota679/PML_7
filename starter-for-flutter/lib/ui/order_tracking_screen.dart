@@ -7,10 +7,10 @@ import 'package:flutter/material.dart';
 class OrderTrackingScreen extends StatefulWidget {
   final String orderId;
 
-  const OrderTrackingScreen({Key? key, required this.orderId}) : super(key: key);
+  const OrderTrackingScreen({super.key, required this.orderId});
 
   @override
-  _OrderTrackingScreenState createState() => _OrderTrackingScreenState();
+  State<OrderTrackingScreen> createState() => _OrderTrackingScreenState();
 }
 
 class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
@@ -37,7 +37,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         _order = order;
       });
     } on AppwriteException catch (e) {
-      print(e.message);
+      debugPrint(e.message);
     }
   }
 

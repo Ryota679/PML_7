@@ -11,10 +11,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class TenantMenuScreen extends ConsumerStatefulWidget {
   final String tenantId;
 
-  const TenantMenuScreen({Key? key, required this.tenantId}) : super(key: key);
+  const TenantMenuScreen({super.key, required this.tenantId});
 
   @override
-  _TenantMenuScreenState createState() => _TenantMenuScreenState();
+  ConsumerState<TenantMenuScreen> createState() => _TenantMenuScreenState();
 }
 
 class _TenantMenuScreenState extends ConsumerState<TenantMenuScreen> {
@@ -38,7 +38,7 @@ class _TenantMenuScreenState extends ConsumerState<TenantMenuScreen> {
         _products = products;
       });
     } on AppwriteException catch (e) {
-      print(e.message);
+      debugPrint(e.message);
     }
   }
 

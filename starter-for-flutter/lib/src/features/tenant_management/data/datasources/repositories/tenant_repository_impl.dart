@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart'; // Added for debugPrint
 
 import 'package:kantin_app/src/core/api/appwrite_client.dart'; 
 import 'package:kantin_app/src/features/tenant_management/domain/repositories/tenant_repository.dart';
@@ -34,8 +35,8 @@ class TenantRepositoryImpl implements TenantRepository {
       final String body = jsonEncode(payload);
 
       // --- LOG DEBUGGING TAMBAHAN ---
-      print('Mengirim ke fungsi: ${AppConstants.functionCreateTenant}');
-      print('Dengan body: $body');
+      debugPrint('Mengirim ke fungsi: ${AppConstants.functionCreateTenant}');
+      debugPrint('Dengan body: $body');
       // -----------------------------
 
       final execution = await _functions.createExecution(

@@ -8,10 +8,10 @@ import 'package:kantin_app/data/repository/order_repository.dart';
 import 'package:flutter/material.dart';
 
 class TenantDashboard extends StatefulWidget {
-  const TenantDashboard({Key? key}) : super(key: key);
+  const TenantDashboard({super.key});
 
   @override
-  _TenantDashboardState createState() => _TenantDashboardState();
+  State<TenantDashboard> createState() => _TenantDashboardState();
 }
 
 class _TenantDashboardState extends State<TenantDashboard> {
@@ -43,7 +43,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
         });
       }
     } on AppwriteException catch (e) {
-      print(e.message);
+      debugPrint(e.message);
     }
   }
 
@@ -72,11 +72,11 @@ class _TenantDashboardState extends State<TenantDashboard> {
                   title: Text(product.data['name']),
                   subtitle: Text('\$${product.data['price']}'),
                   trailing: Switch(
-                    value: product.data['isAvailable'],
+                    value: product.data['is_available'],
                     onChanged: (value) async {
                       await _productRepository.updateProduct(
                         product.$id,
-                        data: {'isAvailable': value},
+                        data: {'is_available': value},
                       );
                       _loadTenantAndData();
                     },
@@ -91,7 +91,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
                 final order = _orders[index];
                 return ListTile(
                   title: Text('Order #${order.$id}'),
-                  subtitle: Text('Total: \$${order.data['totalPrice']}'),
+                  subtitle: Text('Total: \$${order.data['total_amount']}'),
                   trailing: DropdownButton<String>(
                     value: order.data['status'],
                     onChanged: (String? newValue) async {
@@ -103,7 +103,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
                         _loadTenantAndData();
                       }
                     },
-                    items: <String>['pending', 'preparing', 'ready_for_pickup', 'completed', 'cancelled']
+                    items: <String>['new', 'preparing', 'ready_for_pickup', 'completed', 'cancelled']
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
@@ -127,29 +127,29 @@ class _TenantDashboardState extends State<TenantDashboard> {
   }
 
   void _showAddProductDialog() {
-    final _nameController = TextEditingController();
-    final _priceController = TextEditingController();
-    final _categoryController = TextEditingController();
+    final nameController = TextEditingController();
+    final priceController = TextEditingController();
+    final categoryController = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Add Product'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                controller: _nameController,
+                controller: nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
               ),
               TextField(
-                controller: _priceController,
+                controller: priceController,
                 decoration: const InputDecoration(labelText: 'Price'),
                 keyboardType: TextInputType.number,
               ),
               TextField(
-                controller: _categoryController,
+                controller: categoryController,
                 decoration: const InputDecoration(labelText: 'Category ID'),
               ),
             ],
@@ -157,19 +157,21 @@ class _TenantDashboardState extends State<TenantDashboard> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
               },
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () async {
+                final navigatorState = Navigator.of(dialogContext); // Capture NavigatorState
                 await _productRepository.createProduct(
-                  _nameController.text,
-                  double.parse(_priceController.text),
-                  _categoryController.text,
+                  nameController.text,
+                  double.parse(priceController.text),
+                  categoryController.text,
                   _tenant!.$id,
                 );
-                Navigator.of(context).pop();
+                if (!mounted) return; // Check if _TenantDashboardState is still mounted
+                navigatorState.pop(); // Use the captured NavigatorState
                 _loadTenantAndData();
               },
               child: const Text('Add'),

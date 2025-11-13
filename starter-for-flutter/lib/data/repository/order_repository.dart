@@ -10,10 +10,16 @@ class OrderRepository {
 
   OrderRepository(Client client) : _databases = Databases(client), _functions = Functions(client), _realtime = Realtime(client);
 
-  Future<Document> createOrder(List<Map<String, dynamic>> items, double totalPrice, String tenantId) async {
+  Future<Document> createOrder(List<Map<String, dynamic>> items, double totalAmount, String tenantId, String customerName) async {
     final execution = await _functions.createExecution(
       functionId: 'createOrder',
-      body: '{"items": $items, "totalPrice": $totalPrice, "tenantId": "$tenantId"}',
+      body: jsonEncode({
+        'order_items': items,
+        'total_amount': totalAmount,
+        'tenant_id': tenantId,
+        'customer_name': customerName,
+      }),
+      headers: {'Content-Type': 'application/json'},
     );
     return Document.fromMap(jsonDecode(execution.responseBody));
   }
@@ -22,7 +28,7 @@ class OrderRepository {
     final response = await _databases.listDocuments(
       databaseId: Environment.appwriteDatabaseId,
       collectionId: 'orders',
-      queries: [Query.equal('tenantId', tenantId)],
+      queries: [Query.equal('tenant_id', tenantId)],
     );
     return response.documents;
   }
@@ -30,7 +36,8 @@ class OrderRepository {
   Future<void> updateOrderStatus(String orderId, String status) async {
     await _functions.createExecution(
       functionId: 'updateOrderStatus',
-      body: '{"orderId": "$orderId", "status": "$status"}',
+      body: jsonEncode({'orderId': orderId, 'status': status}),
+      headers: {'Content-Type': 'application/json'},
     );
   }
 
@@ -43,6 +50,7 @@ class OrderRepository {
   }
 
   Stream<RealtimeMessage> subscribeToOrderUpdates(String orderId) {
-    return _realtime.subscribe(['databases.${Environment.appwriteDatabaseId}.collections.orders.documents.$orderId']).stream;
+    final channel = 'databases.${Environment.appwriteDatabaseId}.collections.orders.documents.$orderId';
+    return _realtime.subscribe([channel]).stream;
   }
 }
