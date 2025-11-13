@@ -12,7 +12,7 @@ class TenantRepository {
     try {
       await _functions.createExecution(
         functionId: 'createTenant1',
-        data: '{"tenantName": "$name", "tenantEmail": "$email", "tenantPassword": "$password"}',
+        body: '{"tenantName": "$name", "tenantEmail": "$email", "tenantPassword": "$password"}',
         headers: {'Content-Type': 'application/json'},
       );
       return true;
