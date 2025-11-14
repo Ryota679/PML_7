@@ -8,16 +8,19 @@ import 'package:flutter/foundation.dart'; // Added for debugPrint
 import 'package:kantin_app/src/core/api/appwrite_client.dart'; 
 import 'package:kantin_app/src/features/tenant_management/domain/repositories/tenant_repository.dart';
 import 'package:kantin_app/src/core/constants/app_constants.dart';
+import 'package:appwrite/models.dart';
 
 final tenantRepositoryProvider = Provider<TenantRepository>((ref) {
   final functions = ref.watch(appwriteFunctionsProvider);
-  return TenantRepositoryImpl(functions);
+  final databases = ref.watch(appwriteDatabaseProvider);
+  return TenantRepositoryImpl(functions, databases);
 });
 
 class TenantRepositoryImpl implements TenantRepository {
   final Functions _functions;
+  final Databases _databases;
 
-  TenantRepositoryImpl(this._functions);
+  TenantRepositoryImpl(this._functions, this._databases);
 
   @override
   Future<Map<String, dynamic>> createTenant({
@@ -63,6 +66,55 @@ class TenantRepositoryImpl implements TenantRepository {
           throw Exception('Function failed with status: ${execution.status}');
         }
       }
+    } on AppwriteException catch (e) {
+      throw Exception(e.message ?? 'Unknown Appwrite error');
+    } catch (e) {
+      throw Exception('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<DocumentList> getTenants() async {
+    try {
+      final response = await _databases.listDocuments(
+        databaseId: AppConstants.databaseId,
+        collectionId: AppConstants.tenantsCollectionId,
+      );
+      return response;
+    } on AppwriteException catch (e) {
+      throw Exception(e.message ?? 'Unknown Appwrite error');
+    } catch (e) {
+      throw Exception('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<Document?> getTenantByOwner(String userId) async {
+    try {
+      final response = await _databases.listDocuments(
+        databaseId: AppConstants.databaseId,
+        collectionId: AppConstants.tenantsCollectionId,
+        queries: [Query.equal('owner_user_id', userId)],
+      );
+      if (response.documents.isNotEmpty) {
+        return response.documents.first;
+      }
+      return null;
+    } on AppwriteException catch (e) {
+      throw Exception(e.message ?? 'Unknown Appwrite error');
+    } catch (e) {
+      throw Exception('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<Document> getTenantById(String tenantId) async {
+    try {
+      return await _databases.getDocument(
+        databaseId: AppConstants.databaseId,
+        collectionId: AppConstants.tenantsCollectionId,
+        documentId: tenantId,
+      );
     } on AppwriteException catch (e) {
       throw Exception(e.message ?? 'Unknown Appwrite error');
     } catch (e) {

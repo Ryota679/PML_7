@@ -23,3 +23,9 @@ final appwriteAccountProvider = Provider<Account>((ref) {
   final client = ref.watch(appwriteClientProvider);
   return Account(client);
 });
+
+// Provider ini untuk mengakses service Databases
+final appwriteDatabaseProvider = Provider<Databases>((ref) {
+  final client = ref.watch(appwriteClientProvider);
+  return Databases(client);
+});
