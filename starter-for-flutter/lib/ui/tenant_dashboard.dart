@@ -1,24 +1,22 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
-import 'package:kantin_app/data/repository/auth_repository.dart';
-import 'package:kantin_app/data/repository/base_appwrite_repository.dart';
-import 'package:kantin_app/data/repository/tenant_repository.dart';
-import 'package:kantin_app/data/repository/product_repository.dart';
-import 'package:kantin_app/data/repository/order_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kantin_app/src/core/api/appwrite_client.dart';
+import 'package:kantin_app/src/features/tenant_management/data/datasources/repositories/tenant_repository_impl.dart';
+import 'package:kantin_app/data/repository/product_repository_provider.dart';
+import 'package:kantin_app/data/repository/order_repository_provider.dart';
+import 'package:kantin_app/src/features/tenant_management/presentation/screens/tenant_profile_screen.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
-class TenantDashboard extends StatefulWidget {
+class TenantDashboard extends ConsumerStatefulWidget {
   const TenantDashboard({super.key});
 
   @override
-  State<TenantDashboard> createState() => _TenantDashboardState();
+  ConsumerState<TenantDashboard> createState() => _TenantDashboardState();
 }
 
-class _TenantDashboardState extends State<TenantDashboard> {
-  final AuthRepository _authRepository = AuthRepository(BaseAppwriteRepository().client);
-  final TenantRepository _tenantRepository = TenantRepository(BaseAppwriteRepository().client);
-  final ProductRepository _productRepository = ProductRepository(BaseAppwriteRepository().client);
-  final OrderRepository _orderRepository = OrderRepository(BaseAppwriteRepository().client);
+class _TenantDashboardState extends ConsumerState<TenantDashboard> {
   Document? _tenant;
   List<Document> _products = [];
   List<Document> _orders = [];
@@ -31,11 +29,11 @@ class _TenantDashboardState extends State<TenantDashboard> {
 
   Future<void> _loadTenantAndData() async {
     try {
-      final user = await _authRepository.getAccount();
-      final tenant = await _tenantRepository.getTenantByOwner(user.$id);
+      final user = await ref.read(appwriteAccountProvider).get();
+      final tenant = await ref.read(tenantRepositoryProvider).getTenantByOwner(user.$id);
       if (tenant != null) {
-        final products = await _productRepository.getProducts(tenant.$id);
-        final orders = await _orderRepository.getOrders(tenant.$id);
+        final products = await ref.read(productRepositoryProvider).getProducts(tenant.$id);
+        final orders = await ref.read(orderRepositoryProvider).getOrders(tenant.$id);
         setState(() {
           _tenant = tenant;
           _products = products;
@@ -54,6 +52,15 @@ class _TenantDashboardState extends State<TenantDashboard> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(_tenant?.data['name'] ?? 'Tenant Dashboard'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                context.push('/tenant/profile');
+              },
+              tooltip: 'Pengaturan Profil',
+            ),
+          ],
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Products'),
@@ -74,7 +81,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
                   trailing: Switch(
                     value: product.data['is_available'],
                     onChanged: (value) async {
-                      await _productRepository.updateProduct(
+                      await ref.read(productRepositoryProvider).updateProduct(
                         product.$id,
                         data: {'is_available': value},
                       );
@@ -96,7 +103,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
                     value: order.data['status'],
                     onChanged: (String? newValue) async {
                       if (newValue != null) {
-                        await _orderRepository.updateOrderStatus(
+                        await ref.read(orderRepositoryProvider).updateOrderStatus(
                           order.$id,
                           newValue,
                         );
@@ -164,7 +171,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
             TextButton(
               onPressed: () async {
                 final navigatorState = Navigator.of(dialogContext); // Capture NavigatorState
-                await _productRepository.createProduct(
+                await ref.read(productRepositoryProvider).createProduct(
                   nameController.text,
                   double.parse(priceController.text),
                   categoryController.text,

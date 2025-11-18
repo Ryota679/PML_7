@@ -3,8 +3,9 @@
 import 'package:appwrite/appwrite.dart'; // Pastikan import ini ada untuk AppwriteException & Account
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kantin_app/src/core/api/appwrite_client.dart'; 
-import 'package:kantin_app/src/features/tenant_management/presentation/screens/create_tenant_screen.dart';
+import 'package:kantin_app/src/core/api/appwrite_client.dart';
+import 'package:kantin_app/ui/business_owner_dashboard.dart';
+import 'package:kantin_app/ui/tenant_dashboard.dart';
 
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -47,17 +48,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       // Kode ini sekarang seharusnya tidak error lagi.
       await account.createEmailPasswordSession(
-  email: _emailController.text.trim(),
-  password: _passwordController.text,
-    );
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
 
       debugPrint('✅ Login Berhasil!');
 
-      if (mounted) {
-        // Kode ini sekarang seharusnya tidak error lagi karena import sudah benar.
+      final user = await account.get();
+      final labels = user.labels;
+
+      if (!mounted) return;
+
+      if (labels.contains('business_owner')) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CreateTenantScreen()),
+          MaterialPageRoute(builder: (_) => const BusinessOwnerDashboard()),
         );
+      } else if (labels.contains('tenant')) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const TenantDashboard()),
+        );
+      } else {
+        _showError('Akun Anda belum memiliki role yang valid.');
+        await account.deleteSession(sessionId: 'current');
       }
     } on AppwriteException catch (e) {
       debugPrint('❌ TERJADI ERROR APPWRITE:');
@@ -85,22 +97,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login Business Owner')),
+      appBar: AppBar(title: const Text('Login Biasa')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Text(
+              'Masuk ke Dashboard',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Gunakan email & password Business Owner atau Tenant. '
+              'Aplikasi akan otomatis mengarahkan sesuai label akun.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email),
+                border: OutlineInputBorder(),
+              ),
               keyboardType: TextInputType.emailAddress,
             ),
+            const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                prefixIcon: Icon(Icons.lock),
+                border: OutlineInputBorder(),
+              ),
               obscureText: true,
             ),
             const SizedBox(height: 20),

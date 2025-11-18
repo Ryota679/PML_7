@@ -1,24 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:appwrite/models.dart';
-import 'package:appwrite/appwrite.dart';
-import 'package:kantin_app/data/repository/base_appwrite_repository.dart';
-import 'package:kantin_app/data/repository/tenant_repository.dart';
-import 'package:kantin_app/data/repository/category_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kantin_app/data/repository/category_repository_provider.dart';
+import 'package:kantin_app/ui/tenant_list_screen.dart';
+import 'package:kantin_app/src/features/tenant_management/presentation/screens/create_tenant_screen.dart';
 
-class BusinessOwnerDashboard extends StatefulWidget {
+class BusinessOwnerDashboard extends ConsumerStatefulWidget {
   const BusinessOwnerDashboard({super.key});
 
   @override
-  State<BusinessOwnerDashboard> createState() => _BusinessOwnerDashboardState();
+  ConsumerState<BusinessOwnerDashboard> createState() => _BusinessOwnerDashboardState();
 }
 
-class _BusinessOwnerDashboardState extends State<BusinessOwnerDashboard> {
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+class _BusinessOwnerDashboardState extends ConsumerState<BusinessOwnerDashboard> {
   final _categoryController = TextEditingController();
-  final TenantRepository _tenantRepository = TenantRepository(BaseAppwriteRepository().client);
-  final CategoryRepository _categoryRepository = CategoryRepository(BaseAppwriteRepository().client);
   List<Document> _categories = [];
 
   @override
@@ -29,13 +24,13 @@ class _BusinessOwnerDashboardState extends State<BusinessOwnerDashboard> {
 
   Future<void> _loadCategories() async {
     try {
-      final categories = await _categoryRepository.getCategories();
+      final categories = await ref.read(categoryRepositoryProvider).getCategories();
       if (!mounted) return;
       setState(() {
         _categories = categories;
       });
-    } on AppwriteException catch (e) {
-      debugPrint(e.message);
+    } catch (e) {
+      debugPrint(e.toString());
     }
   }
 
@@ -49,55 +44,24 @@ class _BusinessOwnerDashboardState extends State<BusinessOwnerDashboard> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Tenant Name'),
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Tenant Email'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Tenant Password'),
-              obscureText: true,
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CreateTenantScreen()),
+                );
+              },
+              child: const Text('Create Tenant'),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () async {
-                setState(() {
-                  // _isLoading = true; // Add a loading state variable if you don't have one
-                });
-                final name = _nameController.text;
-                final email = _emailController.text;
-                final password = _passwordController.text;
-                final messenger = ScaffoldMessenger.of(context); 
-                try {
-                  await _tenantRepository.createTenant(name, email, password);
-                  if (!mounted) return;
-                  messenger.showSnackBar(
-                    const SnackBar(content: Text('Tenant created successfully!')),
-                  );
-                  _nameController.clear();
-                  _emailController.clear();
-                  _passwordController.clear();
-                } on AppwriteException catch (e) {
-                  debugPrint('Appwrite Error: ${e.message}'); 
-                  debugPrint('Appwrite Code: ${e.code}');
-                  debugPrint('Appwrite Response: ${e.response}');
-                  if (!mounted) return;
-                  messenger.showSnackBar(
-                    SnackBar(content: Text('Error: ${e.message ?? "Failed to create tenant."}')),
-                  );
-                } finally {
-                  if (mounted) {
-                    setState(() {
-                      // _isLoading = false;
-                    });
-                  }
-                }
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TenantListScreen()),
+                );
               },
-              child: const Text('Create Tenant'),
+              child: const Text('My Tenants'),
             ),
             const SizedBox(height: 32),
             const Text('Categories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -119,7 +83,7 @@ class _BusinessOwnerDashboardState extends State<BusinessOwnerDashboard> {
             ElevatedButton(
               onPressed: () async {
                 final name = _categoryController.text;
-                await _categoryRepository.createCategory(name);
+                await ref.read(categoryRepositoryProvider).createCategory(name);
                 if (!mounted) return;
                 _categoryController.clear();
                 _loadCategories();

@@ -1,9 +1,8 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import 'package:kantin_app/data/cart_provider.dart';
-import 'package:kantin_app/data/repository/base_appwrite_repository.dart';
-import 'package:kantin_app/data/repository/tenant_repository.dart';
-import 'package:kantin_app/data/repository/product_repository.dart';
+import 'package:kantin_app/src/features/tenant_management/data/datasources/repositories/tenant_repository_impl.dart';
+import 'package:kantin_app/data/repository/product_repository_provider.dart';
 import 'package:kantin_app/ui/cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,8 +17,6 @@ class TenantMenuScreen extends ConsumerStatefulWidget {
 }
 
 class _TenantMenuScreenState extends ConsumerState<TenantMenuScreen> {
-  final TenantRepository _tenantRepository = TenantRepository(BaseAppwriteRepository().client);
-  final ProductRepository _productRepository = ProductRepository(BaseAppwriteRepository().client);
   Document? _tenant;
   List<Document> _products = [];
 
@@ -31,8 +28,8 @@ class _TenantMenuScreenState extends ConsumerState<TenantMenuScreen> {
 
   Future<void> _loadTenantAndProducts() async {
     try {
-      final tenant = await _tenantRepository.getTenantById(widget.tenantId);
-      final products = await _productRepository.getProducts(widget.tenantId);
+      final tenant = await ref.read(tenantRepositoryProvider).getTenantById(widget.tenantId);
+      final products = await ref.read(productRepositoryProvider).getProducts(widget.tenantId);
       setState(() {
         _tenant = tenant;
         _products = products;

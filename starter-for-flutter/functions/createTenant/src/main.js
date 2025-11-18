@@ -54,45 +54,62 @@ export default async ({ req, res, log, error }) => {
     await users.updateVerification(newTenantUser.$id, true);
     log(`User '${tenantName}' berhasil diverifikasi.`);
 
+    // Data tenant disesuaikan dengan skema di data.md
+    // Schema membutuhkan: name (required), owner_user_id (required)
+    // owner_user_id = ID Business Owner yang membuat tenant ini (untuk query tenant milik business owner)
+    // userId = ID user tenant yang baru dibuat (untuk menghubungkan dengan user tenant)
     const tenantData = {
       name: tenantName,
-      logoUrl: 'https://example.com/default_logo.png', // Default logo
-      owner_user_id: businessOwnerId,
-      description: `Tenant ${tenantName}`, // Default description
-      status: 'active', // Default status
-      userid: newTenantUser.$id, // ID of the new tenant user
-      qrCodeUrl: '', // Initially empty
+      logoUrl: 'https://img.ly/30', // Placeholder URL short (opsional, bisa diupdate tenant)
+      owner_user_id: businessOwnerId, // ID Business Owner yang membuat tenant (REQUIRED untuk query)
+      userId: newTenantUser.$id, // ID user tenant yang baru dibuat (opsional, untuk referensi)
     };
+    
+    log('Data tenant yang akan dibuat:', JSON.stringify(tenantData));
+    log('Database ID:', process.env.APPWRITE_DATABASE_ID);
+    log('Collection ID: tenants');
 
-    // Buat dokumen dengan data esensial dan izin yang benar
-    const tenantDocument = await databases.createDocument(
-      process.env.APPWRITE_DATABASE_ID,
-      'tenants',
-      ID.unique(),
-      tenantData,
-      [
-        Permission.read(Role.user(businessOwnerId)),
-        Permission.update(Role.user(businessOwnerId)),
-        Permission.delete(Role.user(businessOwnerId)),
-        Permission.read(Role.user(newTenantUser.$id)),
-        Permission.update(Role.user(newTenantUser.$id)),
-      ]
-    );
-    log(`Dokumen tenant '${tenantName}' berhasil dibuat dengan izin.`);
+    try {
+      // Buat dokumen dengan data esensial dan izin yang benar
+      const tenantDocument = await databases.createDocument(
+        process.env.APPWRITE_DATABASE_ID, 
+        'tenants', 
+        ID.unique(), 
+        tenantData,
+        [
+          Permission.read(Role.user(businessOwnerId)),
+          Permission.update(Role.user(businessOwnerId)),
+          Permission.delete(Role.user(businessOwnerId)),
+          Permission.read(Role.user(newTenantUser.$id)),
+          Permission.update(Role.user(newTenantUser.$id)),
+        ]
+      );
+      log(`Dokumen tenant '${tenantName}' berhasil dibuat dengan ID: ${tenantDocument.$id}`);
 
-    // Update dokumen dengan ID-nya sendiri sebagai data QR code
-    const updatedDocument = await databases.updateDocument(
-      process.env.APPWRITE_DATABASE_ID,
-      'tenants',
-      tenantDocument.$id,
-      { qrCodeUrl: `https://your-domain.com/tenant-qr/${tenantDocument.$id}` } // Ganti dengan URL Anda
-    );
-    log(`QR Code data berhasil di-set.`);
-
-    return res.json({ success: true, message: `Tenant ${tenantName} berhasil dibuat!`, data: updatedDocument });
+      return res.json({ 
+        success: true, 
+        message: `Tenant ${tenantName} berhasil dibuat!`, 
+        data: tenantDocument 
+      });
+    } catch (docError) {
+      error('Error saat membuat dokumen tenant:', docError);
+      // Jika gagal membuat dokumen, hapus user yang sudah dibuat untuk menjaga konsistensi
+      try {
+        await users.delete(newTenantUser.$id);
+        log('User yang sudah dibuat dihapus karena gagal membuat dokumen tenant');
+      } catch (deleteError) {
+        error('Gagal menghapus user setelah error:', deleteError);
+      }
+      throw docError; // Re-throw untuk ditangani di catch utama
+    }
 
   } catch (e) {
     error('Terjadi error fatal:', e);
-    return res.json({ success: false, message: e.message, }, 500);
+    error('Stack trace:', e.stack);
+    return res.json({ 
+      success: false, 
+      message: e.message || 'Terjadi kesalahan saat membuat tenant',
+      error: e.toString(),
+    }, 500);
   }
 }
