@@ -91,15 +91,33 @@ class TenantRepositoryImpl implements TenantRepository {
   @override
   Future<Document?> getTenantByOwner(String userId) async {
     try {
+      // Untuk tenant: cari tenant berdasarkan userId (ID user tenant)
       final response = await _databases.listDocuments(
         databaseId: AppConstants.databaseId,
         collectionId: AppConstants.tenantsCollectionId,
-        queries: [Query.equal('owner_user_id', userId)],
+        queries: [Query.equal('userId', userId)], // Cari berdasarkan userId (ID user tenant)
       );
       if (response.documents.isNotEmpty) {
         return response.documents.first;
       }
       return null;
+    } on AppwriteException catch (e) {
+      throw Exception(e.message ?? 'Unknown Appwrite error');
+    } catch (e) {
+      throw Exception('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<DocumentList> getTenantsByBusinessOwner(String businessOwnerId) async {
+    try {
+      // Untuk business owner: cari semua tenant berdasarkan owner_user_id (ID business owner)
+      final response = await _databases.listDocuments(
+        databaseId: AppConstants.databaseId,
+        collectionId: AppConstants.tenantsCollectionId,
+        queries: [Query.equal('owner_user_id', businessOwnerId)], // Cari berdasarkan owner_user_id (ID business owner)
+      );
+      return response;
     } on AppwriteException catch (e) {
       throw Exception(e.message ?? 'Unknown Appwrite error');
     } catch (e) {
@@ -114,6 +132,39 @@ class TenantRepositoryImpl implements TenantRepository {
         databaseId: AppConstants.databaseId,
         collectionId: AppConstants.tenantsCollectionId,
         documentId: tenantId,
+      );
+    } on AppwriteException catch (e) {
+      throw Exception(e.message ?? 'Unknown Appwrite error');
+    } catch (e) {
+      throw Exception('An unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<Document> updateTenant({
+    required String tenantId,
+    String? name,
+    String? logoUrl,
+    String? description,
+    String? status,
+  }) async {
+    try {
+      // Hanya update field yang tidak null
+      final Map<String, dynamic> updateData = {};
+      if (name != null) updateData['name'] = name;
+      if (logoUrl != null) updateData['logoUrl'] = logoUrl;
+      if (description != null) updateData['description'] = description;
+      if (status != null) updateData['status'] = status;
+
+      if (updateData.isEmpty) {
+        throw Exception('Tidak ada data yang akan diupdate');
+      }
+
+      return await _databases.updateDocument(
+        databaseId: AppConstants.databaseId,
+        collectionId: AppConstants.tenantsCollectionId,
+        documentId: tenantId,
+        data: updateData,
       );
     } on AppwriteException catch (e) {
       throw Exception(e.message ?? 'Unknown Appwrite error');

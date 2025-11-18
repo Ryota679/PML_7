@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: const Text('Login Biasa'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -77,13 +77,13 @@ class _LoginScreenState extends State<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Welcome!',
+              'Login Biasa',
               style: Theme.of(context).textTheme.headlineMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'Please login to continue',
+              'Masuk menggunakan akun Business Owner atau Tenant',
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
@@ -115,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     onPressed: _login,
-                    child: const Text('Login'),
+                    child: const Text('Login Biasa'),
                   ),
           ],
         ),

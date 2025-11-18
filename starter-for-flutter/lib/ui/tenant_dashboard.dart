@@ -5,6 +5,8 @@ import 'package:kantin_app/src/core/api/appwrite_client.dart';
 import 'package:kantin_app/src/features/tenant_management/data/datasources/repositories/tenant_repository_impl.dart';
 import 'package:kantin_app/data/repository/product_repository_provider.dart';
 import 'package:kantin_app/data/repository/order_repository_provider.dart';
+import 'package:kantin_app/src/features/tenant_management/presentation/screens/tenant_profile_screen.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 class TenantDashboard extends ConsumerStatefulWidget {
@@ -50,6 +52,15 @@ class _TenantDashboardState extends ConsumerState<TenantDashboard> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(_tenant?.data['name'] ?? 'Tenant Dashboard'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                context.push('/tenant/profile');
+              },
+              tooltip: 'Pengaturan Profil',
+            ),
+          ],
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Products'),
