@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Owner - Kantin Digital</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><a href="dashboard.html" style="text-decoration: none; color: inherit;">Kantin Digital</a></h1>
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="tenants.html">Manajemen Tenant</a></li>
+                    <li><a href="reports.html">Laporan</a></li>
+                    <li><a href="profile.html" class="active">Profil</a></li>
+                    <li><a href="../index.html">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <section>
+            <h2>Profil Owner</h2>
+            <div class="form-group">
+                <label for="name">Nama</label>
+                <input type="text" id="name" value="Owner">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" value="owner@example.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" value="password">
+            </div>
+            <button class="btn btn-primary">Simpan Perubahan</button>
+        </section>
+    </main>
+    <script src="../app.js"></script>
+</body>
+</html>

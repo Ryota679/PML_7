@@ -1,61 +1,101 @@
-<!-- buyer/cart.html -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keranjang Anda - Kantin Digital</title>
+    <title>Keranjang Belanja - Kantin Digital</title>
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="header">
-        <a href="javascript:history.back()">&larr; Kembali ke Menu</a>
-        <h1>Keranjang</h1>
+        <h1><a href="home.html" style="text-decoration: none; color: inherit;">Kantin Digital</a></h1>
+        <a href="../index.html">Logout</a>
     </div>
     <div class="container">
         <div class="card">
-            <div class="product-list" id="cart-items-container">
+            <div id="cart-items">
                 <!-- Item keranjang akan dimuat di sini -->
             </div>
-            <div style="border-top: 2px solid #eee; padding-top: 20px; margin-top: 20px; text-align: right;">
-                <h3>Total Belanja: <span id="total-price" class="price">Rp 0</span></h3>
+            <div class="cart-summary" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+                <p>Total: <strong id="cart-total">Rp 0</strong></p>
+                <button class="btn btn-primary" onclick="checkout()">Checkout</button>
+                <button class="btn btn-secondary" onclick="clearCartAndRender()">Bersihkan Keranjang</button>
             </div>
-            <button class="btn btn-success" onclick="checkout()">Lanjutkan ke Checkout</button>
         </div>
     </div>
     <script src="../app.js"></script>
     <script>
-        // Data keranjang palsu
-        const FAKE_CART = [
-            { id: 102, name: "Soto Ayam Spesial", price: 20000, quantity: 1 },
-            { id: 103, name: "Es Teh Manis", price: 5000, quantity: 2 },
-        ];
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartTotalElement = document.getElementById('cart-total');
 
-        const container = document.getElementById('cart-items-container');
-        let totalPrice = 0;
+        function renderCart() {
+            const cart = getCart();
+            cartItemsContainer.innerHTML = '';
+            let total = 0;
 
-        FAKE_CART.forEach(item => {
-            const subtotal = item.price * item.quantity;
-            totalPrice += subtotal;
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p style="text-align:center; color: #888;">Keranjang belanja kosong.</p>';
+                cartTotalElement.textContent = 'Rp 0';
+                return;
+            }
 
-            container.innerHTML += `
-                <div class="product-item">
-                    <div class="info">
-                        <h4>${item.name}</h4>
-                        <p>Jumlah: ${item.quantity}</p>
-                        <span class="price">Rp ${subtotal.toLocaleString('id-ID')}</span>
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                cartItemsContainer.innerHTML += `
+                    <div class="product-item" style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                        <div class="info">
+                            <h4>${item.productName}</h4>
+                            <p>Rp ${item.price.toLocaleString('id-ID')}</p>
+                            <div style="display: flex; align-items: center; margin-top: 5px;">
+                                <button class="btn btn-sm" onclick="decreaseQuantityAndRender(${item.tenantId}, ${item.productId})"><i class="fas fa-minus"></i></button>
+                                <span style="margin: 0 10px;">${item.quantity}</span>
+                                <button class="btn btn-sm" onclick="increaseQuantityAndRender(${item.tenantId}, ${item.productId})"><i class="fas fa-plus"></i></button>
+                                <button class="btn btn-danger btn-sm" style="margin-left: 15px;" onclick="removeItemAndRender(${item.tenantId}, ${item.productId})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div style="font-weight: bold;">Rp ${itemTotal.toLocaleString('id-ID')}</div>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="alert('Item dihapus!')">Hapus</button>
-                </div>
-            `;
-        });
+                `;
+            });
+            cartTotalElement.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+        }
 
-        document.getElementById('total-price').textContent = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+        function increaseQuantityAndRender(tenantId, productId) {
+            increaseQuantity(tenantId, productId);
+            renderCart();
+        }
+
+        function decreaseQuantityAndRender(tenantId, productId) {
+            decreaseQuantity(tenantId, productId);
+            renderCart();
+        }
+
+        function removeItemAndRender(tenantId, productId) {
+            removeItem(tenantId, productId);
+            renderCart();
+        }
 
         function checkout() {
-            alert('Pesanan berhasil dibuat! Anda akan diarahkan ke halaman pelacakan.');
-            navigateTo('orders.html');
+            const buyerName = prompt("Masukkan nama Anda untuk pesanan ini:", window.currentBuyerName || "Pembeli Anonim");
+            if (buyerName) {
+                saveCurrentBuyerNameToLocalStorage(buyerName); // Save buyer name to localStorage
+                const newOrderIds = placeOrder(buyerName);
+                if (newOrderIds && newOrderIds.length > 0) {
+                    alert("Pesanan Anda telah berhasil dibuat!");
+                    navigateTo('orders.html'); // Redirect to buyer's orders page
+                }
+            }
         }
+
+        function clearCartAndRender() {
+            clearCart();
+            renderCart();
+        }
+
+        renderCart();
+        updateCartCount();
     </script>
 </body>
 </html>

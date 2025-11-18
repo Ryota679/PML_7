@@ -1,72 +1,69 @@
+### 3. Spesifikasi Kebutuhan Perangkat Lunak (srs.md)
+*(Peran diperbarui dan diklarifikasi)*
+
+```markdown:Spesifikasi Kebutuhan Perangkat Lunak:srs.md
 ### **Spesifikasi Kebutuhan Perangkat Lunak (SRS): Aplikasi Tenant QR-Order**
 
-*   **Versi:** 1.1
-*   **Tanggal:** 31 Oktober 2025
-*   **Status:** Revisi
-*   **Penyusun:** Gemini
+* **Versi:** 1.3
+* **Tanggal:** 18 November 2025
+* **Status:** Revisi (Memperbarui Role Enum)
+* **Penyusun:** Gemini
 
 ---
 
 ### **1. Pendahuluan**
 
 #### **1.1 Tujuan**
-Dokumen ini bertujuan untuk memberikan spesifikasi yang detail dan komprehensif mengenai kebutuhan fungsional dan non-fungsional untuk pengembangan Aplikasi Tenant QR-Order. Dokumen ini akan menjadi acuan utama bagi tim pengembang, penguji, dan manajer proyek, dengan fokus pada implementasi menggunakan platform **Appwrite** sebagai backend.
+Dokumen ini bertujuan untuk memberikan spesifikasi yang detail dan komprehensif mengenai kebutuhan fungsional dan non-fungsional untuk pengembangan Aplikasi Tenant QR-Order.
 
 #### **1.2 Ruang Lingkup Produk**
-Perangkat lunak ini adalah aplikasi seluler (Android & iOS) yang berfungsi sebagai platform pemesanan makanan siap pakai. Sistem akan melayani empat peran pengguna utama:
-1.  **Guest/Public (Pelanggan Akhir):** Pengunjung yang memesan makanan secara anonim melalui pemindaian QR code.
-2.  **Tenant (Penyewa/Staf):** Pengguna operasional yang mengelola menu dan pesanan harian.
-3.  **Business Owner (Klien/Pemilik Bisnis):** Klien yang berlangganan sistem. Bisa berupa pemilik area multi-tenant (ruko, kantin) atau pemilik bisnis tunggal (kafe, restoran).
-4.  **System Admin (Pemilik Aplikasi):** Administrator platform (Anda) yang mengelola sistem secara keseluruhan melalui konsol Appwrite.
+Perangkat lunak ini adalah aplikasi seluler (Android & iOS). Sistem akan melayani peran pengguna utama:
+1.  **Guest (Anonim):** Pelanggan akhir yang memesan tanpa login.
+2.  **Guest (Terdaftar):** (Opsional/Masa Depan) Pelanggan yang memiliki akun (peran `guest` di koleksi `users`) untuk menyimpan riwayat pesanan.
+3.  **Tenant:** Pengguna operasional yang mengelola menu dan pesanan (peran `tenant`).
+4.  **Business Owner:** Klien yang berlangganan sistem (peran `owner_business`).
+5.  **System Admin:** Administrator platform (via konsol Appwrite).
 
 **Di luar ruang lingkup (Out of Scope) untuk Versi 1.0 adalah:**
-*   Integrasi gateway pembayaran online.
-*   Sistem rating dan ulasan.
-*   Layanan pengantaran (delivery).
-*   Fitur promosi dan diskon.
+* Integrasi gateway pembayaran online.
+* Alur login penuh untuk peran `guest`.
+* Sistem rating dan ulasan.
+* Layanan pengantaran (delivery).
+* Fitur promosi dan diskon.
 
 #### **1.3 Definisi, Akronim, dan Singkatan**
-*   **SRS:** Software Requirements Specification.
-*   **PRD:** Product Requirements Document.
-*   **SDD:** Software Design Document.
-*   **BaaS:** Backend as a Service.
-*   **SDK:** Software Development Kit.
-*   **CRUD:** Create, Read, Update, Delete.
+* **SRS:** Software Requirements Specification.
+* **PRD:** Product Requirements Document.
+* **SDD:** Software Design Document.
+* **BaaS:** Backend as a Service.
 
 #### **1.4 Referensi**
-*   Product Requirements Document (PRD) v1.0
-*   Software Design Document (SDD) v1.1
-*   Ceklist Iterasi v1.1
-
-#### **1.5 Tinjauan Dokumen**
-Dokumen ini terdiri dari tiga bagian utama: Pendahuluan, Deskripsi Umum, dan Kebutuhan Spesifik yang telah disesuaikan dengan arsitektur BaaS.
+* Product Requirements Document (PRD) v1.0
+* Software Design Document (SDD) v1.6
+* Ceklist Iterasi v1.2
+* Spesifikasi Koleksi Data (data_collections.md)
 
 ---
 
 ### **2. Deskripsi Umum**
 
 #### **2.1 Perspektif Produk**
-Aplikasi ini adalah sistem mandiri yang terdiri dari aplikasi seluler (front-end) dan platform **Backend as a Service (Appwrite)**. Aplikasi seluler akan dikembangkan menggunakan Flutter, sementara semua logika sisi server, database, dan autentikasi akan dikelola oleh Appwrite.
+Aplikasi ini adalah sistem mandiri yang terdiri dari aplikasi seluler (front-end) dan platform **Backend as a Service (Appwrite)**.
 
 #### **2.2 Fungsi Produk**
-*   **Untuk Guest/Public:** Memfasilitasi pemesanan menu tanpa perlu login, hanya dengan memindai QR code, dan melacak status pesanan secara real-time.
-*   **Untuk Tenant:** Menyediakan dasbor untuk mengelola produk (menu), memproses pesanan masuk, dan melihat riwayat transaksi harian.
-*   **Untuk Business Owner:** Memberikan dasbor untuk mengelola akun tenant, mengontrol kategori produk, dan memantau performa penjualan di semua tenant miliknya.
+* **Untuk Guest (Anonim):** Memfasilitasi pemesanan menu tanpa perlu login, hanya dengan memindai QR code, dan melacak status pesanan secara real-time.
+* **Untuk Tenant:** Menyediakan dasbor untuk mengelola produk (menu), memproses pesanan masuk, dan melihat riwayat transaksi harian.
+* **Untuk Business Owner:** Memberikan dasbor untuk mengelola akun tenant, mengelola akun staff tenant (users), dan memantau performa penjualan.
 
 #### **2.3 Karakteristik Pengguna**
-*   **Business Owner:** Membutuhkan kontrol atas bisnisnya dan data penjualan. Tidak harus sangat melek teknologi.
-*   **Tenant:** Membutuhkan alur kerja yang cepat dan efisien untuk mengelola pesanan di jam sibuk.
-*   **Guest/Public:** Mengharapkan pengalaman pemesanan yang instan, tanpa hambatan registrasi.
+* **Business Owner:** Membutuhkan kontrol atas bisnisnya dan data penjualan.
+* **Tenant:** Membutuhkan alur kerja yang cepat dan efisien.
+* **Guest (Anonim):** Mengharapkan pengalaman pemesanan yang instan, tanpa hambatan registrasi.
 
 #### **2.4 Batasan**
 1.  Aplikasi klien harus dikembangkan menggunakan Flutter, Riverpod, GoRouter, dan Drift.
 2.  Sistem backend **harus** menggunakan **Appwrite** sebagai platform BaaS.
-3.  Database lokal pada klien (untuk keranjang belanja) menggunakan SQLite via Drift.
-4.  Sistem pembayaran untuk V1.0 terbatas pada **Bayar Tunai di Tempat (Cash on Pickup)**.
-
-#### **2.5 Asumsi dan Ketergantungan**
-1.  Diasumsikan semua pengguna memiliki akses ke smartphone dan koneksi internet.
-2.  Keberhasilan notifikasi real-time bergantung sepenuhnya pada layanan **Appwrite Realtime**.
+3.  Pembayaran V1.0 terbatas pada **Bayar Tunai di Tempat (Cash on Pickup)**.
 
 ---
 
@@ -75,53 +72,57 @@ Aplikasi ini adalah sistem mandiri yang terdiri dari aplikasi seluler (front-end
 #### **3.1 Kebutuhan Fungsional**
 
 **FR-AUTH: Modul Autentikasi**
-*   **FR-AUTH-01:** Sistem harus menyediakan halaman login untuk peran `Business Owner` dan `Tenant`.
-*   **FR-AUTH-02:** Sistem harus dapat mengidentifikasi peran pengguna setelah login dan mengarahkannya ke dasbor yang sesuai.
-*   **FR-AUTH-03:** Sistem harus menyediakan fitur "Lupa Password" untuk pengguna terdaftar.
-*   **FR-AUTH-04:** Sistem **tidak boleh** mengharuskan `Guest/Public` (pelanggan) untuk mendaftar atau login untuk melakukan pemesanan.
+* **FR-AUTH-01:** Sistem harus menyediakan halaman login untuk peran `owner_business` dan `tenant`.
+* **FR-AUTH-02:** Sistem harus dapat mengidentifikasi peran pengguna (`role` di koleksi `users`) setelah login dan mengarahkannya ke dasbor yang sesuai.
+* **FR-AUTH-03:** Sistem harus menyediakan fitur "Lupa Password".
+* **FR-AUTH-04:** Sistem **tidak boleh** mengharuskan `Guest (Anonim)` untuk mendaftar atau login untuk melakukan pemesanan (Alur utama V1.0).
 
-**FR-BIZ: Modul Business Owner**
-*   **FR-BIZ-01:** `Business Owner` harus dapat melihat dasbor statistik penjualan dari semua tenant miliknya.
-*   **FR-BIZ-02:** `Business Owner` harus dapat membuat, melihat, dan menonaktifkan akun `Tenant`.
-*   **FR-BIZ-03:** `Business Owner` harus dapat melakukan CRUD pada kategori produk untuk bisnisnya.
+**FR-BIZ: Modul Business Owner (`owner_business`)**
+* **FR-BIZ-01:** `Business Owner` harus dapat melihat dasbor statistik penjualan dari semua tenant miliknya.
+* **FR-BIZ-02:** `Business Owner` harus dapat membuat, melihat, dan menonaktifkan akun `Tenant` (mengisi Nama, Jenis, Deskripsi).
+* **FR-BIZ-03:** `Business Owner` harus dapat membuat akun `Tenant User` (Staf Admin) dengan Email, Username, Password, dan mengaitkannya dengan `tenant_id` tertentu (Admin Tenant/Dropdown).
+* **FR-BIZ-04:** `Business Owner` harus dapat menetapkan dan melihat `contract_end_date` untuk setiap Tenant User.
+* **FR-BIZ-05:** `Business Owner` harus dapat melakukan CRUD pada kategori produk.
 
-**FR-TEN: Modul Tenant**
-*   **FR-TEN-01:** `Tenant` harus dapat melihat dasbor ringkasan pesanan (baru, diproses, selesai).
-*   **FR-TEN-02:** `Tenant` harus menerima pembaruan pesanan baru secara **real-time**.
-*   **FR-TEN-03:** `Tenant` harus dapat mengubah status pesanan menjadi: `preparing`, `ready_for_pickup`, `completed`, atau `cancelled`.
-*   **FR-TEN-04:** `Tenant` harus dapat melakukan CRUD pada produk miliknya.
-*   **FR-TEN-05:** `Tenant` harus dapat mengubah status ketersediaan produknya dengan cepat.
+**FR-TEN: Modul Tenant (`tenant`)**
+* **FR-TEN-01:** `Tenant` harus dapat melihat dasbor ringkasan pesanan.
+* **FR-TEN-02:** `Tenant` harus menerima pembaruan pesanan baru secara **real-time**.
+* **FR-TEN-03:** `Tenant` harus dapat mengubah status pesanan (`preparing`, `ready_for_pickup`, `completed`, `cancelled`).
+* **FR-TEN-04:** `Tenant` harus dapat melakukan CRUD pada produk miliknya.
+* **FR-TEN-05:** `Tenant` harus dapat mengubah status ketersediaan produknya.
 
-**FR-GUEST: Modul Guest/Public (Pelanggan)**
-*   **FR-GUEST-01:** Setelah memindai QR code, pengguna harus langsung diarahkan ke halaman menu tenant yang bersangkutan.
-*   **FR-GUEST-02:** Pengguna harus dapat menambahkan, mengubah kuantitas, dan menghapus item dari keranjang belanja.
-*   **FR-GUEST-03:** Pengguna harus dapat menyelesaikan pesanan (checkout) dengan mengisi informasi minimal (misal: nama).
-*   **FR-GUEST-04:** Pengguna harus dapat melihat halaman pelacakan pesanan yang statusnya diperbarui secara **real-time**.
-*   **FR-GUEST-05:** Pengguna harus menerima notifikasi visual di dalam aplikasi saat status pesanannya berubah.
+**FR-GUEST: Modul Guest (Anonim)**
+* **FR-GUEST-01:** Setelah memindai QR code, pengguna harus langsung diarahkan ke halaman menu tenant yang bersangkutan.
+* **FR-GUEST-02:** Pengguna harus dapat menambahkan/mengubah/menghapus item dari keranjang belanja.
+* **FR-GUEST-03:** Pengguna harus dapat menyelesaikan pesanan (checkout) dengan mengisi informasi minimal (misal: nama).
+* **FR-GUEST-04:** Pengguna harus dapat melihat halaman pelacakan pesanan yang statusnya diperbarui secara **real-time**.
 
 #### **3.2 Kebutuhan Non-Fungsional**
-
-**NFR-PERF: Kinerja**
-*   **NFR-PERF-01:** Waktu muat aplikasi (cold start) harus < 3 detik.
-*   **NFR-PERF-02:** Latensi pembaruan status pesanan (via Appwrite Realtime) harus < 5 detik.
-
-**NFR-SEC: Keamanan**
-*   **NFR-SEC-01:** Keamanan password (hashing, salt) dikelola sepenuhnya oleh layanan **Appwrite Authentication**.
-*   **NFR-SEC-02:** Semua komunikasi antara klien dan server Appwrite harus dienkripsi (HTTPS/WSS).
-*   **NFR-SEC-03:** Kontrol akses harus diterapkan menggunakan sistem **Permissions** pada level koleksi dan dokumen di Appwrite.
-
-**NFR-USAB: Usabilitas**
-*   **NFR-USAB-01:** Alur pemesanan untuk `Guest/Public` harus dapat diselesaikan dalam langkah sesedikit mungkin untuk meminimalkan friksi.
-
-**NFR-REL: Reliabilitas**
-*   **NFR-REL-01:** Aplikasi harus dapat menangani koneksi internet yang tidak stabil dan memberikan umpan balik yang jelas kepada pengguna.
+(Tidak ada perubahan signifikan, NFR-SEC-01, NFR-PERF-01, dll tetap berlaku)
 
 #### **3.3 Kebutuhan Database**
-Sistem akan menggunakan **Appwrite Database (NoSQL)**. Data akan diorganisir dalam koleksi-koleksi berikut:
-*   **Users (via Appwrite Auth):** Menyimpan data pengguna untuk peran `Business Owner` dan `Tenant`. Relasi dan peran dikelola melalui custom claims atau atribut.
-*   **Collection `tenants`:** Menyimpan profil setiap tenant/warung, terhubung ke `Business Owner`.
-*   **Collection `categories`:** Menyimpan kategori produk, terhubung ke `Business Owner`.
-*   **Collection `products`:** Menyimpan item menu, terhubung ke `tenants` dan `categories`.
-*   **Collection `orders`:** Menyimpan data transaksi, terhubung ke `tenants`.
+Sistem akan menggunakan **Appwrite Database (NoSQL)**. Detail koleksi tercantum dalam dokumen `data_collections.md`.
+```eof
 
-(Struktur atribut dan izin detail mengacu pada Dokumen Desain Perangkat Lunak v1.1)
+### 4. Checklist Iterasi (Ceklist iterasi.md)
+*(Peran diperbarui menjadi `owner_business`)*
+
+```markdown:Roadmap & Timeline MVP:Ceklist iterasi.md
+### **Roadmap & Timeline MVP: Aplikasi Kantin Multi-Tenant (8 Minggu)**
+
+**Total Estimasi Durasi MVP:** 4 Sprints (8 Minggu)
+**Backend Platform:** Appwrite (atau BaaS sejenis)
+
+#### **Gantt Chart Visualisasi Sprint**
+```mermaid
+gantt
+    title Roadmap Pembangunan MVP (Versi Akselerasi 8 Minggu)
+    dateFormat  YYYY-MM-DD
+    section Sprint 1: Fondasi & Autentikasi
+    Fondasi & Autentikasi      :done, 2025-09-22, 2w
+    section Sprint 2: Manajemen Konten (Business Owner & Tenant)
+    Manajemen Konten (Business Owner & Tenant)   :active, 2025-10-06, 2w
+    section Sprint 3: Alur Inti Pembeli (End-to-End)
+    Alur Inti Pembeli (End-to-End) : 2025-10-20, 2w
+    section Sprint 4: Siklus Pesanan & Stabilisasi
+    Siklus Pesanan & Stabilisasi : 2025-11-03, 2w

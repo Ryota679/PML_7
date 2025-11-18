@@ -1,0 +1,67 @@
+<!-- owner/categories.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Kategori</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="header">
+        <a href="dashboard.html">&larr; Kembali ke Dasbor</a>
+        <h1>Kelola Kategori</h1>
+    </div>
+    <div class="container">
+        <div class="card">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="new-category-name" placeholder="Nama kategori baru" style="flex-grow: 1;">
+                <button class="btn btn-primary" onclick="addCategory()">Tambah</button>
+            </div>
+
+            <div class="tenant-list" id="category-list-container">
+                <!-- Daftar kategori akan dimuat di sini -->
+            </div>
+        </div>
+    </div>
+    <script src="../app.js"></script>
+    <script>
+        const container = document.getElementById('category-list-container');
+        
+        function renderCategories() {
+            container.innerHTML = ''; // Kosongkan dulu
+            FAKE_DATA.categories.forEach(cat => {
+                container.innerHTML += `
+                    <div class="tenant-item">
+                        <div class="info">
+                            <h4>${cat.name}</h4>
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary btn-sm" onclick="editCategory(${cat.id})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="alert('Kategori ${cat.name} dihapus!')">Hapus</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        function addCategory() {
+            const input = document.getElementById('new-category-name');
+            if (input.value) {
+                alert(`Kategori "${input.value}" berhasil ditambahkan!`);
+                input.value = '';
+            }
+        }
+        
+        function editCategory(id) {
+            const category = FAKE_DATA.categories.find(c => c.id === id);
+            const newName = prompt(`Edit nama kategori:`, category.name);
+            if (newName) {
+                alert(`Kategori diubah menjadi "${newName}"!`);
+            }
+        }
+
+        renderCategories(); // Tampilkan daftar kategori saat halaman dimuat
+    </script>
+</body>
+</html>

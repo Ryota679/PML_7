@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Menu - Kantin Digital</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><a href="dashboard.html" style="text-decoration: none; color: inherit;">Kantin Digital</a></h1>
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="orders.html">Pesanan</a></li>
+                    <li><a href="menu.html" class="active">Menu</a></li>
+                    <li><a href="profile.html">Profil</a></li>
+                    <li><a href="billing.html">Tagihan</a></li>
+                    <li><a href="../index.html">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <button class="btn btn-primary">Tambah Produk Baru</button>
+            </div>
+            <div class="product-list" id="product-list-container">
+                <!-- Daftar produk akan dimuat di sini -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../app.js"></script>
+    <script>
+        const productContainer = document.getElementById('product-list-container');
+        const tenantId = 1; // Ganti dengan ID tenant yang login
+
+        FAKE_DATA.products[tenantId].forEach(product => {
+            productContainer.innerHTML += `
+                <div class="product-item">
+                    <div class="info">
+                        <h4>${product.name}</h4>
+                        <p>${product.desc}</p>
+                        <p class="price">Rp ${product.price.toLocaleString('id-ID')}</p>
+                        <span class="status ${product.available ? 'status-open' : 'status-closed'}">
+                            ${product.available ? 'Tersedia' : 'Habis'}
+                        </span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-secondary btn-sm">Edit</button>
+                    </div>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

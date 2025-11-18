@@ -54,19 +54,21 @@ export default async ({ req, res, log, error }) => {
     await users.updateVerification(newTenantUser.$id, true);
     log(`User '${tenantName}' berhasil diverifikasi.`);
 
-    // Data tenant disesuaikan dengan skema baru
     const tenantData = {
       name: tenantName,
-      business_owner_id: businessOwnerId,
-      status: 'active',
-      subscription_plan: 'basic',
+      logoUrl: 'https://example.com/default_logo.png', // Default logo
+      owner_user_id: businessOwnerId,
+      description: `Tenant ${tenantName}`, // Default description
+      status: 'active', // Default status
+      userid: newTenantUser.$id, // ID of the new tenant user
+      qrCodeUrl: '', // Initially empty
     };
 
     // Buat dokumen dengan data esensial dan izin yang benar
     const tenantDocument = await databases.createDocument(
-      process.env.APPWRITE_DATABASE_ID, 
-      'tenants', 
-      ID.unique(), 
+      process.env.APPWRITE_DATABASE_ID,
+      'tenants',
+      ID.unique(),
       tenantData,
       [
         Permission.read(Role.user(businessOwnerId)),
@@ -80,10 +82,10 @@ export default async ({ req, res, log, error }) => {
 
     // Update dokumen dengan ID-nya sendiri sebagai data QR code
     const updatedDocument = await databases.updateDocument(
-      process.env.APPWRITE_DATABASE_ID, 
-      'tenants', 
-      tenantDocument.$id, 
-      { qr_code_data: tenantDocument.$id }
+      process.env.APPWRITE_DATABASE_ID,
+      'tenants',
+      tenantDocument.$id,
+      { qrCodeUrl: `https://your-domain.com/tenant-qr/${tenantDocument.$id}` } // Ganti dengan URL Anda
     );
     log(`QR Code data berhasil di-set.`);
 

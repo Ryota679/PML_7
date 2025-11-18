@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Owner - Kantin Digital</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><a href="dashboard.html" style="text-decoration: none; color: inherit;">Kantin Digital</a></h1>
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="tenants.html">Manajemen Tenant</a></li>
+                    <li><a href="reports.html">Laporan</a></li>
+                    <li><a href="profile.html">Profil</a></li>
+                    <li><a href="../index.html">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <section class="dashboard-summary">
+            <div class="card">
+                <h2>Total Tenant</h2>
+                <p id="total-tenants">0</p>
+            </div>
+            <div class="card">
+                <h2>Total Pendapatan</h2>
+                <p id="total-revenue">Rp 0</p>
+            </div>
+            <div class="card">
+                <h2>Pesanan Hari Ini</h2>
+                <p id="todays-orders">0</p>
+            </div>
+        </section>
+        <section>
+            <h2>Tenant Terbaru</h2>
+            <ul class="tenant-list">
+                <li>Tenant A</li>
+                <li>Tenant B</li>
+                <li>Tenant C</li>
+            </ul>
+        </section>
+    </main>
+    <script src="../app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            populateOwnerDashboard();
+        });
+    </script>
+</body>
+</html>

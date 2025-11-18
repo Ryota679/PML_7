@@ -8,7 +8,7 @@
 Di era digital saat ini, semakin banyak pelaku usaha kuliner yang mencari cara untuk meningkatkan efisiensi operasional dan pengalaman pelanggan. Namun pada kenyataannya, **banyak tenant kecil di area seperti burjo, kantin kampus, ruko kuliner, hingga rest area** masih mengandalkan sistem manual dalam melayani pesanan. Pelanggan harus memanggil pelayan, mencatat pesanan di kertas, dan menunggu lama tanpa kepastian status pesanannya.  
 Kondisi ini tidak hanya menurunkan efisiensi, tetapi juga mempengaruhi kepuasan pelanggan — terutama di jam makan siang atau saat tenant ramai.
 
-Selain itu, para **owner tenant atau pengelola area** (misalnya pemilik rest area atau ruko kuliner) sering menghadapi kesulitan dalam:
+Selain itu, para **Business Owner atau pengelola area** (misalnya pemilik rest area atau ruko kuliner) sering menghadapi kesulitan dalam:
 - Memantau performa tiap penyewa.
 - Melakukan rekap penjualan secara real-time.
 - Memberikan sistem digital seragam untuk semua tenant di bawah pengelolaannya.
@@ -16,9 +16,7 @@ Selain itu, para **owner tenant atau pengelola area** (misalnya pemilik rest are
 Dari sisi penyewa (tenant), banyak dari mereka belum memiliki kemampuan teknis atau sumber daya untuk membuat sistem pemesanan online sendiri. Oleh karena itu, dibutuhkan sebuah **aplikasi siap pakai yang bisa langsung digunakan tanpa login pelanggan**, tetapi tetap memberikan sistem manajemen pesanan yang lengkap bagi tenant.
 
 Aplikasi **Tenant QR-Order** dikembangkan untuk menjawab tantangan ini dengan pendekatan sederhana:  
-➡️ *“Cukup tempel QR di meja, pelanggan scan, pilih menu, dan tenant langsung terima pesanan di dashboard.”*  
-
-Dengan sistem ini, seluruh pihak — pelanggan, penyewa, dan pemilik area — dapat merasakan kemudahan digitalisasi tanpa perlu proses yang rumit atau mahal.
+➡️ *“Cukup tempel QR di meja, pelanggan scan, pilih menu, dan tenant langsung terima pesanan di dashboard.”* Dengan sistem ini, seluruh pihak — pelanggan, penyewa, dan pemilik area — dapat merasakan kemudahan digitalisasi tanpa perlu proses yang rumit atau mahal.
 
 ---
 
@@ -34,7 +32,7 @@ Aplikasi **Tenant QR-Order** dirancang untuk menghadirkan solusi digital yang me
    - Memberikan akses teknologi kepada pemilik warung atau tenant tanpa memerlukan biaya tinggi atau kemampuan teknis khusus.
    - Mendorong adaptasi teknologi di sektor kuliner lokal.
 
-3. **Memudahkan pengelola area (owner tenant) dalam manajemen penyewa:**
+3. **Memudahkan pengelola area (Business Owner) dalam manajemen penyewa:**
    - Owner dapat menambahkan akun penyewa secara otomatis dari satu dashboard.
    - Setiap penyewa mendapat QR unik yang langsung terhubung ke menunya masing-masing.
    - Owner dapat melihat laporan global penjualan di semua tenant secara real-time.
@@ -45,9 +43,7 @@ Aplikasi **Tenant QR-Order** dirancang untuk menghadirkan solusi digital yang me
 
 5. **Menciptakan ekosistem aplikasi yang berkelanjutan dan dapat dimonetisasi:**
    - Melalui model berlangganan, komisi transaksi, dan fitur premium.
-   - Memberikan keuntungan finansial bagi pengembang dan owner tenant yang menyewakan sistem.
-
-Dengan tujuan-tujuan tersebut, aplikasi ini diharapkan menjadi solusi digital yang **mudah diimplementasikan, hemat biaya, dan meningkatkan daya saing tenant kuliner di era modern.**
+   - Memberikan keuntungan finansial bagi pengembang dan Business Owner yang menyewakan sistem.
 
 ---
 
@@ -57,7 +53,7 @@ Dengan tujuan-tujuan tersebut, aplikasi ini diharapkan menjadi solusi digital ya
 |----------------|------------|
 | **Pelanggan** | Pengunjung yang memesan makanan/minuman dari tenant menggunakan QR Code |
 | **Tenant/Penyewa** | Pemilik warung/burjo/kantin yang mengelola menu dan menerima pesanan |
-| **Owner Tenant / Pengelola Area** | Pemilik rest area, ruko, atau kantin yang menyewakan sistem ke tenant dan memantau seluruh aktivitas |
+| **Business Owner / Pengelola Area** | Pemilik rest area, ruko, atau kantin yang menyewakan sistem ke tenant dan memantau seluruh aktivitas |
 
 ---
 
@@ -71,7 +67,7 @@ Dengan tujuan-tujuan tersebut, aplikasi ini diharapkan menjadi solusi digital ya
 | **B. Tenant / Admin** | Manajemen menu | Tambah, ubah, dan hapus menu |
 |  | Dashboard pesanan | Melihat pesanan masuk, status, dan total transaksi |
 |  | QR unik otomatis | Setiap tenant mendapat QR berbeda otomatis saat akun dibuat |
-| **C. Owner Tenant** | Manajemen penyewa | Menambahkan dan mengelola tenant dari dashboard pusat |
+| **C. Business Owner** | Manajemen penyewa | Menambahkan dan mengelola tenant dari dashboard pusat |
 |  | Laporan global | Melihat performa penjualan tiap tenant |
 |  | Kontrol langganan | Mengatur paket berlangganan dan status aktif tenant |
 
@@ -81,7 +77,7 @@ Dengan tujuan-tujuan tersebut, aplikasi ini diharapkan menjadi solusi digital ya
 
 ```mermaid
 flowchart TD
-    A[Owner Tenant] -->|Membuat akun Tenant baru| B[Generate QR unik otomatis]
+    A[Business Owner] -->|Membuat akun Tenant baru| B[Generate QR unik otomatis]
     B --> C[QR dicetak & ditempel di meja Tenant]
     C --> D[Pelanggan scan QR]
     D --> E[Masuk ke halaman menu tanpa login]

@@ -1,4 +1,3 @@
-<!-- buyer/orders.html -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -6,36 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesanan Saya - Kantin Digital</title>
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="header">
-        <a href="home.html">&larr; Kembali ke Beranda</a>
-        <h1>Pesanan Saya</h1>
+        <h1><a href="home.html" style="text-decoration: none; color: inherit;">Kantin Digital</a></h1>
+        <a href="../index.html">Logout</a>
     </div>
     <div class="container">
-        <!-- Pesanan Aktif -->
-        <div class="card">
+        <div id="active-orders-container" class="card">
             <div class="card-header">
                 <h3>Pesanan Aktif</h3>
             </div>
-            <div class="order-item">
-                <h4>Pesanan #ORD-003</h4>
-                <p>Dari: <b>Soto Ayam Pak Min</b></p>
-                <p>Status: <span class="order-status status-ready">Siap Diambil</span></p>
-                <p>Total: Rp 15.000</p>
-            </div>
+            <!-- Active orders will be loaded here -->
         </div>
 
-        <!-- Riwayat Pesanan -->
-        <div class="card">
+        <div id="history-orders-container" class="card" style="margin-top: 20px;">
             <div class="card-header">
                 <h3>Riwayat Pesanan</h3>
             </div>
-            <p>Pesanan #ORD-001 - <b>Selesai</b></p>
-            <p>Pesanan #ORD-002 - <b>Selesai</b></p>
-            <button class="btn btn-secondary btn-sm" onclick="alert('Memesan ulang item dari pesanan #ORD-001')">Pesan Lagi</button>
+            <!-- Order history will be loaded here -->
         </div>
     </div>
     <script src="../app.js"></script>
+    <script>
+        const activeOrdersContainer = document.getElementById('active-orders-container');
+        const historyOrdersContainer = document.getElementById('history-orders-container');
+
+        function renderBuyerOrders() {
+            loadCurrentBuyerNameFromLocalStorage(); // Ensure currentBuyerName is loaded
+            const buyerName = currentBuyerName; // Get the buyer name from app.js
+
+            if (!buyerName) {
+                activeOrdersContainer.innerHTML = '<p style="text-align:center; color: #888;">Silakan login atau lakukan pemesanan terlebih dahulu.</p>';
+                historyOrdersContainer.innerHTML = '';
+                return;
+            }
+
+            const allBuyerOrders = FAKE_DATA.orders.filter(order => order.buyerName === buyerName);
+
+            const activeOrders = allBuyerOrders.filter(order => order.status !== 'completed' && order.status !== 'cancelled');
+            const historyOrders = allBuyerOrders.filter(order => order.status === 'completed' || order.status === 'cancelled');
+
+            // Render Active Orders
+            activeOrdersContainer.innerHTML = '<div class="card-header"><h3>Pesanan Aktif</h3></div>';
+            if (activeOrders.length === 0) {
+                activeOrdersContainer.innerHTML += '<p style="text-align:center; color: #888;">Tidak ada pesanan aktif.</p>';
+            } else {
+                activeOrders.forEach(order => {
+                    let detailItems = '';
+                    order.details.forEach(item => {
+                        detailItems += `<li>${item.productName} (${item.quantity}x) - Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</li>`;
+                    });
+                    activeOrdersContainer.innerHTML += `
+                        <div class="order-item" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                            <h4>Pesanan #${order.id}</h4>
+                            <p>Dari: <b>${order.tenantName}</b></p>
+                            <p>Status: <span class="order-status status-${order.status}">${order.status === 'new' ? 'Pesanan Masuk' : order.status === 'preparing' ? 'Pesanan Diproses' : 'Siap Diambil'}</span></p>
+                            <p>Total: Rp ${order.total.toLocaleString('id-ID')}</p>
+                            <button class="btn btn-sm btn-info" onclick="toggleOrderDetails('${order.id}')">Lihat Detail</button>
+                            <div id="details-${order.id}" style="display: none; margin-top: 10px; background-color: #f8f9fa; padding: 10px; border-radius: 5px;">
+                                <h5>Detail Pesanan:</h5>
+                                <ul style="list-style-type: none; padding: 0;">${detailItems}</ul>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Render History Orders
+            historyOrdersContainer.innerHTML = '<div class="card-header"><h3>Riwayat Pesanan</h3></div>';
+            if (historyOrders.length === 0) {
+                historyOrdersContainer.innerHTML += '<p style="text-align:center; color: #888;">Tidak ada riwayat pesanan.</p>';
+            } else {
+                historyOrders.forEach(order => {
+                    let detailItems = '';
+                    order.details.forEach(item => {
+                        detailItems += `<li>${item.productName} (${item.quantity}x) - Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</li>`;
+                    });
+                    historyOrdersContainer.innerHTML += `
+                        <div class="order-item" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                            <h4>Pesanan #${order.id}</h4>
+                            <p>Dari: <b>${order.tenantName}</b></p>
+                            <p>Status: <span class="order-status status-${order.status}">${order.status === 'completed' ? 'Pesanan Selesai' : 'Dibatalkan'}</span></p>
+                            <p>Total: Rp ${order.total.toLocaleString('id-ID')}</p>
+                            <button class="btn btn-sm btn-info" onclick="toggleOrderDetails('${order.id}')">Lihat Detail</button>
+                            <div id="details-${order.id}" style="display: none; margin-top: 10px; background-color: #f8f9fa; padding: 10px; border-radius: 5px;">
+                                <h5>Detail Pesanan:</h5>
+                                <ul style="list-style-type: none; padding: 0;">${detailItems}</ul>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function toggleOrderDetails(orderId) {
+            const detailsDiv = document.getElementById(`details-${orderId}`);
+            if (detailsDiv.style.display === 'none') {
+                detailsDiv.style.display = 'block';
+            } else {
+                detailsDiv.style.display = 'none';
+            }
+        }
+
+        renderBuyerOrders();
+    </script>
 </body>
 </html>

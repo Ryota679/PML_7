@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Tenant - Kantin Digital</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><a href="dashboard.html" style="text-decoration: none; color: inherit;">Kantin Digital</a></h1>
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="orders.html">Pesanan</a></li>
+                    <li><a href="menu.html">Menu</a></li>
+                    <li><a href="profile.html" class="active">Profil</a></li>
+                    <li><a href="billing.html">Tagihan</a></li>
+                    <li><a href="../index.html">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <div class="container">
+        <div class="card">
+            <div class="form-group">
+                <label for="tenant-name">Nama Kantin</label>
+                <input type="text" id="tenant-name" value="Soto Ayam Pak Min">
+            </div>
+            <div class="form-group">
+                <label for="tenant-description">Deskripsi</label>
+                <textarea id="tenant-description" rows="3">Soto ayam kampung asli.</textarea>
+            </div>
+            <div class="form-group">
+                <label>Status Buka</label>
+                <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <button class="btn btn-primary">Simpan Perubahan</button>
+        </div>
+    </div>
+    <script src="../app.js"></script>
+</body>
+</html>

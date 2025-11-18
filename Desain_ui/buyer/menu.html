@@ -3,47 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu - Kantin Digital</title>
+    <title>Menu Kantin - Kantin Digital</title>
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="header">
-        <a href="home.html">&larr; Kembali</a>
-        <h1 id="tenant-name">Nama Tenant</h1>
-        <a href="cart.html" class="cart-icon">
-            🛒 <span class="cart-count">0</span>
-        </a>
+        <h1 id="tenant-name-header"><a href="home.html" style="text-decoration: none; color: inherit;">Kantin Digital</a></h1>
+        <div style="display: flex; align-items: center;">
+            <a href="cart.html" class="cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cart-count">0</span>
+            </a>
+            <a href="../index.html" style="margin-left: 15px;">Logout</a>
+        </div>
     </div>
     <div class="container">
         <div class="card">
             <div class="product-list" id="product-list-container">
-                <!-- Data produk akan dimuat di sini -->
+                <!-- Data produk akan dimuat di sini oleh JS -->
             </div>
         </div>
     </div>
     <script src="../app.js"></script>
     <script>
-        const tenantId = getQueryParam('tenantId');
-        const tenant = FAKE_DATA.tenants.find(t => t.id == tenantId);
-        const products = FAKE_DATA.products[tenantId] || [];
-
-        document.getElementById('tenant-name').textContent = tenant.name;
-
         const container = document.getElementById('product-list-container');
-        products.forEach(product => {
-            container.innerHTML += `
-                <div class="product-item">
-                    <div class="info">
-                        <h4>${product.name}</h4>
-                        <p>${product.desc}</p>
-                        <span class="price">Rp ${product.price.toLocaleString('id-ID')}</span>
-                    </div>
-                    <button class="btn btn-primary btn-sm" ${!product.available ? 'disabled' : ''} onclick="alert('Menambahkan ${product.name} ke keranjang!')">
-                        ${product.available ? 'Tambah' : 'Habis'}
-                    </button>
-                </div>
-            `;
-        });
+        const tenantNameHeader = document.getElementById('tenant-name-header');
+        const tenantId = parseInt(getQueryParam('tenantId'));
+
+        if (tenantId) {
+            const tenant = FAKE_DATA.tenants.find(t => t.id === tenantId);
+            if (tenant) {
+                tenantNameHeader.textContent = tenant.name;
+                const products = FAKE_DATA.products[tenantId];
+                if (products) {
+                    products.forEach(product => {
+                        container.innerHTML += `
+                            <div class="product-item">
+                                <div class="info">
+                                    <h4>${product.name}</h4>
+                                    <p>${product.desc}</p>
+                                    <p class="price">Rp ${product.price.toLocaleString('id-ID')}</p>
+                                </div>
+                                <button class="btn btn-primary btn-sm" onclick="addToCart(${tenantId}, ${product.id}, '${product.name}', ${product.price})">Tambah ke Keranjang</button>
+                            </div>
+                        `;
+                    });
+                } else {
+                    container.innerHTML = '<p>Tidak ada produk untuk kantin ini.</p>';
+                }
+            } else {
+                tenantNameHeader.textContent = 'Kantin Tidak Ditemukan';
+            }
+        } else {
+            tenantNameHeader.textContent = 'Pilih Kantin Dahulu';
+        }
+        updateCartCount();
     </script>
 </body>
-</html>

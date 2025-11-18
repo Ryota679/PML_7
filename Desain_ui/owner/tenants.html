@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Tenant - Kantin Digital</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><a href="dashboard.html" style="text-decoration: none; color: inherit;">Kantin Digital</a></h1>
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="tenants.html" class="active">Manajemen Tenant</a></li>
+                    <li><a href="reports.html">Laporan</a></li>
+                    <li><a href="profile.html">Profil</a></li>
+                    <li><a href="../index.html">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <section>
+            <div class="flex justify-between align-center">
+                <h2>Daftar Tenant</h2>
+                <button class="btn btn-primary">Tambah Tenant</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama Tenant</th>
+                        <th>Email</th>
+                        <th>Sisa Kontrak</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tenant-list-body">
+                    <!-- Tenant rows will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <script src="../app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            populateTenantList();
+        });
+    </script>
+</body>
+</html>

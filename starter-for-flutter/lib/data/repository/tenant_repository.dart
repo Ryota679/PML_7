@@ -9,17 +9,18 @@ class TenantRepository {
 
   TenantRepository(Client client) : _databases = Databases(client), _functions = Functions(client);
 
-  Future<bool> createTenant(String name, String email, String password) async {
+  Future<void> createTenant(String name, String email, String password) async {
     try {
       await _functions.createExecution(
-        functionId: 'createTenant1',
-        body: '{"tenantName": "$name", "tenantEmail": "$email", "tenantPassword": "$password"}',
+        functionId: 'createTenant', // ID fungsi yang benar
+        body:
+            '{"tenantName": "$name", "tenantEmail": "$email", "tenantPassword": "$password"}',
         headers: {'Content-Type': 'application/json'},
       );
-      return true;
     } on AppwriteException catch (e) {
-      debugPrint(e.message); // Replaced print with debugPrint
-      return false;
+      // Lemparkan kembali pengecualian agar UI dapat menanganinya
+      debugPrint('Error in createTenant: ${e.message}');
+      rethrow;
     }
   }
 

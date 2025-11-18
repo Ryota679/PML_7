@@ -71,25 +71,18 @@ class _BusinessOwnerDashboardState extends State<BusinessOwnerDashboard> {
                 final name = _nameController.text;
                 final email = _emailController.text;
                 final password = _passwordController.text;
-                final messenger = ScaffoldMessenger.of(context); // Capture ScaffoldMessenger before async gap
+                final messenger = ScaffoldMessenger.of(context); 
                 try {
-                  final success = await _tenantRepository.createTenant(name, email, password);
+                  await _tenantRepository.createTenant(name, email, password);
                   if (!mounted) return;
-                  if (success) {
-                    messenger.showSnackBar(
-                      const SnackBar(content: Text('Tenant created successfully!')),
-                    );
-                    _nameController.clear();
-                    _emailController.clear();
-                    _passwordController.clear();
-                  } else {
-                    // This 'else' might not be reached if createTenant throws an exception
-                    messenger.showSnackBar(
-                      const SnackBar(content: Text('Failed to create tenant.')),
-                    );
-                  }
+                  messenger.showSnackBar(
+                    const SnackBar(content: Text('Tenant created successfully!')),
+                  );
+                  _nameController.clear();
+                  _emailController.clear();
+                  _passwordController.clear();
                 } on AppwriteException catch (e) {
-                  debugPrint('Appwrite Error: ${e.message}'); // Detailed error log
+                  debugPrint('Appwrite Error: ${e.message}'); 
                   debugPrint('Appwrite Code: ${e.code}');
                   debugPrint('Appwrite Response: ${e.response}');
                   if (!mounted) return;

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Tenant</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="header">
+         <a href="dashboard.html">&larr; Kembali</a>
+        <h1>Kelola Tenant</h1>
+    </div>
+    <div class="container">
+        <div class="card">
+             <button class="btn btn-primary" style="margin-bottom: 20px;" onclick="alert('Membuka form tambah tenant baru!')">Tambah Tenant Baru</button>
+            <div class="tenant-list" id="tenant-list-container">
+                 <!-- Daftar tenant akan dimuat di sini -->
+            </div>
+        </div>
+    </div>
+     <script src="../app.js"></script>
+    <script>
+        const container = document.getElementById('tenant-list-container');
+        FAKE_DATA.tenants.forEach(tenant => {
+            container.innerHTML += `
+                <div class="tenant-item">
+                    <img src="${tenant.logo}" alt="${tenant.name}">
+                    <div class="info">
+                        <h4>${tenant.name}</h4>
+                        <small>Status: ${tenant.isOpen ? 'Aktif' : 'Nonaktif'}</small>
+                    </div>
+                     <button class="btn btn-secondary btn-sm" onclick="alert('Menonaktifkan ${tenant.name}')">Nonaktifkan</button>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

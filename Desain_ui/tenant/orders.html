@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Pesanan - Kantin Digital</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><a href="dashboard.html" style="text-decoration: none; color: inherit;">Kantin Digital</a></h1>
+            <nav>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="orders.html" class="active">Pesanan</a></li>
+                    <li><a href="menu.html">Menu</a></li>
+                    <li><a href="profile.html">Profil</a></li>
+                    <li><a href="billing.html">Tagihan</a></li>
+                    <li><a href="../index.html">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <div class="container">
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" onclick="filterOrders('new')">Pesanan Baru</div>
+                <div class="tab" onclick="filterOrders('preparing')">Sedang Disiapkan</div>
+                <div class="tab" onclick="filterOrders('completed')">Pesanan Selesai</div>
+            </div>
+            <div id="order-list">
+                <!-- Daftar pesanan akan dimuat di sini -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../app.js"></script>
+    <script>
+        const orderListContainer = document.getElementById('order-list');
+        let currentStatusFilter = 'new';
+        const tenantId = 1; // Hardcoded for Pak Min for now
+
+        function renderOrders() {
+            orderListContainer.innerHTML = '';
+            const tenantOrders = FAKE_DATA.orders.filter(order => order.tenantId === tenantId);
+            const filteredOrders = tenantOrders.filter(order => order.status === currentStatusFilter);
+
+            if (filteredOrders.length === 0) {
+                orderListContainer.innerHTML = '<p style="text-align:center; color: #888;">Tidak ada pesanan.</p>';
+                return;
+            }
+
+            filteredOrders.forEach(order => {
+                let detailItems = '';
+                order.details.forEach(item => {
+                    detailItems += `<li>${item.productName} (${item.quantity}x) - Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</li>`;
+                });
+
+                orderListContainer.innerHTML += `
+                    <div class="card" style="margin-bottom: 15px;">
+                        <div class="order-item">
+                            <div class="info">
+                                <strong>ID Pesanan: ${order.id}</strong><br>
+                                <span>Nama Pembeli: ${order.buyerName}</span><br>
+                                <span>Jumlah Item: ${order.items}</span><br>
+                                <span>Total: Rp ${order.total.toLocaleString('id-ID')}</span>
+                                <ul style="list-style-type: none; padding: 0; margin: 5px 0 0 0;">${detailItems}</ul>
+                            </div>
+                            <div class="actions">
+                                ${currentStatusFilter === 'new' ? '<button class="btn btn-primary btn-sm" onclick="updateAndRenderOrderStatus('' + order.id + '', 'preparing')">Terima</button>' : ''}
+                                ${currentStatusFilter === 'preparing' ? '<button class="btn btn-success btn-sm" onclick="updateAndRenderOrderStatus('' + order.id + '', 'completed')">Selesai</button>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterOrders(status) {
+            currentStatusFilter = status;
+            document.querySelectorAll('.tabs .tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.tabs .tab[onclick="filterOrders('${status}')"]`).classList.add('active');
+            renderOrders();
+        }
+
+        function updateAndRenderOrderStatus(orderId, newStatus) {
+            updateOrderStatus(orderId, newStatus); // Call the global function from app.js
+            renderOrders(); // Re-render orders after status update
+        }
+
+        // Initial render
+        renderOrders();
+    </script>
+</body>
+</html>

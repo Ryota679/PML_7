@@ -305,7 +305,9 @@
             ],
             "events": [],
             "scopes": [
-                "users.read"
+                "users.read",
+                "users.write",
+                "documents.write"
             ],
             "schedule": "",
             "timeout": 15,
