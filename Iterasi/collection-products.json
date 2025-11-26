@@ -1,0 +1,125 @@
+{
+    "$id": "products",
+    "name": "products",
+    "enabled": true,
+    "documentSecurity": true,
+    "attributes": [
+        {
+            "key": "tenant_id",
+            "type": "string",
+            "size": 255,
+            "required": true,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "category_id",
+            "type": "string",
+            "size": 255,
+            "required": false,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "name",
+            "type": "string",
+            "size": 100,
+            "required": true,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "description",
+            "type": "string",
+            "size": 500,
+            "required": false,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "price",
+            "type": "integer",
+            "min": 0,
+            "max": 100000000,
+            "required": true,
+            "array": false,
+            "default": 0
+        },
+        {
+            "key": "image_url",
+            "type": "string",
+            "size": 2000,
+            "required": false,
+            "array": false,
+            "default": null,
+            "format": "url"
+        },
+        {
+            "key": "is_available",
+            "type": "boolean",
+            "required": true,
+            "array": false,
+            "default": true
+        },
+        {
+            "key": "stock",
+            "type": "integer",
+            "min": 0,
+            "max": 9999,
+            "required": false,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "display_order",
+            "type": "integer",
+            "min": 0,
+            "max": 9999,
+            "required": false,
+            "array": false,
+            "default": 0
+        }
+    ],
+    "indexes": [
+        {
+            "key": "tenant_products_index",
+            "type": "key",
+            "attributes": [
+                "tenant_id"
+            ],
+            "orders": [
+                "ASC"
+            ]
+        },
+        {
+            "key": "category_products_index",
+            "type": "key",
+            "attributes": [
+                "category_id"
+            ],
+            "orders": [
+                "ASC"
+            ]
+        },
+        {
+            "key": "available_products_index",
+            "type": "key",
+            "attributes": [
+                "is_available"
+            ],
+            "orders": [
+                "DESC"
+            ]
+        },
+        {
+            "key": "price_index",
+            "type": "key",
+            "attributes": [
+                "price"
+            ],
+            "orders": [
+                "ASC"
+            ]
+        }
+    ]
+}

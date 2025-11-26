@@ -1,0 +1,70 @@
+{
+    "$id": "categories",
+    "name": "categories",
+    "enabled": true,
+    "documentSecurity": true,
+    "attributes": [
+        {
+            "key": "tenant_id",
+            "type": "string",
+            "size": 255,
+            "required": true,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "name",
+            "type": "string",
+            "size": 100,
+            "required": true,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "description",
+            "type": "string",
+            "size": 255,
+            "required": false,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "display_order",
+            "type": "integer",
+            "min": 0,
+            "max": 999,
+            "required": false,
+            "array": false,
+            "default": 0
+        },
+        {
+            "key": "is_active",
+            "type": "boolean",
+            "required": true,
+            "array": false,
+            "default": true
+        }
+    ],
+    "indexes": [
+        {
+            "key": "tenant_categories_index",
+            "type": "key",
+            "attributes": [
+                "tenant_id"
+            ],
+            "orders": [
+                "ASC"
+            ]
+        },
+        {
+            "key": "display_order_index",
+            "type": "key",
+            "attributes": [
+                "display_order"
+            ],
+            "orders": [
+                "ASC"
+            ]
+        }
+    ]
+}

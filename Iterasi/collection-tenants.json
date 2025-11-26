@@ -1,0 +1,103 @@
+{
+    "$id": "tenants",
+    "name": "tenants",
+    "enabled": true,
+    "documentSecurity": true,
+    "attributes": [
+        {
+            "key": "owner_id",
+            "type": "string",
+            "size": 255,
+            "required": true,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "name",
+            "type": "string",
+            "size": 100,
+            "required": true,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "type",
+            "type": "string",
+            "size": 20,
+            "required": true,
+            "array": false,
+            "default": "food",
+            "elements": [
+                "food",
+                "beverage",
+                "snack",
+                "dessert",
+                "other"
+            ],
+            "format": "enum"
+        },
+        {
+            "key": "description",
+            "type": "string",
+            "size": 500,
+            "required": false,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "is_active",
+            "type": "boolean",
+            "required": true,
+            "array": false,
+            "default": true
+        },
+        {
+            "key": "logo_url",
+            "type": "string",
+            "size": 2000,
+            "required": false,
+            "array": false,
+            "default": null,
+            "format": "url"
+        },
+        {
+            "key": "phone",
+            "type": "string",
+            "size": 20,
+            "required": false,
+            "array": false,
+            "default": null
+        },
+        {
+            "key": "display_order",
+            "type": "integer",
+            "min": 0,
+            "max": 9999,
+            "required": false,
+            "array": false,
+            "default": 0
+        }
+    ],
+    "indexes": [
+        {
+            "key": "owner_id_index",
+            "type": "key",
+            "attributes": [
+                "owner_id"
+            ],
+            "orders": [
+                "ASC"
+            ]
+        },
+        {
+            "key": "active_tenants_index",
+            "type": "key",
+            "attributes": [
+                "is_active"
+            ],
+            "orders": [
+                "DESC"
+            ]
+        }
+    ]
+}

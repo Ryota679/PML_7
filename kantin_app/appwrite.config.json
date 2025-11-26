@@ -1,0 +1,637 @@
+{
+    "projectId": "perojek-pml",
+    "endpoint": "https://fra.cloud.appwrite.io/v1",
+    "projectName": "perojek pml",
+    "settings": {
+        "services": {
+            "account": true,
+            "avatars": true,
+            "databases": true,
+            "locale": true,
+            "health": true,
+            "storage": true,
+            "teams": true,
+            "users": true,
+            "sites": true,
+            "functions": true,
+            "graphql": true,
+            "messaging": true
+        },
+        "auth": {
+            "methods": {
+                "jwt": true,
+                "phone": true,
+                "invites": true,
+                "anonymous": true,
+                "email-otp": true,
+                "magic-url": true,
+                "email-password": true
+            },
+            "security": {
+                "duration": 31536000,
+                "limit": 0,
+                "sessionsLimit": 10,
+                "passwordHistory": 0,
+                "passwordDictionary": false,
+                "personalDataCheck": false,
+                "sessionAlerts": false,
+                "mockNumbers": []
+            }
+        }
+    },
+    "functions": [
+        {
+            "$id": "activateBusinessOwner",
+            "execute": [
+                "any"
+            ],
+            "name": "Activate Business Owner",
+            "enabled": true,
+            "logging": true,
+            "runtime": "node-18.0",
+            "scopes": [
+                "users.write"
+            ],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "specification": "s-0.5vcpu-512mb",
+            "path": "functions/Activate Business Owner"
+        },
+        {
+            "$id": "691d57860017535b860c",
+            "execute": [
+                "users"
+            ],
+            "name": "approve-registration",
+            "enabled": true,
+            "logging": true,
+            "runtime": "node-18.0",
+            "scopes": [],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "specification": "s-0.5vcpu-512mb",
+            "path": "functions/approve-registration"
+        },
+        {
+            "$id": "createTenantUser",
+            "execute": [
+                "any"
+            ],
+            "name": "Create Tenant User",
+            "enabled": true,
+            "logging": true,
+            "runtime": "node-18.0",
+            "scopes": [
+                "users.write"
+            ],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "specification": "s-0.5vcpu-512mb",
+            "path": "functions/create-tenant-user"
+        }
+    ],
+    "tablesDB": [
+        {
+            "$id": "kantin-db",
+            "name": "kantin",
+            "enabled": true
+        }
+    ],
+    "tables": [
+        {
+            "$id": "categories",
+            "$permissions": [
+                "create(\"team:system_admins\")",
+                "read(\"team:system_admins\")",
+                "update(\"team:system_admins\")",
+                "delete(\"team:system_admins\")",
+                "create(\"team:busines_owner\")",
+                "read(\"team:busines_owner\")",
+                "update(\"team:busines_owner\")",
+                "delete(\"team:busines_owner\")",
+                "read(\"team:tenant_1\")",
+                "read(\"team:P1\")"
+            ],
+            "databaseId": "kantin-db",
+            "name": "categories",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "tenant_id.idx",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "tenant_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "products",
+            "$permissions": [
+                "create(\"team:tenant_1\")",
+                "read(\"team:tenant_1\")",
+                "update(\"team:tenant_1\")",
+                "delete(\"team:tenant_1\")",
+                "read(\"team:P1\")",
+                "read(\"team:busines_owner\")",
+                "create(\"team:system_admins\")",
+                "read(\"team:system_admins\")",
+                "update(\"team:system_admins\")",
+                "delete(\"team:system_admins\")"
+            ],
+            "databaseId": "kantin-db",
+            "name": "products",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "category_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "description",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": "",
+                    "encrypt": false
+                },
+                {
+                    "key": "price",
+                    "type": "double",
+                    "required": true,
+                    "array": false,
+                    "min": 20,
+                    "max": 256,
+                    "default": null
+                },
+                {
+                    "key": "image_url",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "is_available",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "tenant_id.idx",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "tenant_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "category_id.idx",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "category_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "is_available.idx",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "is_available"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "orders",
+            "$permissions": [
+                "create(\"team:P1\")",
+                "read(\"team:tenant_1\")",
+                "update(\"team:tenant_1\")",
+                "read(\"team:busines_owner\")",
+                "create(\"team:system_admins\")",
+                "read(\"team:system_admins\")",
+                "update(\"team:system_admins\")",
+                "delete(\"team:system_admins\")"
+            ],
+            "databaseId": "kantin-db",
+            "name": "orders",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "totalPrice",
+                    "type": "double",
+                    "required": true,
+                    "array": false,
+                    "min": 256,
+                    "max": 256,
+                    "default": null
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": "pending",
+                    "encrypt": false
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "customerName",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "items",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "tenant_id.idx",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "tenant_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "status.idx",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "status"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "users",
+            "$permissions": [
+                "read(\"users\")",
+                "create(\"label:applications\")",
+                "read(\"label:applications\")",
+                "update(\"label:applications\")",
+                "create(\"label:adminsystem\")",
+                "read(\"label:adminsystem\")",
+                "update(\"label:adminsystem\")",
+                "delete(\"label:adminsystem\")"
+            ],
+            "databaseId": "kantin-db",
+            "name": "Users",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "user_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "role",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "elements": [
+                        "owner_bussines",
+                        "tenant",
+                        "guest",
+                        "adminsystem"
+                    ],
+                    "format": "enum",
+                    "default": null
+                },
+                {
+                    "key": "username",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "tenant_id",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "contract_end_date",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "is_active",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "users.idx",
+                    "type": "unique",
+                    "status": "available",
+                    "columns": [
+                        "user_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "role.idx",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "role"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "tenant.idx",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "tenant_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "contract_end_date.idx",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "contract_end_date"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "registration_requests",
+            "$permissions": [
+                "create(\"any\")",
+                "read(\"label:adminsystem\")",
+                "update(\"label:adminsystem\")",
+                "delete(\"label:adminsystem\")",
+                "read(\"label:applications\")",
+                "update(\"label:applications\")"
+            ],
+            "databaseId": "kantin-db",
+            "name": "registration_requests",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "full_name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "email",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "password_hash",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 500,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "business_name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "business_type",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 100,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "phone",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 20,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 50,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "admin_notes",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 1000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "reviewed_by",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "reviewed_at",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "email.idx",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "email"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "status.idx",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "status"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        }
+    ],
+    "teams": [
+        {
+            "$id": "system_admins",
+            "name": "System Administrators"
+        },
+        {
+            "$id": "busines_owner",
+            "name": "Business Owner"
+        },
+        {
+            "$id": "tenant_1",
+            "name": "Tenant"
+        },
+        {
+            "$id": "P1",
+            "name": "Publik"
+        }
+    ]
+}
