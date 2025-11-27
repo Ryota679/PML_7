@@ -24,15 +24,21 @@ class ProductCard extends StatelessWidget {
         children: [
           ListTile(
             leading: CircleAvatar(
-              backgroundColor: product.isAvailable
-                  ? Colors.green.shade100
-                  : Colors.grey.shade300,
-              child: Icon(
-                Icons.restaurant,
-                color: product.isAvailable
-                    ? Colors.green.shade700
-                    : Colors.grey.shade600,
-              ),
+              radius: 28,
+              backgroundColor: product.imageUrl != null && product.imageUrl!.isNotEmpty
+                  ? Colors.grey.shade200
+                  : (product.isAvailable ? Colors.green.shade100 : Colors.grey.shade300),
+              backgroundImage: product.imageUrl != null && product.imageUrl!.isNotEmpty
+                  ? NetworkImage(product.imageUrl!)
+                  : null,
+              child: product.imageUrl == null || product.imageUrl!.isEmpty
+                  ? Icon(
+                      Icons.restaurant,
+                      color: product.isAvailable
+                          ? Colors.green.shade700
+                          : Colors.grey.shade600,
+                    )
+                  : null,
             ),
             title: Text(
               product.name,

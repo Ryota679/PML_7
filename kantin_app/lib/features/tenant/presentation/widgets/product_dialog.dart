@@ -210,46 +210,54 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                   ),
                 ),
                 
-                // Show uploaded image preview
+                // Show uploaded image URL (preview disabled to prevent crash)
                 if (_uploadedImageUrl != null || _imageUrlController.text.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Container(
-                    height: 120,
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
+                      color: Colors.green.shade50,
+                      border: Border.all(color: Colors.green.shade300),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        _uploadedImageUrl ?? _imageUrlController.text,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.broken_image, color: Colors.grey),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Gagal memuat gambar',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.green, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                '✅ Gambar berhasil diupload',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green,
                                 ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _uploadedImageUrl ?? _imageUrlController.text,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                  fontFamily: 'monospace',
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Preview akan muncul setelah produk disimpan',
+                                style: TextStyle(fontSize: 10, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _uploadedImageUrl ?? _imageUrlController.text,
-                    style: const TextStyle(fontSize: 11, color: Colors.grey),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  const SizedBox(height: 8),
                 ],
                 
                 const SizedBox(height: 12),
@@ -356,58 +364,104 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
   }
 
   Future<void> _handleImageUpload() async {
+    AppLogger.info('🔵 START: _handleImageUpload()');
+    
+    if (!mounted) {
+      AppLogger.warning('⚠️ Widget not mounted, aborting image upload');
+      return;
+    }
+
     setState(() {
       _isUploadingImage = true;
     });
 
+    String? uploadedUrl;
+    
     try {
       final imageUploadService = ref.read(imageUploadServiceProvider);
       
-      final imageUrl = await imageUploadService.pickAndUploadImage(
+      AppLogger.info('📤 Calling pickAndUploadImage...');
+      uploadedUrl = await imageUploadService.pickAndUploadImage(
         bucketId: AppwriteConfig.productImagesBucketId,
-        maxSizeKB: 500, // Max 500KB after compression
+        maxSizeKB: 500,
       );
-
-      if (imageUrl != null) {
-        setState(() {
-          _uploadedImageUrl = imageUrl;
-          _imageUrlController.clear(); // Clear manual URL input
-        });
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✅ Gambar berhasil diupload!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-      }
-    } catch (e, stackTrace) {
-      AppLogger.error('Error uploading image', e, stackTrace);
       
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❌ Gagal upload gambar: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
-          ),
-        );
+      AppLogger.info('📥 Upload result: ${uploadedUrl ?? "cancelled"}');
+
+      if (!mounted) {
+        AppLogger.warning('⚠️ Widget unmounted during upload, aborting state update');
+        return;
       }
-    } finally {
-      if (mounted) {
+
+      if (uploadedUrl != null) {
+        AppLogger.info('✅ Setting uploaded URL in state');
+        setState(() {
+          _uploadedImageUrl = uploadedUrl;
+          _imageUrlController.clear();
+          _isUploadingImage = false;
+        });
+        AppLogger.info('✅ State updated successfully');
+
+        // Show success message AFTER state is stable
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('✅ Gambar berhasil diupload!'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        });
+      } else {
+        // User cancelled
+        AppLogger.info('ℹ️ User cancelled image picker');
         setState(() {
           _isUploadingImage = false;
         });
       }
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ CRITICAL: Image upload error', e, stackTrace);
+      
+      if (mounted) {
+        setState(() {
+          _isUploadingImage = false;
+          // Don't set uploadedUrl on error
+        });
+        
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('❌ Gagal upload: ${e.toString()}'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          }
+        });
+      }
+    } finally {
+      AppLogger.info('🔵 END: _handleImageUpload()');
     }
   }
 
   Future<void> _saveProduct() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedCategory == null) return;
+    AppLogger.info('🔵 _saveProduct() called - Stack trace: ${StackTrace.current}');
+    
+    if (!_formKey.currentState!.validate()) {
+      AppLogger.warning('⚠️ Form validation failed');
+      return;
+    }
+    if (_selectedCategory == null) {
+      AppLogger.warning('⚠️ No category selected');
+      return;
+    }
+    if (!mounted) {
+      AppLogger.warning('⚠️ Widget not mounted');
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -415,9 +469,12 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
 
     final user = ref.read(authProvider).user;
     if (user?.tenantId == null) {
-      setState(() {
-        _isLoading = false;
-      });
+      AppLogger.error('❌ No tenant ID', null, null);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
       return;
     }
 
@@ -426,63 +483,85 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
     final name = _nameController.text.trim();
     final description = _descriptionController.text.trim();
     final price = int.parse(_priceController.text.trim());
-    // Use uploaded image URL if available, otherwise use manual URL
     final imageUrl = _uploadedImageUrl ?? _imageUrlController.text.trim();
     final stock = _hasStockTracking && _stockController.text.trim().isNotEmpty
         ? int.parse(_stockController.text.trim())
         : null;
 
+    AppLogger.info('💾 Saving product: $name, price: $price, image: ${imageUrl.isNotEmpty ? "YES" : "NO"}');
+
     bool success;
-    if (widget.product == null) {
-      // Create new product
-      success = await notifier.createProduct(
-        categoryId: _selectedCategory!.id,
-        name: name,
-        description: description.isEmpty ? null : description,
-        price: price,
-        imageUrl: imageUrl.isEmpty ? null : imageUrl,
-        isAvailable: _isAvailable,
-        stock: stock,
-      );
-    } else {
-      // Update existing product
-      success = await notifier.updateProduct(
-        productId: widget.product!.id,
-        categoryId: _selectedCategory!.id,
-        name: name,
-        description: description.isEmpty ? null : description,
-        price: price,
-        imageUrl: imageUrl.isEmpty ? null : imageUrl,
-        isAvailable: _isAvailable,
-        stock: stock,
-      );
-    }
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (success) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              widget.product == null
-                  ? 'Produk berhasil ditambahkan'
-                  : 'Produk berhasil diupdate',
-            ),
-            backgroundColor: Colors.green,
-          ),
+    try {
+      if (widget.product == null) {
+        success = await notifier.createProduct(
+          categoryId: _selectedCategory!.id,
+          name: name,
+          description: description.isEmpty ? null : description,
+          price: price,
+          imageUrl: imageUrl.isEmpty ? null : imageUrl,
+          isAvailable: _isAvailable,
+          stock: stock,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Gagal menyimpan produk'),
-            backgroundColor: Colors.red,
-          ),
+        success = await notifier.updateProduct(
+          productId: widget.product!.id,
+          categoryId: _selectedCategory!.id,
+          name: name,
+          description: description.isEmpty ? null : description,
+          price: price,
+          imageUrl: imageUrl.isEmpty ? null : imageUrl,
+          isAvailable: _isAvailable,
+          stock: stock,
         );
       }
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ Save product error', e, stackTrace);
+      success = false;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success) {
+      AppLogger.info('✅ Product saved, reloading list...');
+      await notifier.loadProducts();
+      
+      final products = ref.read(tenantProductsProvider(user.tenantId!)).products;
+      AppLogger.info('📊 Products in list after save: ${products.length}');
+      
+      if (mounted) {
+        Navigator.pop(context);
+        
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  widget.product == null
+                      ? '✅ Produk berhasil ditambahkan'
+                      : '✅ Produk berhasil diupdate',
+                ),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        });
+      }
+    } else {
+      AppLogger.error('❌ Failed to save product', null, null);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('❌ Gagal menyimpan produk'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      });
     }
   }
 }

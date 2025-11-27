@@ -2,12 +2,14 @@ import 'package:appwrite/appwrite.dart';
 import '../../../core/config/appwrite_config.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../shared/models/product_model.dart';
+import '../../../core/services/image_upload_service.dart';
 
 /// Repository for managing products
 class ProductRepository {
   final Databases _databases;
+  final Storage _storage;
 
-  ProductRepository(this._databases);
+  ProductRepository(this._databases, this._storage);
 
   /// Get all products for a specific tenant
   Future<List<ProductModel>> getProductsByTenant(String tenantId) async {
@@ -156,21 +158,78 @@ class ProductRepository {
     }
   }
 
-  /// Delete a product
+  /// Delete a product and its associated image from storage
   Future<void> deleteProduct(String productId) async {
     try {
       AppLogger.info('Deleting product: $productId');
 
+      // Step 1: Get product data to check for image
+      final product = await _databases.getDocument(
+        databaseId: AppwriteConfig.databaseId,
+        collectionId: AppwriteConfig.productsCollectionId,
+        documentId: productId,
+      );
+
+      final productModel = ProductModel.fromDocument(product);
+
+      // Step 2: Delete image from storage if it exists
+      if (productModel.imageUrl != null && productModel.imageUrl!.isNotEmpty) {
+        try {
+          final fileId = _extractFileIdFromUrl(productModel.imageUrl!);
+          if (fileId != null) {
+            AppLogger.info('Deleting image from storage: $fileId');
+            await _storage.deleteFile(
+              bucketId: AppwriteConfig.productImagesBucketId,
+              fileId: fileId,
+            );
+            AppLogger.info('✅ Image deleted from storage');
+          }
+        } catch (e, stackTrace) {
+          // Log error but continue with product deletion
+          AppLogger.warning('Failed to delete image from storage: $e');
+        }
+      }
+
+      // Step 3: Delete product from database
       await _databases.deleteDocument(
         databaseId: AppwriteConfig.databaseId,
         collectionId: AppwriteConfig.productsCollectionId,
         documentId: productId,
       );
 
-      AppLogger.info('Product deleted successfully');
+      AppLogger.info('✅ Product deleted successfully');
     } catch (e, stackTrace) {
       AppLogger.error('Error deleting product', e, stackTrace);
       rethrow;
+    }
+  }
+
+  /// Extract file ID from Appwrite storage URL
+  /// Format: https://cloud.appwrite.io/v1/storage/buckets/[bucketId]/files/[fileId]/view?project=[projectId]
+  String? _extractFileIdFromUrl(String url) {
+    try {
+      // Check if URL is from Appwrite storage
+      if (!url.contains('storage/buckets')) {
+        AppLogger.info('URL is not from Appwrite storage, skipping delete');
+        return null;
+      }
+
+      // Extract fileId from URL
+      final uri = Uri.parse(url);
+      final pathSegments = uri.pathSegments;
+      
+      // Find 'files' segment and get the next one (fileId)
+      final filesIndex = pathSegments.indexOf('files');
+      if (filesIndex != -1 && filesIndex + 1 < pathSegments.length) {
+        final fileId = pathSegments[filesIndex + 1];
+        AppLogger.info('Extracted fileId: $fileId');
+        return fileId;
+      }
+
+      return null;
+    } catch (e) {
+      AppLogger.warning('Failed to extract fileId from URL: $e');
+      return null;
     }
   }
 

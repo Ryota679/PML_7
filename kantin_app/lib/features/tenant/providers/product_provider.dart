@@ -6,7 +6,8 @@ import '../data/product_repository.dart';
 /// Provider for ProductRepository
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
   final databases = ref.watch(appwriteDatabasesProvider);
-  return ProductRepository(databases);
+  final storage = ref.watch(appwriteStorageProvider);
+  return ProductRepository(databases, storage);
 });
 
 /// State class for products

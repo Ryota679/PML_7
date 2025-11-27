@@ -7,6 +7,8 @@ class UserModel {
   final String? id;
   final String userId; // Reference to Appwrite Auth user
   final String role; // owner_business, tenant, adminsystem, guest
+  final String? subRole; // NULL (tenant owner) | 'staff' (tenant staff)
+  final String? createdBy; // User ID who created this user
   final String username; // Username for login
   final String fullName;
   final String email;
@@ -17,10 +19,17 @@ class UserModel {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  // Convenience getters for role checking
+  bool get isTenantOwner => role == 'tenant' && subRole == null;
+  bool get isTenantStaff => role == 'tenant' && subRole == 'staff';
+  bool get isBusinessOwner => role == 'owner_business' || role == 'owner_bussines';
+
   UserModel({
     this.id,
     required this.userId,
     required this.role,
+    this.subRole,
+    this.createdBy,
     required this.username,
     required this.fullName,
     required this.email,
@@ -49,6 +58,8 @@ class UserModel {
       id: doc.$id,
       userId: doc.data['user_id'] as String,
       role: doc.data['role'] as String,
+      subRole: doc.data['sub_role'] as String?,
+      createdBy: doc.data['created_by'] as String?,
       username: username,
       fullName: fullName,
       email: email,
@@ -69,6 +80,8 @@ class UserModel {
       id: json['\$id'] as String?,
       userId: json['user_id'] as String,
       role: json['role'] as String,
+      subRole: json['sub_role'] as String?,
+      createdBy: json['created_by'] as String?,
       username: json['username'] as String,
       fullName: json['full_name'] as String,
       email: json['email'] as String,
@@ -96,6 +109,8 @@ class UserModel {
     return {
       'user_id': userId,
       'role': role,
+      'sub_role': subRole,
+      'created_by': createdBy,
       'username': username,
       'full_name': fullName,
       'email': email,
@@ -111,6 +126,8 @@ class UserModel {
     String? id,
     String? userId,
     String? role,
+    String? subRole,
+    String? createdBy,
     String? username,
     String? fullName,
     String? email,
@@ -125,6 +142,8 @@ class UserModel {
       id: id ?? this.id,
       userId: userId ?? this.userId,
       role: role ?? this.role,
+      subRole: subRole ?? this.subRole,
+      createdBy: createdBy ?? this.createdBy,
       username: username ?? this.username,
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,

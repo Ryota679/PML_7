@@ -1,0 +1,71 @@
+import 'package:appwrite/appwrite.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kantin_app/core/providers/appwrite_provider.dart';
+import 'package:kantin_app/features/auth/providers/auth_provider.dart';
+import 'package:kantin_app/shared/models/user_model.dart';
+import '../../data/tenant_contracts_repository.dart';
+import '../../data/tenant_user_with_info.dart';
+
+/// Provider for tenant contracts repository
+final tenantContractsRepositoryProvider = Provider<TenantContractsRepository>((ref) {
+  final databases = ref.watch(appwriteDatabasesProvider);
+  return TenantContractsRepository(databases: databases);
+});
+
+/// Provider for managing tenant contracts
+final tenantContractsProvider = StateNotifierProvider<TenantContractsNotifier, AsyncValue<List<TenantUserWithInfo>>>((ref) {
+  final repository = ref.watch(tenantContractsRepositoryProvider);
+  final currentUser = ref.watch(authProvider).user;
+  
+  return TenantContractsNotifier(
+    repository: repository,
+    currentUser: currentUser,
+  );
+});
+
+class TenantContractsNotifier extends StateNotifier<AsyncValue<List<TenantUserWithInfo>>> {
+  final TenantContractsRepository repository;
+  final UserModel? currentUser;
+
+  TenantContractsNotifier({
+    required this.repository,
+    required this.currentUser,
+  }) : super(const AsyncValue.loading()) {
+    loadTenantUsers();
+  }
+
+  /// Load all tenant users for current business owner
+  Future<void> loadTenantUsers() async {
+    if (currentUser == null || currentUser?.userId == null) {
+      state = const AsyncValue.data([]);
+      return;
+    }
+
+    state = const AsyncValue.loading();
+
+    try {
+      final tenantUsers = await repository.getTenantUsersWithInfo(currentUser!.userId);
+      state = AsyncValue.data(tenantUsers);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Add contract token (months) to a tenant user
+  Future<bool> addContractToken(String userDocId, int months) async {
+    try {
+      await repository.addContractToken(userDocId, months);
+      
+      // Refresh list
+      await loadTenantUsers();
+      
+      return true;
+    } catch (e) {
+      // Keep error in state but don't override
+      return false;
+    }
+  }
+
+  /// Refresh tenant users list
+  Future<void> refresh() => loadTenantUsers();
+}

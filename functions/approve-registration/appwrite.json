@@ -1,0 +1,23 @@
+{
+    "projectId": "perojek-pml",
+    "projectName": "perojek-pml",
+    "functions": [
+        {
+            "name": "approve-registration",
+            "$id": "691d57860017535b860c",
+            "runtime": "node-18.0",
+            "path": ".",
+            "entrypoint": "src/main.js",
+            "ignore": [
+                "node_modules",
+                ".git",
+                ".gitignore"
+            ],
+            "execute": [
+                "users"
+            ],
+            "timeout": 15,
+            "commands": "npm install"
+        }
+    ]
+}

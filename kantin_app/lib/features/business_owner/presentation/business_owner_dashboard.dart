@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kantin_app/features/auth/providers/auth_provider.dart';
 import 'tenant_management_page.dart';
 import 'tenant_user_management_page.dart';
+import 'pages/tenant_contracts_page.dart';
 
 /// Business Owner Dashboard
 /// 
@@ -107,6 +108,21 @@ class BusinessOwnerDashboard extends ConsumerWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const TenantUserManagementPage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuCard(
+                  context,
+                  icon: Icons.calendar_month,
+                  title: 'Kelola Kontrak',
+                  subtitle: 'Atur kontrak tenant',
+                  color: Colors.teal,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TenantContractsPage(),
                       ),
                     );
                   },
