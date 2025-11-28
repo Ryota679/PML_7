@@ -48,6 +48,9 @@ dependencies:
   # Backend as a Service
   appwrite: ^20.3.2
   
+  # QR Code Generator
+  qr_flutter: ^4.1.0
+  
   # Local Database
   drift: ^2.20.3
   sqlite3_flutter_libs: ^0.5.24

@@ -9,6 +9,12 @@ import 'package:kantin_app/features/admin/presentation/admin_dashboard.dart';
 import 'package:kantin_app/features/business_owner/presentation/business_owner_dashboard.dart';
 import 'package:kantin_app/features/registration/presentation/business_owner_registration_page.dart';
 import 'package:kantin_app/features/tenant/presentation/tenant_dashboard.dart';
+import 'package:kantin_app/features/guest/presentation/guest_landing_page.dart';
+import 'package:kantin_app/features/guest/presentation/guest_menu_page.dart';
+import 'package:kantin_app/features/guest/presentation/cart_page.dart';
+import 'package:kantin_app/features/guest/presentation/customer_code_entry_page.dart';
+import 'package:kantin_app/features/customer/presentation/customer_registration_page.dart';
+import 'package:kantin_app/features/customer/presentation/customer_login_page.dart';
 import 'package:kantin_app/shared/widgets/loading_widget.dart';
 
 /// App Router Provider
@@ -28,24 +34,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return '/loading';
       }
 
-      // Jika belum login, redirect ke login (kecuali sudah di login, debug, atau register page)
+      // Jika belum login, redirect ke guest landing (kecuali public routes)
       if (!isAuthenticated) {
-        if (state.matchedLocation != '/login' && 
-            state.matchedLocation != '/debug' &&
-            state.matchedLocation != '/register') {
-          return '/login';
+        // Allow public access to these routes
+        final isPublicRoute = state.matchedLocation == '/guest' ||
+                              state.matchedLocation.startsWith('/menu/') || 
+                              state.matchedLocation.startsWith('/cart/') ||
+                              state.matchedLocation == '/enter-code' ||
+                              state.matchedLocation == '/customer-login' ||
+                              state.matchedLocation == '/customer-register' ||
+                              state.matchedLocation == '/login' ||
+                              state.matchedLocation == '/debug' ||
+                              state.matchedLocation == '/register';
+        
+        if (!isPublicRoute) {
+          return '/guest'; // Redirect to guest landing page
         }
         return null;
       }
 
       // Jika sudah login, redirect dari login ke dashboard sesuai role
-      if (state.matchedLocation == '/login') {
+      if (state.matchedLocation == '/login' || 
+          state.matchedLocation == '/customer-login') {
         if (userRole == 'adminsystem') {
           return '/admin';
         } else if (userRole == AppConstants.roleOwnerBusiness) {
           return '/business-owner';
         } else if (userRole == AppConstants.roleTenant) {
           return '/tenant';
+        } else if (userRole == AppConstants.roleCustomer) {
+          return '/customer-dashboard';
         }
       }
 
@@ -57,6 +75,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return '/business-owner';
         } else if (userRole == AppConstants.roleTenant) {
           return '/tenant';
+        } else if (userRole == AppConstants.roleCustomer) {
+          return '/customer-dashboard';
         }
       }
 
@@ -89,6 +109,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/debug',
         builder: (context, state) => const DebugAdminPage(),
       ),
+      // Guest Landing Page (for non-authenticated users)
+      GoRoute(
+        path: '/guest',
+        builder: (context, state) => const GuestLandingPage(),
+      ),
       GoRoute(
         path: '/admin',
         builder: (context, state) => const AdminDashboard(),
@@ -100,6 +125,42 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/tenant',
         builder: (context, state) => const TenantDashboard(),
+      ),
+      // Guest/Public routes
+      GoRoute(
+        path: '/enter-code',
+        builder: (context, state) => const CustomerCodeEntryPage(),
+      ),
+      GoRoute(
+        path: '/menu/:tenantId',
+        builder: (context, state) {
+          final tenantId = state.pathParameters['tenantId']!;
+          return GuestMenuPage(tenantId: tenantId);
+        },
+      ),
+      GoRoute(
+        path: '/cart/:tenantId',
+        builder: (context, state) {
+          final tenantId = state.pathParameters['tenantId']!;
+          return CartPage(tenantId: tenantId);
+        },
+      ),
+      // Customer routes (public access for login/register)
+      GoRoute(
+        path: '/customer-login',
+        builder: (context, state) => const CustomerLoginPage(),
+      ),
+      GoRoute(
+        path: '/customer-register',
+        builder: (context, state) => const CustomerRegistrationPage(),
+      ),
+      GoRoute(
+        path: '/customer-dashboard',
+        builder: (context, state) => const Scaffold(
+          body: Center(
+            child: Text('Customer Dashboard - Coming Soon in Phase 3!'),
+          ),
+        ),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

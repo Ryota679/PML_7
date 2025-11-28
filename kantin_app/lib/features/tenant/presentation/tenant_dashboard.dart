@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kantin_app/features/auth/providers/auth_provider.dart';
 import 'package:kantin_app/shared/models/permission_service.dart';
 import 'package:kantin_app/shared/models/tenant_model.dart';
 import 'pages/product_management_page.dart';
 import 'pages/staff_management_page.dart';
+import 'pages/qr_code_display_page.dart';
 import 'providers/current_tenant_provider.dart';
 
 /// Tenant Dashboard
@@ -134,20 +136,37 @@ class TenantDashboard extends ConsumerWidget {
                     );
                   },
                 ),
-                _buildMenuCard(
-                  context,
-                  icon: Icons.qr_code,
-                  title: 'QR Code',
-                  subtitle: 'Lihat QR tenant',
-                  color: Colors.purple,
-                  onTap: () {
-                    // TODO: Show QR code
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Fitur akan tersedia di Sprint 2'),
-                      ),
-                    );
-                  },
+                // QR Code - Navigate to QR display page
+                tenantAsync.when(
+                  data: (tenant) => tenant != null
+                      ? _buildMenuCard(
+                          context,
+                          icon: Icons.qr_code,
+                          title: 'QR Code',
+                          subtitle: 'QR Code menu',
+                          color: Colors.purple,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => QrCodeDisplayPage(
+                                  tenantId: tenant.id!,
+                                  tenantName: tenant.name,
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : const SizedBox.shrink(),
+                  loading: () => _buildMenuCard(
+                    context,
+                    icon: Icons.qr_code,
+                    title: 'QR Code',
+                    subtitle: 'Loading...',
+                    color: Colors.purple,
+                    onTap: () {},
+                  ),
+                  error: (_, __) => const SizedBox.shrink(),
                 ),
                 _buildMenuCard(
                   context,

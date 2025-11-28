@@ -32,6 +32,13 @@ class AuthState {
       error: error ?? this.error,
     );
   }
+
+  // Helper getters
+  bool get isCustomer => user?.role == 'customer';
+  bool get isTenant => user?.role == 'tenant';
+  bool get isBusinessOwner => user?.role == 'owner_bussines';
+  bool get isAdmin => user?.role == 'adminsystem';
+  bool get isGuest => !isAuthenticated;
 }
 
 /// Auth Provider
@@ -131,6 +138,55 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       
       return false;
+    }
+  }
+
+  /// Register Customer
+  /// Register new customer account
+  Future<bool> registerCustomer({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      // Register customer via repository
+      final user = await authRepository.registerCustomer(
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+      );
+
+      if (user == null) {
+        throw Exception('Registration failed');
+      }
+
+      // Auto-login after registration
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        user: user,
+      );
+
+      return true;
+    } catch (e) {
+      AppLogger.error('Customer registration failed', e);
+      
+      String errorMessage = 'Registrasi gagal';
+      if (e.toString().contains('email already exists')) {
+        errorMessage = 'Email sudah terdaftar';
+      }
+
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        error: errorMessage,
+      );
+
+      throw Exception(errorMessage);
     }
   }
 

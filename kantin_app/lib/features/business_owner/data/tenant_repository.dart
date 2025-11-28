@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import '../../../core/config/appwrite_config.dart';
 import '../../../core/utils/app_logger.dart';
+import '../../../core/utils/tenant_code_generator.dart';
 import '../../../shared/models/tenant_model.dart';
 
 /// Repository for tenant CRUD operations
@@ -92,7 +93,26 @@ class TenantRepository {
       );
 
       AppLogger.info('Tenant created: ${doc.$id}');
-      return TenantModel.fromDocument(doc);
+      
+      // Auto-generate and save tenant code
+      try {
+        final tenantCode = TenantCodeGenerator.generateCode(doc.$id);
+        AppLogger.info('Generated tenant code: $tenantCode for ${doc.$id}');
+        
+        final updatedDoc = await _databases.updateDocument(
+          databaseId: AppwriteConfig.databaseId,
+          collectionId: AppwriteConfig.tenantsCollectionId,
+          documentId: doc.$id,
+          data: {'tenant_code': tenantCode},
+        );
+        
+        AppLogger.info('Tenant code saved successfully');
+        return TenantModel.fromDocument(updatedDoc);
+      } catch (codeError, codeStackTrace) {
+        AppLogger.warning('Failed to save tenant code, but tenant created: $codeError');
+        // Return tenant without code (will be generated on-the-fly)
+        return TenantModel.fromDocument(doc);
+      }
     } catch (e, stackTrace) {
       AppLogger.error('Error creating tenant', e, stackTrace);
       rethrow;

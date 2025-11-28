@@ -80,6 +80,58 @@ class AuthRepository {
     }
   }
 
+  /// Register Customer
+  /// Create new customer account and user profile document
+  Future<UserModel?> registerCustomer({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+  }) async {
+    try {
+      AppLogger.info('Registering customer: $email');
+
+      // 1. Create Appwrite account
+      final user = await account.create(
+        userId: ID.unique(),
+        email: email,
+        password: password,
+        name: name,
+      );
+
+      AppLogger.info('Appwrite account created: ${user.$id}');
+
+      // 2. Login automatically
+      await account.createEmailPasswordSession(
+        email: email,
+        password: password,
+      );
+
+      // 3. Create user profile document in database
+      final userDoc = await database.createDocument(
+        databaseId: AppwriteConfig.databaseId,
+        collectionId: AppwriteConfig.usersCollectionId,
+        documentId: ID.unique(),
+        data: {
+          'user_id': user.$id,
+          'username': name,
+          'role': 'customer',
+          'email': email,
+          'phone': phone,
+          'is_active': true,
+        },
+      );
+
+      final userModel = UserModel.fromDocument(userDoc);
+      AppLogger.info('Customer registered successfully');
+      
+      return userModel;
+    } catch (e, stackTrace) {
+      AppLogger.error('Customer registration failed', e, stackTrace);
+      rethrow;
+    }
+  }
+
   /// Get user profile from database
   Future<UserModel?> getUserProfile(String userId) async {
     try {

@@ -1,4 +1,5 @@
 import 'package:appwrite/models.dart';
+import 'package:kantin_app/core/utils/tenant_code_generator.dart';
 
 /// Model representing a tenant/stand in the kantin
 class TenantModel {
@@ -11,6 +12,7 @@ class TenantModel {
   final String? logoUrl;
   final String? phone;
   final int displayOrder;
+  final String? tenantCode; // 6-character code for customer access
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -24,6 +26,7 @@ class TenantModel {
     this.logoUrl,
     this.phone,
     required this.displayOrder,
+    this.tenantCode,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -40,6 +43,7 @@ class TenantModel {
       logoUrl: doc.data['logo_url'] as String?,
       phone: doc.data['phone'] as String?,
       displayOrder: doc.data['display_order'] as int? ?? 0,
+      tenantCode: doc.data['tenant_code'] as String?,
       createdAt: DateTime.parse(doc.$createdAt),
       updatedAt: DateTime.parse(doc.$updatedAt),
     );
@@ -56,7 +60,13 @@ class TenantModel {
       'logo_url': logoUrl,
       'phone': phone,
       'display_order': displayOrder,
+      'tenant_code': tenantCode,
     };
+  }
+
+  /// Get or generate tenant code
+  String getCode() {
+    return tenantCode ?? TenantCodeGenerator.generateCode(id);
   }
 
   /// Create a copy with updated fields

@@ -20,6 +20,7 @@ class AppwriteConfig {
   static const String productsCollectionId = 'products';
   static const String categoriesCollectionId = 'categories';
   static const String ordersCollectionId = 'orders';
+  static const String orderItemsCollectionId = 'order_items';
   static const String registrationRequestsCollectionId = 'registration_requests';
   
   // Appwrite Function IDs

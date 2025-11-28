@@ -11,6 +11,7 @@ class AppConstants {
   static const String roleOwnerBusiness = 'owner_bussines'; // Temporary: matches DB typo
   static const String roleTenant = 'tenant';
   static const String roleGuest = 'guest';
+  static const String roleCustomer = 'customer'; // Pembeli terdaftar
   
   // Order Status
   static const String orderStatusPending = 'pending';
