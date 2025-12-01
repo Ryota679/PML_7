@@ -33,3 +33,14 @@ final appwriteFunctionsProvider = Provider<Functions>((ref) {
   final client = ref.watch(appwriteClientProvider);
   return Functions(client);
 });
+
+/// Provider for Appwrite Realtime
+final realtimeProvider = Provider<Realtime>((ref) {
+  final client = ref.watch(appwriteClientProvider);
+  return Realtime(client);
+});
+
+// Alias for consistency
+final databasesProvider = appwriteDatabasesProvider;
+final storageProvider = appwriteStorageProvider;
+final accountProvider = appwriteAccountProvider;

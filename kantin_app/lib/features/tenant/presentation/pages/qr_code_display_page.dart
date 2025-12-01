@@ -16,15 +16,24 @@ class QrCodeDisplayPage extends StatelessWidget {
   });
 
   /// Generate menu URL untuk QR code
+  /// DEPRECATED: Not used for QR code anymore (switched to tenant code only)
+  /// Kept for "Share Link" functionality
   String get menuUrl {
-    // TODO: Update with actual production URL
-    // For development: localhost dengan tenant ID
+    // TODO: Update with actual production URL when deploying web version
+    // For now, this is only used for sharing via link, not in QR code
     return 'http://192.168.1.19:53917/menu/$tenantId';
   }
 
-  /// Get tenant code
+  /// Get tenant code (PRIMARY method for QR code)
   String get tenantCode {
     return TenantCodeGenerator.generateCode(tenantId);
+  }
+
+  /// Get QR code data
+  /// Returns ONLY the tenant code for app-based scanning
+  /// Future: When web version is ready, can switch to URL
+  String get qrCodeData {
+    return tenantCode; // Just the code: e.g., "Q8L2PH"
   }
 
   /// Copy URL to clipboard
@@ -211,7 +220,7 @@ class QrCodeDisplayPage extends StatelessWidget {
                   ],
                 ),
                 child: QrImageView(
-                  data: menuUrl,
+                  data: qrCodeData, // ✅ Changed from menuUrl to qrCodeData (tenant code only)
                   version: QrVersions.auto,
                   size: 280,
                   backgroundColor: Colors.white,
@@ -250,9 +259,9 @@ class QrCodeDisplayPage extends StatelessWidget {
                     const SizedBox(height: 16),
                     _buildInstruction('1', 'Cetak atau tampilkan QR code ini'),
                     const SizedBox(height: 12),
-                    _buildInstruction('2', 'Customer scan dengan kamera HP'),
+                    _buildInstruction('2', 'Customer scan dengan aplikasi Kantin'),
                     const SizedBox(height: 12),
-                    _buildInstruction('3', 'Langsung ke menu tanpa login'),
+                    _buildInstruction('3', 'Langsung ke menu tenant Anda'),
                     const SizedBox(height: 12),
                     _buildInstruction('4', 'Customer bisa langsung order'),
                   ],
@@ -389,11 +398,13 @@ class QrCodeDisplayPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('QR Code ini berisi link ke menu Anda.'),
+            Text('QR Code ini berisi Kode Tenant Anda (6 karakter).'),
             SizedBox(height: 12),
-            Text('Customer yang scan akan langsung masuk ke halaman menu dan bisa langsung order tanpa perlu login.'),
+            Text('Customer yang scan dengan aplikasi Kantin akan langsung masuk ke menu Anda dan bisa langsung order.'),
             SizedBox(height: 12),
-            Text('Cetak dan tempel di meja atau tampilkan di layar untuk customer scan.'),
+            Text('Alternatif: Customer juga bisa ketik kode manual di halaman "Masukkan Kode Tenant".'),
+            SizedBox(height: 12),
+            Text('💡 Tip: Cetak dan tempel di meja atau tampilkan di layar kasir.'),
           ],
         ),
         actions: [

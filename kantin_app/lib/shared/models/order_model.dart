@@ -182,6 +182,14 @@ class OrderModel {
   /// Check if this is a customer order (linked to customer account)
   bool get isCustomerOrder => customerId != null;
 
+  /// Get queue number (last 3 digits of order ID)
+  String getQueueNumber() {
+    if (id == null || id!.length < 3) {
+      return '001';
+    }
+    return id!.substring(id!.length - 3).toUpperCase();
+  }
+
   /// Create a copy with updated fields
   OrderModel copyWith({
     String? id,

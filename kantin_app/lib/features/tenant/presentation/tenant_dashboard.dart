@@ -8,6 +8,7 @@ import 'package:kantin_app/shared/models/tenant_model.dart';
 import 'pages/product_management_page.dart';
 import 'pages/staff_management_page.dart';
 import 'pages/qr_code_display_page.dart';
+import 'pages/tenant_order_dashboard_page.dart';
 import 'providers/current_tenant_provider.dart';
 
 /// Tenant Dashboard
@@ -113,10 +114,11 @@ class TenantDashboard extends ConsumerWidget {
                   subtitle: 'Kelola pesanan masuk',
                   color: Colors.blue,
                   onTap: () {
-                    // TODO: Navigate to orders
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Fitur akan tersedia di Sprint 4'),
+                    // Navigate to tenant order dashboard
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TenantOrderDashboardPage(),
                       ),
                     );
                   },

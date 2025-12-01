@@ -15,6 +15,7 @@ import 'package:kantin_app/features/guest/presentation/cart_page.dart';
 import 'package:kantin_app/features/guest/presentation/pages/checkout_page.dart';
 import 'package:kantin_app/features/guest/presentation/pages/order_tracking_page.dart';
 import 'package:kantin_app/features/guest/presentation/customer_code_entry_page.dart';
+import 'package:kantin_app/features/guest/presentation/pages/qr_scanner_page.dart';
 import 'package:kantin_app/features/customer/presentation/customer_registration_page.dart';
 import 'package:kantin_app/features/customer/presentation/customer_login_page.dart';
 import 'package:kantin_app/shared/widgets/loading_widget.dart';
@@ -45,6 +46,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                               state.matchedLocation.startsWith('/checkout/') ||
                               state.matchedLocation.startsWith('/order/') ||
                               state.matchedLocation == '/enter-code' ||
+                              state.matchedLocation == '/scan-qr' ||
                               state.matchedLocation == '/customer-login' ||
                               state.matchedLocation == '/customer-register' ||
                               state.matchedLocation == '/login' ||
@@ -134,6 +136,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/enter-code',
         builder: (context, state) => const CustomerCodeEntryPage(),
+      ),
+      // QR Scanner
+      GoRoute(
+        path: '/scan-qr',
+        builder: (context, state) => const QrScannerPage(),
       ),
       GoRoute(
         path: '/menu/:tenantId',

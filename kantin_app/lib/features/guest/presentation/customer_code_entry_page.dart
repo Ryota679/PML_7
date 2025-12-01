@@ -209,12 +209,8 @@ class _CustomerCodeEntryPageState extends ConsumerState<CustomerCodeEntryPage> {
                 // QR Scan Option
                 OutlinedButton.icon(
                   onPressed: () {
-                    // TODO: Implement QR scanner
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Fitur scan QR coming soon!'),
-                      ),
-                    );
+                    // Navigate to QR scanner page
+                    context.push('/scan-qr');
                   },
                   icon: const Icon(Icons.qr_code_scanner),
                   label: const Text('Scan QR Code'),
