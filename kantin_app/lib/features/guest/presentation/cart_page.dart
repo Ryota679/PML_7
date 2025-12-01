@@ -111,15 +111,11 @@ class CartPage extends ConsumerWidget {
                           height: 48,
                           child: FilledButton.icon(
                             onPressed: () {
-                              // Navigate to checkout (Sprint 3B)
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Checkout akan tersedia di Sprint 3B'),
-                                ),
-                              );
+                              // Navigate to checkout page
+                              context.push('/checkout/$tenantId');
                             },
                             icon: const Icon(Icons.shopping_bag),
-                            label: const Text('Checkout'),
+                            label: const Text('Lanjut ke Checkout'),
                           ),
                         ),
                       ],

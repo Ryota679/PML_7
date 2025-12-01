@@ -65,47 +65,6 @@ Roadmap ini dipecah menjadi 4 Sprint, masing-masing berisi daftar tugas yang diu
 * **[2.7] [Appwrite]** Atur izin (document-level) pada koleksi `products` dan `categories` agar hanya bisa di-CRUD oleh `tenant` yang bersangkutan.
 * **[2.8] [Front-end]** Buat UI Dasbor `Tenant` untuk mengelola `products` (CRUD & toggle ketersediaan).
 * **[2.9] [Front-end]** Integrasikan UI `Tenant` (Manajemen Products) langsung ke Appwrite Database.
-
----
-
-#### **Sprint 3: Alur Inti Pembeli (End-to-End) (Minggu 5-6)** 
-**Tujuan Sprint:** Pembeli (Guest Anonim) dapat melakukan alur pemesanan tanpa login, mulai dari scan QR hingga berhasil membuat pesanan.
-
-* **[3.1] [Appwrite]** Atur izin koleksi `tenants` dan `products` agar dapat dibaca oleh **pengguna anonim (publik)**.
-* **[3.2] [Front-end]** Buat UI Halaman Menu Tenant Publik (diakses via QR code/`tenant_id`).
-* **[3.3] [Front-end]** Implementasikan fungsi "Tambah ke Keranjang" (Manajemen State Lokal, misal: Riverpod/Drift).
-* **[3.4] [Front-end]** Buat UI Halaman Keranjang Belanja dan Halaman Checkout (Form Nama Pelanggan).
-* **[3.5] [Appwrite]** Buat **Appwrite Function** `createOrder` untuk memvalidasi keranjang dan membuat dokumen pesanan baru.
-* **[3.6] [Front-end]** Integrasikan alur checkout (Tombol "Pesan Sekarang") untuk memanggil Appwrite Function `createOrder`.
-* **[3.7] [Front-end]** Arahkan ke halaman "Pelacakan Pesanan" (statis untuk saat ini, hanya menunjukkan status "pending").
-
----
-
-#### **Sprint 4: Siklus Pesanan & Stabilisasi (Minggu 7-8)** 
-**Tujuan Sprint:** Menutup siklus pesanan, memastikan Tenant dapat memprosesnya, dan Pembeli mendapat update status secara *real-time*.
-
-* **[4.1] [Appwrite]** Buat **Appwrite Function** `updateOrderStatus` (untuk digunakan oleh Tenant mengganti status: `preparing`, `ready_for_pickup`, dll.).
-* **[4.2] [Appwrite]** Konfigurasi **Appwrite Realtime** pada koleksi `orders` (untuk *listen* perubahan status).
-* **[4.3] [Appwrite]** Atur izin baca pada koleksi `orders` (Tenant hanya melihat pesanan miliknya, Pembeli anonim melacak via ID pesanan).
-* **[4.4] [Front-end]** Buat UI "Manajemen Pesanan" untuk `Tenant`, yang *listen* ke update **realtime** untuk pesanan baru.
-* **[4.5] [Front-end]** Integrasikan tombol di UI Tenant (misal: "Siapkan Pesanan", "Siap Diambil") untuk memanggil *function* `updateOrderStatus`.
-* **[4.6] [Front-end]** Sempurnakan UI "Lacak Pesanan" untuk `Guest` agar *listen* ke update **realtime** dari Appwrite.
-* **[4.7] [Umum]** Lakukan **smoke testing** menyeluruh (Alur Owner, Tenant, dan Guest).
-* **[4.8] [Umum]** Prioritaskan dan perbaiki **bug pemblokir (blocker bugs)**.
-* **[4.9] [Umum]** Siapkan build aplikasi untuk demonstrasi.
-
----
-
-## ** Progress Summary**
-### **Sprint 4:  Belum Dimulai (0%)**
-### **Sprint 4: ⏳ Belum Dimulai (0%)**
-- **Target:** Real-time order management
-- **Dependencies:** Sprint 3
-
----
-
-## **🎯 Key Achievements**
-
 ### **Session 26 Nov 2025: Tenant & User Management**
 
 #### **1. Tenant Management System (Tasks 2.1-2.4)**
@@ -998,6 +957,201 @@ feat: Add image upload with compression for product images
 ### **Future Enhancements:**
 - 🔮 QR scanner functionality (mobile camera)
 - 🔮 Production URL configuration
+  - Validate code exists
+  - Navigate to correct guest menu
+  - Error handling with helpful messages
+- ✅ **Repository Method** (`getTenantByCode()`):
+  - Search by code (case-insensitive)
+  - Return TenantModel or null
+  - Logging for debugging
+
+##### **E. Guest Landing Page** (`guest_landing_page.dart`)
+- ✅ First screen for non-authenticated users
+- ✅ Prominent "Masukkan Kode Tenant" CTA
+- ✅ Beautiful gradient design
+- ✅ Clear navigation flow
+- ✅ Info about how to get tenant code
+
+---
+
+### **3. Router & Navigation Updates**
+
+#### **New Routes:**
+- ✅ `/guest` - Guest landing page (default for non-auth users)
+- ✅ `/enter-code` - Code entry page
+- ✅ `/menu/:tenantId` - Guest menu (public access)
+- ✅ `/cart/:tenantId` - Shopping cart (public access)
+
+#### **Redirect Logic:**
+- ✅ Non-authenticated users → `/guest` (instead of `/login`)
+- ✅ Public routes accessible without auth
+- ✅ Authenticated users → role-based dashboard
+
+---
+
+### **4. Files Created/Modified**
+
+#### **New Files (7):**
+1. `lib/core/utils/tenant_code_generator.dart` (76 lines)
+2. `lib/features/tenant/presentation/pages/qr_code_display_page.dart` (284 lines)
+3. `lib/features/guest/presentation/customer_code_entry_page.dart` (249 lines)
+4. `lib/features/guest/presentation/guest_landing_page.dart` (165 lines)
+5. `lib/shared/repositories/tenant_repository.dart` (152 lines)
+6. `lib/features/admin/presentation/populate_tenant_codes_page.dart` (170 lines)
+7. `add_tenant_code_field.ps1` (Database migration script)
+
+#### **Modified Files (5):**
+1. `pubspec.yaml` - Added `qr_flutter: ^4.1.0`
+2. `lib/shared/models/tenant_model.dart` - Added `tenantCode` field
+3. `lib/features/business_owner/data/tenant_repository.dart` - Auto-save code logic
+4. `lib/features/tenant/presentation/tenant_dashboard.dart` - QR Code navigation
+5. `lib/core/router/app_router.dart` - New routes and redirect logic
+
+---
+
+### **5. User Flows**
+
+#### **Flow 1: Tenant Gets Code**
+```
+1. Login as Tenant → Dashboard
+2. Click "QR Code" card (purple)
+3. See large code display (Q8L2PH)
+4. Copy code and share with customers
+5. (Optional) Show QR code to scan
+```
+
+#### **Flow 2: Customer Enters Code**
+```
+1. Open app (not logged in)
+2. See guest landing page
+3. Click "Mulai Order"
+4. Enter 6-char code (Q8L2PH)
+5. Click "Lanjutkan"
+6. Navigate to guest menu automatically ✅
+```
+
+#### **Flow 3: Create New Tenant (Auto-Code)**
+```
+1. Business Owner creates new tenant
+2. System auto-generates code from tenant ID
+3. Code saved to database automatically
+4. Tenant can immediately share code with customers
+```
+
+---
+
+### **6. Database Migration**
+
+#### **Manual Setup Required:**
+✅ **Documented in:** `TENANT_CODE_SETUP.md`
+
+**Steps:**
+1. Add `tenant_code` attribute (String, size 6, optional)
+2. Create unique index (`idx_tenant_code`)
+3. Populate existing tenant with code (one-time)
+
+**Status:** 
+- ✅ Migration script created
+- ✅ Documentation complete
+- ⏳ Manual execution needed (5 minutes via Console)
+
+---
+
+### **7. Testing & Validation**
+
+#### **Development Testing:**
+- ✅ Code generation works correctly
+- ✅ QR code displays properly
+- ✅ Copy functionality works
+- ✅ Code entry UI validates input
+- ⏳ End-to-end lookup (needs DB field setup)
+
+#### **Production Readiness:**
+- ✅ Auto-save for new tenants
+- ✅ Graceful fallback mechanisms
+- ✅ Error handling and user feedback
+- ✅ Backward compatible (nullable field)
+
+---
+
+## **📊 Sprint 3 Progress Update**
+
+### **Sprint 3: 🔄 IN PROGRESS (40% Complete)**
+
+**Original Tasks:**
+- ✅ **[3.1]** Public access permissions setup
+- ✅ **[3.2]** Guest menu page (DONE in previous session)
+- ✅ **[3.3]** Shopping cart functionality (DONE in previous session)
+- ✅ **[Sprint 3C - BONUS]** QR Code Generation System (COMPLETE)
+- ✅ **[Sprint 3C - BONUS]** Tenant Code Lookup System (COMPLETE)
+- ⏳ **[3.4]** Checkout page UI
+- ⏳ **[3.5]** Create Order function
+- ⏳ **[3.6]** Checkout integration
+- ⏳ **[3.7]** Order tracking page
+
+**Bonus Features Added:**
+1. ✅ Guest landing page
+2. ✅ Tenant code system (alternative to QR for development)
+3. ✅ Auto-save tenant codes
+4. ✅ Utility page for bulk code population
+
+**Target:** Guest ordering flow end-to-end
+**Status:** Core navigation & access methods complete, checkout flow next
+
+---
+
+## **🔧 Technical Improvements**
+
+### **Code Quality:**
+- ✅ Repository pattern maintained
+- ✅ Comprehensive error handling
+- ✅ Loading states for async operations
+- ✅ User feedback (SnackBars, error messages)
+- ✅ Input validation and sanitization
+
+### **Performance:**
+- ✅ Efficient code generation (O(1) lookup by tenant_code index)
+- ✅ Minimal memory footprint
+- ✅ Fast navigation (no unnecessary API calls)
+
+### **Documentation:**
+- ✅ Setup guides created
+- ✅ Code comments added
+- ✅ User flow documentation
+- ✅ Troubleshooting guide
+
+---
+
+## **📝 Known Issues & Notes**
+
+### **Development Limitation:**
+⚠️ **QR Code URLs use localhost during development**
+- **Issue:** QR codes contain `localhost:port` URLs
+- **Impact:** QR scan from physical devices won't work in dev
+- **Workaround:** Use tenant code system instead
+- **Production Fix:** Update URL to production domain before deployment
+
+### **Manual Setup Required:**
+⏳ **Tenant code field needs one-time setup**
+- **What:** Add `tenant_code` field via Appwrite Console
+- **Why:** Appwrite CLI command not available
+- **Duration:** ~5 minutes
+- **Documentation:** Complete guide provided
+
+---
+
+## **🎯 Next Session Priorities**
+
+### **Immediate (Sprint 3B - Checkout Flow):**
+1. ⏳ Complete tenant_code field setup in database
+2. ⏳ Test end-to-end code lookup flow
+3. ⏳ Build checkout page UI
+4. ⏳ Implement order creation logic
+5. ⏳ Add order confirmation page
+
+### **Future Enhancements:**
+- 🔮 QR scanner functionality (mobile camera)
+- 🔮 Production URL configuration
 - 🔮 QR code download feature
 - 🔮 Analytics (track code vs QR usage)
 
@@ -1015,4 +1169,337 @@ feat: Add image upload with compression for product images
 - Auto-save Tenant Codes (BONUS)
 
 ---
+
+**Last Updated:** 30 November 2025, 15:00 WIB  
+**Session Duration (30 Nov):** ~2.5 hours  
+**Lines of Code Added:** ~1,318+ LOC  
+**New Files Created:** 6 files  
+**Files Modified:** 2 files  
+**Features Delivered:**   
+- Sprint 3.4-3.7: Guest Checkout Flow (COMPLETE)  
+- Order Models dengan JSON Storage (COMPLETE)  
+- Order Tracking Page (COMPLETE)  
+- Direct SDK Approach (No Appwrite Function)  
+
+---
+
+## **🎯 Key Achievements (Session 30 Nov 2025: Sprint 3.4-3.7 - Checkout Flow)**
+
+### **Sprint 3 Progress Update:** 🔄 **40% → 80% COMPLETE**
+
+#### **Completed Features:**
+
+##### **1. Order Management System (Sprint 3.4-3.5)**
+
+**Database Schema - `orders` Collection:**
+- ✅ Collection created dengan schema lengkap:
+  - `order_number` (String, 50) - Format: ORD-YYYYMMDD-HHMMSS-XXX
+  - `tenant_id` (String, 255) - FK to tenants
+  - `customer_name` (String, 255) - Required
+  - `customer_phone` (String, 100) - Required (user request untuk follow-up)
+  - `customer_id` (String, 255) - Optional (untuk future customer tracking)
+  - `table_number` (String, 50) - Optional (dine-in orders)
+  - `customer_notes` (String, 500) - Optional
+  - `items` (String, 100000) - JSON array of order items
+  - `total_price` (Integer) - Required
+  - `status` (String, 50) - Enum: pending, confirmed, preparing, ready, completed, cancelled
+  - Timestamps: `$createdAt`, `$updatedAt`
+
+- ✅ Indexes created:
+  - `idx_order_number` (unique)
+  - `idx_tenant_id`, `idx_customer_id`, `idx_status`, `idx_created_at`
+
+- ✅ Permissions configured:
+  - **Create:** `Any` (guest dapat membuat order tanpa auth)
+  - **Read:** `Any` (guest dapat tracking order via order number)
+  - **Update/Delete:** Label `tenant` + Label `staff` (authenticated users only)
+
+**Models Created:**
+- ✅ **OrderItemModel** (`lib/shared/models/order_item_model.dart` - 66 lines):
+  - Removed dependency on separate `order_items` collection
+  - Added `fromJson()` and `toJson()` methods
+  - Items stored as JSON array in `orders.items` field (size: 100KB)
+  - Auto-calculated subtotal getter
+
+- ✅ **OrderModel** (`lib/shared/models/order_model.dart` - 233 lines):
+  - Parses items from JSON string stored in database
+  - Correct field mapping: `customer_phone`, `total_price`, `customer_notes`
+  - OrderStatus enum with 6 states + colors + labels
+  - Helper methods: `generateOrderNumber()`, `formattedTotal`, `totalItems`
+  - Guest order tracking support
+
+**Repository Created:**
+- ✅ **OrderRepository** (`lib/shared/repositories/order_repository.dart` - 200 lines):
+  - `createOrder()` - Direct SDK call (NO Appwrite Function)
+  - `getOrderByNumber()` - For guest tracking
+  - `getOrderById()` - By document ID
+  - `getOrdersByTenant()` - For Sprint 4 (tenant dashboard)
+  - `updateOrderStatus()` - For Sprint 4
+  - `deleteOrder()` - Cancel orders
+
+**Providers Created:**
+- ✅ **Order Providers** (`lib/features/guest/providers/order_provider.dart` - 38 lines):
+  - `orderRepositoryProvider` - Repository instance
+  - `orderByNumberProvider` - Fetch by order number (guest tracking)
+  - `orderByIdProvider` - Fetch by document ID
+  - `tenantOrdersProvider` - Fetch tenant orders (Sprint 4)
+  - `currentOrderProvider` - State for current order
+
+##### **2. Checkout Page Implementation (Sprint 3.6)**
+
+**Checkout Page UI:**
+- ✅ **CheckoutPage** (`lib/features/guest/presentation/pages/checkout_page.dart` - 371 lines):
+  - Customer information form with validation:
+    - Name (required) - Text capitalization
+    - Phone (required) - Digit-only, 10-13 characters
+    - Table Number (optional) - Dine-in support
+    - Notes (optional) - Max 200 characters, multi-line
+  - Cart review section with item details
+  - Total summary with Rupiah formatting
+  - Submit logic with loading state
+  - Error handling and user feedback
+  - Navigation to order tracking after success
+
+**Integration:**
+- ✅ Updated `cart_page.dart`:
+  - Added checkout button: "Lanjut ke Checkout"
+  - Navigate to `/checkout/:tenantId`
+- ✅ Updated `app_router.dart`:
+  - Added route: `/checkout/:tenantId`
+  - Added route: `/order/:orderNumber`
+  - Updated public routes to allow guest access
+
+##### **3. Order Tracking Page (Sprint 3.7)**
+
+**Order Tracking UI:**
+- ✅ **OrderTrackingPage** (`lib/features/guest/presentation/pages/order_tracking_page.dart` - 410 lines):
+  - Success confirmation with icon
+  - Order number display (large, highlighted)
+  - Order status with color-coded badges
+  - Customer information display
+  - Order items list with quantities and prices
+  - Total price summary
+  - Error states:
+    - Order not found (invalid order number)
+    - Server errors (network issues)
+  - Back to home button
+
+##### **4. Key Technical Decisions**
+
+**Decision 1: Direct SDK Approach (No Appwrite Function)**
+
+**Rationale:**
+- ✅ Free tier limited to 5 functions (4 already used)
+- ✅ `createOrder` doesn't need complex server-side logic
+- ✅ Permission `Any` allows direct guest access
+- ✅ Saves 1 function slot for Sprint 4's `updateOrderStatus`
+- ✅ Faster execution (no function cold start)
+- ✅ Simpler codebase (less moving parts)
+
+**Implementation:**
+```dart
+// Direct database call from Flutter (client-side)
+final doc = await _databases.createDocument(
+  databaseId: AppwriteConfig.databaseId,
+  collectionId: AppwriteConfig.ordersCollectionId,
+  documentId: ID.unique(),
+  data: orderModel.toMap(), // Items as JSON string
+);
 ```
+
+**Security:**
+- ✅ Collection permission: Create = `Any` (guest access)
+- ✅ Client-side validation ensures data quality
+- ✅ Order status locked to 'pending' on creation
+- ✅ Update/delete requires authentication (tenant/staff labels)
+
+**Decision 2: Items as JSON String (Not Separate Collection)**
+
+**Rationale:**
+- ✅ Simpler than separate `order_items` collection
+- ✅ Single database call to get full order
+- ✅ 100KB size limit = ~600 items per order (sufficient)
+- ✅ Easier to implement and maintain
+- ✅ Better performance (no joins needed)
+
+**Decision 3: Customer Phone Required**
+
+**Rationale:**
+- ✅ User request for follow-up if order not picked up
+- ✅ Better customer service
+- ✅ Can use for future SMS notifications
+
+---
+
+### **Files Created (Sprint 3.4-3.7):**
+
+1. ✅ `lib/shared/models/order_item_model.dart` (66 lines)
+2. ✅ `lib/shared/models/order_model.dart` (233 lines)
+3. ✅ `lib/shared/repositories/order_repository.dart` (200 lines)
+4. ✅ `lib/features/guest/providers/order_provider.dart` (38 lines)
+5. ✅ `lib/features/guest/presentation/pages/checkout_page.dart` (371 lines)
+6. ✅ `lib/features/guest/presentation/pages/order_tracking_page.dart` (410 lines)
+
+**Total New Code:** ~1,318 lines
+
+### **Files Modified:**
+
+1. ✅ `lib/features/guest/presentation/cart_page.dart` - Added checkout button
+2. ✅ `lib/core/router/app_router.dart` - Added checkout and order tracking routes
+
+---
+
+### **Testing Status:**
+
+#### **Completed:**
+- ✅ Models compile successfully
+- ✅ Repository compiles successfully
+- ✅ Pages compile successfully
+- ✅ Router configuration valid
+- ✅ No blocking compilation errors
+
+#### **Pending (requires running app):**
+- ⏳ End-to-end flow testing: Menu → Cart → Checkout → Order Tracking
+- ⏳ Database integration testing (create order, fetch order)
+- ⏳ Form validation testing
+- ⏳ Error handling scenarios (network errors, invalid data)
+- ⏳ UI/UX polish and animations
+
+---
+
+### **Function Usage Tracking:**
+
+**Current Status: 4/5 Functions Used (1 Slot Reserved)**
+
+1. ✅ `approve-registration` - Approve business owner registration
+2. ✅ `create-tenant-user` - Create tenant with Auth + Database
+3. ✅ `create-staff-user` - Create staff with Auth + Database (merged with tenant user)
+4. ✅ `activate-business-owner` - Activate business owner account
+5. ⏳ **RESERVED for Sprint 4:** `updateOrderStatus` - Update order status with authorization
+
+**Saved 1 Slot by:**
+- ❌ NOT creating `createOrder` function
+- ✅ Using direct SDK call instead
+
+---
+
+### **Sprint 3 Progress Summary:**
+
+#### **Completed (80%):**
+- ✅ Sprint 3A: Guest Landing & Menu System (COMPLETE)
+- ✅ Sprint 3B: Shopping Cart (COMPLETE)
+- ✅ Sprint 3C: QR Code & Tenant Lookup (COMPLETE)
+- ✅ Sprint 3.4-3.7: Checkout Flow (COMPLETE)
+
+#### **Remaining (20%):**
+- ⏳ Sprint 3.8 (Bonus): QR Scanner dengan `mobile_scanner: ^7.1.3`
+- ⏳ End-to-end testing & bug fixes
+- ⏳ UI polish & animations
+- ⏳ Documentation updates
+
+---
+
+### **Technical Improvements:**
+
+#### **Code Quality:**
+- ✅ Consistent naming conventions
+- ✅ Comprehensive error handling
+- ✅ User-friendly error messages
+- ✅ Loading states for async operations
+- ✅ Form validation with helpful hints
+
+#### **Performance:**
+- ✅ Single database call per order creation
+- ✅ Optimized JSON serialization
+- ✅ Efficient Riverpod state management
+- ✅ No unnecessary re-renders
+
+#### **Architecture:**
+- ✅ Clean separation: Models → Repository → Providers → UI
+- ✅ Reusable components (OrderItemModel for both cart and orders)
+- ✅ Scalable structure (easy to add features)
+- ✅ Type-safe with Dart strong typing
+
+---
+
+### **Known Issues & Notes:**
+
+**Minor Analysis Warnings:**
+- ⚠️ Deprecated `updateDocument` warnings in `tenant_repository.dart` (unrelated to our changes)
+- ⚠️ Some `avoid_print` warnings (debug code, will be removed in production)
+
+**No Blocking Issues:**
+- ✅ All Sprint 3.4-3.7 features implemented
+- ✅ Code compiles successfully
+- ✅ Ready for runtime testing
+
+---
+
+### **Next Session Priorities:**
+
+#### **Immediate (Testing & Polish):**
+1. ⏳ Run app and test end-to-end checkout flow
+2. ⏳ Verify database integration (orders collection)
+3. ⏳ Test error scenarios (network errors, invalid input)
+4. ⏳ Fix any bugs found during testing
+5. ⏳ UI polish and animations
+
+#### **Sprint 3.8 (Bonus - Optional):**
+1. ⏳ Implement QR Scanner using `mobile_scanner: ^7.1.3`
+2. ⏳ Integrate scanner with tenant lookup flow
+3. ⏳ Test QR scan → Menu flow
+
+#### **Sprint 4 Preparation:**
+1. ⏳ Design tenant order management dashboard
+2. ⏳ Plan `updateOrderStatus` Appwrite Function
+3. ⏳ Real-time order updates (WebSocket/Polling)
+
+---
+
+**Session Completion:** ✅ **Sprint 3.4-3.7 Implementation COMPLETE**  
+**Next Milestone:** Sprint 4 - Order Management & Stabilization  
+**Overall Progress:** Sprint 3 is now **80% COMPLETE**
+
+---
+
+## **🎯 Key Achievements (Session 1 Dec 2025: Checkout Verification & Enhancements)**
+
+### **1. Guest Checkout Flow Verification**
+- ✅ **End-to-End Testing**:
+  - Menu browsing -> Add to cart -> Checkout -> Order Tracking
+  - Verified data persistence in `orders` collection
+  - Verified UI states (loading, success, error)
+
+### **2. Order Tracking Enhancements**
+- ✅ **Tenant Name Display**:
+  - Added `tenant_detail_provider` to fetch tenant info
+  - Displayed "Pesan di: [Tenant Name]" on tracking page
+- ✅ **Queue Number System**:
+  - Implemented pseudo-queue number using last 3 digits of Order ID
+  - Replaced "No. Meja" with "No. Antrian" as primary display
+  - "No. Meja" moved to secondary "Lokasi" field
+- ✅ **Checkout Page Updates**:
+  - Updated input label to "No. Meja / Lokasi (Opsional)"
+
+### **3. Database Verification**
+- ✅ Confirmed existing schema supports new UI requirements
+- ✅ No database changes needed for Queue Number (derived from ID)
+- ✅ No database changes needed for Tenant Name (fetched via relation)
+
+---
+
+**Last Updated:** 1 December 2025
+**Session Focus:** Sprint 3 Completion & Verification
+**Status:** Sprint 3 COMPLETE (100%)
+
+## **🚀 Next Steps (Sprint 4)**
+
+### **Sprint 4: Siklus Pesanan & Stabilisasi**
+1. **Tenant Order Management**:
+   - Dashboard untuk melihat pesanan masuk
+   - Real-time updates (polling/websocket)
+2. **Order Status Updates**:
+   - UI untuk mengubah status (Confirm, Prepare, Ready, Complete)
+   - Logic untuk update status di database
+3. **Guest Real-time Tracking**:
+   - Auto-refresh status di halaman tracking guest

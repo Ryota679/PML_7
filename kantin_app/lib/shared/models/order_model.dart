@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:appwrite/models.dart';
 import 'package:flutter/material.dart';
 import 'package:kantin_app/shared/models/order_item_model.dart';
@@ -63,14 +64,14 @@ class OrderModel {
   final String tenantId;
   final String? customerId; // Link to customer (null for guest orders)
   final String customerName;
-  final String customerContact;
+  final String customerContact; // Maps to customer_phone in DB
   final String? tableNumber;
-  final int totalAmount;
+  final int totalAmount; // Maps to total_price in DB
   final OrderStatus status;
-  final String? notes;
+  final String? notes; // Maps to customer_notes in DB
   final DateTime createdAt;
   final DateTime updatedAt;
-  final List<OrderItemModel>? items; // Populated separately
+  final List<OrderItemModel>? items; // Items stored as JSON in DB
 
   OrderModel({
     this.id,
@@ -90,19 +91,35 @@ class OrderModel {
 
   /// Create OrderModel from Appwrite Document
   factory OrderModel.fromDocument(Document doc) {
+    // Parse items JSON string
+    final itemsJson = doc.data['items'] as String?;
+    List<OrderItemModel> itemsList = [];
+    
+    if (itemsJson != null && itemsJson.isNotEmpty) {
+      try {
+        final decoded = json.decode(itemsJson) as List<dynamic>;
+        itemsList = decoded
+            .map((item) => OrderItemModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+      } catch (e) {
+        print('Error parsing order items: $e');
+      }
+    }
+
     return OrderModel(
       id: doc.$id,
       orderNumber: doc.data['order_number'] as String,
       tenantId: doc.data['tenant_id'] as String,
       customerId: doc.data['customer_id'] as String?,
       customerName: doc.data['customer_name'] as String,
-      customerContact: doc.data['customer_contact'] as String,
+      customerContact: doc.data['customer_phone'] as String,
       tableNumber: doc.data['table_number'] as String?,
-      totalAmount: doc.data['total_amount'] as int? ?? 0,
+      totalAmount: doc.data['total_price'] as int? ?? 0,
       status: OrderStatus.fromString(doc.data['status'] as String? ?? 'pending'),
-      notes: doc.data['notes'] as String?,
+      notes: doc.data['customer_notes'] as String?,
       createdAt: DateTime.parse(doc.$createdAt),
       updatedAt: DateTime.parse(doc.$updatedAt),
+      items: itemsList,
     );
   }
 
@@ -111,13 +128,15 @@ class OrderModel {
     return {
       'order_number': orderNumber,
       'tenant_id': tenantId,
-      'customer_id': customerId,
+      if (customerId != null) 'customer_id': customerId,
       'customer_name': customerName,
-      'customer_contact': customerContact,
-      'table_number': tableNumber,
-      'total_amount': totalAmount,
+      'customer_phone': customerContact, // Map to customer_phone
+      if (tableNumber != null) 'table_number': tableNumber,
+      'total_price': totalAmount, // Map to total_price
       'status': status.name,
-      'notes': notes,
+      if (notes != null) 'customer_notes': notes, // Map to customer_notes
+      if (items != null)
+        'items': json.encode(items!.map((item) => item.toJson()).toList()),
     };
   }
 
@@ -129,6 +148,20 @@ class OrderModel {
     final timeStr = '${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}';
     final random = now.millisecond.toString().padLeft(3, '0');
     return 'ORD-$dateStr-$timeStr-$random';
+  }
+  
+  /// Get total number of items
+  int get totalItems {
+    if (items == null) return 0;
+    return items!.fold<int>(0, (sum, item) => sum + item.quantity);
+  }
+  
+  /// Get formatted total amount
+  String get formattedTotal {
+    return 'Rp ${totalAmount.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]}.',
+        )}';
   }
 
   /// Check if order is pending
@@ -184,6 +217,6 @@ class OrderModel {
 
   @override
   String toString() {
-    return 'OrderModel(orderNumber: $orderNumber, status: ${status.label}, total: $totalAmount)';
+    return 'OrderModel(orderNumber: $orderNumber, status: ${status.label}, total: $formattedTotal)';
   }
 }

@@ -1,30 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kantin_app/core/providers/appwrite_provider.dart';
-import 'package:kantin_app/features/guest/data/order_repository.dart';
+import 'package:kantin_app/shared/providers/appwrite_provider.dart';
+import 'package:kantin_app/shared/repositories/order_repository.dart';
 import 'package:kantin_app/shared/models/order_model.dart';
 
 /// Order Repository Provider
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
-  final databases = ref.watch(appwriteDatabasesProvider);
-  return OrderRepository(databases: databases);
+  final databases = ref.watch(appwriteDatabaseProvider);
+  return OrderRepository(databases);
 });
 
-/// Provider to fetch orders by tenant
-final tenantOrdersProvider = FutureProvider.family<List<OrderModel>, String>(
-  (ref, tenantId) async {
+/// Provider to fetch order by order number (for guest tracking)
+final orderByNumberProvider = FutureProvider.family<OrderModel?, String>(
+  (ref, orderNumber) async {
     final repository = ref.watch(orderRepositoryProvider);
-    return repository.getOrdersByTenant(tenantId);
-  },
-);
-
-/// Provider to fetch orders by tenant with status filter
-final tenantOrdersByStatusProvider = FutureProvider.family<List<OrderModel>, ({String tenantId, OrderStatus status})>(
-  (ref, params) async {
-    final repository = ref.watch(orderRepositoryProvider);
-    return repository.getOrdersByTenant(
-      params.tenantId,
-      status: params.status,
-    );
+    return repository.getOrderByNumber(orderNumber);
   },
 );
 
@@ -33,6 +22,14 @@ final orderByIdProvider = FutureProvider.family<OrderModel, String>(
   (ref, orderId) async {
     final repository = ref.watch(orderRepositoryProvider);
     return repository.getOrderById(orderId);
+  },
+);
+
+/// Provider to fetch orders by tenant (Sprint 4)
+final tenantOrdersProvider = FutureProvider.family<List<OrderModel>, String>(
+  (ref, tenantId) async {
+    final repository = ref.watch(orderRepositoryProvider);
+    return repository.getOrdersByTenant(tenantId: tenantId);
   },
 );
 

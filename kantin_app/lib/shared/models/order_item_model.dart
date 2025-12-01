@@ -1,79 +1,65 @@
-import 'package:appwrite/models.dart';
-
 /// Model representing an order item
+/// Stored as JSON array in orders.items field
 class OrderItemModel {
-  final String? id;
-  final String orderId;
   final String productId;
   final String productName;
   final int productPrice;
   final int quantity;
-  final int subtotal;
   final String? notes;
 
   OrderItemModel({
-    this.id,
-    required this.orderId,
     required this.productId,
     required this.productName,
     required this.productPrice,
     required this.quantity,
-    required this.subtotal,
     this.notes,
   });
 
-  /// Create OrderItemModel from Appwrite Document
-  factory OrderItemModel.fromDocument(Document doc) {
+  /// Calculate subtotal for this item
+  int get subtotal => productPrice * quantity;
+
+  /// Create OrderItemModel from JSON (for deserializing from database)
+  factory OrderItemModel.fromJson(Map<String, dynamic> json) {
     return OrderItemModel(
-      id: doc.$id,
-      orderId: doc.data['order_id'] as String,
-      productId: doc.data['product_id'] as String,
-      productName: doc.data['product_name'] as String,
-      productPrice: doc.data['product_price'] as int? ?? 0,
-      quantity: doc.data['quantity'] as int? ?? 1,
-      subtotal: doc.data['subtotal'] as int? ?? 0,
-      notes: doc.data['notes'] as String?,
+      productId: json['product_id'] as String,
+      productName: json['product_name'] as String,
+      productPrice: json['price'] as int,
+      quantity: json['quantity'] as int,
+      notes: json['notes'] as String?,
     );
   }
 
-  /// Convert to Map for Appwrite createDocument
-  Map<String, dynamic> toMap() {
+  /// Convert to JSON (for serializing to database)
+  Map<String, dynamic> toJson() {
     return {
-      'order_id': orderId,
       'product_id': productId,
       'product_name': productName,
-      'product_price': productPrice,
+      'price': productPrice,
       'quantity': quantity,
       'subtotal': subtotal,
-      'notes': notes,
+      if (notes != null) 'notes': notes,
     };
   }
 
   /// Create a copy with updated fields
   OrderItemModel copyWith({
-    String? id,
-    String? orderId,
     String? productId,
     String? productName,
     int? productPrice,
     int? quantity,
-    int? subtotal,
     String? notes,
   }) {
     return OrderItemModel(
-      id: id ?? this.id,
-      orderId: orderId ?? this.orderId,
       productId: productId ?? this.productId,
       productName: productName ?? this.productName,
       productPrice: productPrice ?? this.productPrice,
       quantity: quantity ?? this.quantity,
-      subtotal: subtotal ?? this.subtotal,
       notes: notes ?? this.notes,
     );
   }
 
   @override
   String toString() {
-    return 'OrderItemModel(product: $productName, qty: $quantity, subtotal: $subtotal)';
+    return 'OrderItemModel(product: $productName, qty: $quantity, price: $productPrice, subtotal: $subtotal)';
   }
 }

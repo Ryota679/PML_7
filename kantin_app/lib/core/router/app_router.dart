@@ -12,6 +12,8 @@ import 'package:kantin_app/features/tenant/presentation/tenant_dashboard.dart';
 import 'package:kantin_app/features/guest/presentation/guest_landing_page.dart';
 import 'package:kantin_app/features/guest/presentation/guest_menu_page.dart';
 import 'package:kantin_app/features/guest/presentation/cart_page.dart';
+import 'package:kantin_app/features/guest/presentation/pages/checkout_page.dart';
+import 'package:kantin_app/features/guest/presentation/pages/order_tracking_page.dart';
 import 'package:kantin_app/features/guest/presentation/customer_code_entry_page.dart';
 import 'package:kantin_app/features/customer/presentation/customer_registration_page.dart';
 import 'package:kantin_app/features/customer/presentation/customer_login_page.dart';
@@ -40,6 +42,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         final isPublicRoute = state.matchedLocation == '/guest' ||
                               state.matchedLocation.startsWith('/menu/') || 
                               state.matchedLocation.startsWith('/cart/') ||
+                              state.matchedLocation.startsWith('/checkout/') ||
+                              state.matchedLocation.startsWith('/order/') ||
                               state.matchedLocation == '/enter-code' ||
                               state.matchedLocation == '/customer-login' ||
                               state.matchedLocation == '/customer-register' ||
@@ -143,6 +147,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final tenantId = state.pathParameters['tenantId']!;
           return CartPage(tenantId: tenantId);
+        },
+      ),
+      GoRoute(
+        path: '/checkout/:tenantId',
+        builder: (context, state) {
+          final tenantId = state.pathParameters['tenantId']!;
+          return CheckoutPage(tenantId: tenantId);
+        },
+      ),
+      GoRoute(
+        path: '/order/:orderNumber',
+        builder: (context, state) {
+          final orderNumber = state.pathParameters['orderNumber']!;
+          return OrderTrackingPage(orderNumber: orderNumber);
         },
       ),
       // Customer routes (public access for login/register)
