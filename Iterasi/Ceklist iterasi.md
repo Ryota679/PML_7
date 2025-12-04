@@ -2608,3 +2608,39 @@ final doc = await _databases.createDocument(
 **Last Updated:** 4 December 2025, 22:45 WIB
 **Status:** Sprint 4 Phase 2 (Delete User) COMPLETE ✅
 ```
+
+---
+
+## **🧠 Architectural Decisions (Session 4 Dec 2025: Future Planning)**
+
+### **1. Appwrite Functions Strategy (Limit Management)** 📉
+**Constraint:** Appwrite Free Tier limits to **5 Functions**.
+**Current Usage (3/5):** `create-user`, `approve-registration`, `activateBusinessOwner`.
+**Planned (2/5):** `delete-user`, `cleanup-expired-contracts`.
+**Problem:** Need slot for Payment Gateway.
+
+**Decision: Consolidated "Payment Gateway" Function**
+- Instead of separate functions, we will create **ONE** "Super Function" (`payment-gateway`).
+- **Mechanism:** Use `type` parameter in payload to distinguish actions.
+  ```json
+  { "type": "PAY_ORDER", "orderId": "..." }
+  { "type": "EXTEND_CONTRACT", "userId": "..." }
+  ```
+- **Benefit:** Saves function slots, centralizes Midtrans configuration.
+- **Scope:** Handles Payment Verification AND Database Updates (Order Status / Contract Date).
+
+### **2. Push Notification Strategy** 🔔
+**Decision:** Use **Appwrite Messaging** + **Firebase FCM**.
+- **No New Function Needed:** We do NOT need a dedicated function for notifications.
+- **Implementation:**
+  - **Client (Flutter):** Generate FCM Token & register to Appwrite.
+  - **Server (Appwrite):** Configure FCM Server Key in Console.
+  - **Trigger:** Call Appwrite Messaging API from existing functions (e.g., inside `payment-gateway` after success).
+
+### **Updated Roadmap**
+1. **Sprint 4 Phase 3 (Auto-Cleanup):** Implement `cleanup-expired-contracts`.
+2. **Sprint 4 Phase 4 (Payment):** Implement `payment-gateway` (Consolidated).
+3. **Sprint 4 Phase 5 (Notifications):** Setup FCM & Integrate into Payment flow.
+
+---
+```
