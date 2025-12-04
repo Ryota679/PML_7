@@ -210,6 +210,32 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return false;
     }
   }
+  /// Delete Account
+  Future<void> deleteAccount({bool force = false}) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final userId = state.user?.id;
+      if (userId == null) {
+        throw Exception('User not found');
+      }
+
+      await authRepository.deleteAccount(userId, force: force);
+      
+      // Logout after successful deletion
+      await logout();
+      
+    } catch (e) {
+      AppLogger.error('Delete account failed', e);
+      
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      
+      rethrow; // Rethrow to handle specific errors in UI
+    }
+  }
 }
 
 /// Auth State Provider

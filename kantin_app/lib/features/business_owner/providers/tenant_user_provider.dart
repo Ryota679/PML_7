@@ -8,7 +8,8 @@ import '../data/tenant_user_repository.dart';
 /// Provider for TenantUserRepository
 final tenantUserRepositoryProvider = Provider<TenantUserRepository>((ref) {
   final databases = ref.watch(appwriteDatabasesProvider);
-  return TenantUserRepository(databases);
+  final functions = ref.watch(appwriteFunctionsProvider);
+  return TenantUserRepository(databases, functions);
 });
 
 /// State for tenant user management
@@ -148,6 +149,33 @@ class TenantUserNotifier extends StateNotifier<TenantUserState> {
       state = state.copyWith(
         isLoading: false,
         error: 'Gagal mengubah status user: $e',
+      );
+      return false;
+    }
+  }
+
+  /// Delete user permanently with cascading delete
+  Future<bool> deleteUserPermanent(String userDocId, String deletedBy) async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      await _repository.deleteUserPermanent(userDocId, deletedBy);
+
+      // Remove from list
+      final updatedList = state.users.where((u) => u.id != userDocId).toList();
+
+      state = state.copyWith(
+        users: updatedList,
+        isLoading: false,
+      );
+
+      AppLogger.info('User deleted permanently');
+      return true;
+    } catch (e, stackTrace) {
+      AppLogger.error('Error deleting user permanently', e, stackTrace);
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Gagal delete user: $e',
       );
       return false;
     }

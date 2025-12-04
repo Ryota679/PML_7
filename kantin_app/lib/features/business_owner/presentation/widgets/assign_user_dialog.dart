@@ -458,13 +458,14 @@ class _AssignUserDialogState extends ConsumerState<AssignUserDialog> {
         'phone': _phoneController.text.trim().isEmpty 
             ? null 
             : _phoneController.text.trim(),
+        'user_type': 'tenant', // Specify user type for the combined function
       };
 
-      AppLogger.info('Calling create-tenant-user function with payload: $payload');
+      AppLogger.info('Calling create-user function with payload: $payload');
 
       // Call Appwrite Function to create user
       final execution = await functions.createExecution(
-        functionId: AppwriteConfig.createTenantUserFunctionId,
+        functionId: AppwriteConfig.createUserFunctionId,
         body: jsonEncode(payload),
       );
 

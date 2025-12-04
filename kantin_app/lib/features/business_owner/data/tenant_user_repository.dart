@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import '../../../core/config/appwrite_config.dart';
@@ -7,8 +9,9 @@ import '../../../shared/models/user_model.dart';
 /// Repository for tenant user management
 class TenantUserRepository {
   final Databases _databases;
+  final Functions _functions;
 
-  TenantUserRepository(this._databases);
+  TenantUserRepository(this._databases, this._functions);
 
   /// Get all tenant users for tenants owned by a specific owner
   Future<List<UserModel>> getTenantUsersByOwner(String ownerId) async {
@@ -50,7 +53,8 @@ class TenantUserRepository {
           .map((doc) => UserModel.fromDocument(doc))
           .where((user) => 
             user.tenantId != null && 
-            tenantIds.contains(user.tenantId)
+            tenantIds.contains(user.tenantId) &&
+            user.subRole != 'staff' // Exclude staff users
           )
           .toList();
 
@@ -184,6 +188,38 @@ class TenantUserRepository {
       return UserModel.fromDocument(doc);
     } catch (e, stackTrace) {
       AppLogger.error('Error toggling user status', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Delete user permanently via Appwrite function
+  /// This will cascade delete all related data (staff, products, orders)
+  Future<void> deleteUserPermanent(String userDocId, String deletedBy) async {
+    try {
+      AppLogger.info('Deleting user $userDocId permanently by $deletedBy');
+
+      // Call delete-user Appwrite function
+      final execution = await _functions.createExecution(
+        functionId: AppwriteConfig.deleteUserFunctionId,
+        body: jsonEncode({
+          'userId': userDocId,
+          'deletedBy': deletedBy,
+          'force': false,
+        }),
+      );
+
+      AppLogger.info('Delete user function executed: ${execution.$id}');
+
+      // Parse response
+      final responseBody = jsonDecode(execution.responseBody);
+      
+      if (responseBody['success'] != true) {
+        throw Exception(responseBody['error'] ?? 'Failed to delete user');
+      }
+
+      AppLogger.info('User deleted permanently: ${responseBody['message']}');
+    } catch (e, stackTrace) {
+      AppLogger.error('Error deleting user permanently', e, stackTrace);
       rethrow;
     }
   }

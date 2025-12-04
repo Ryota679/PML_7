@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +11,12 @@ import 'package:kantin_app/shared/providers/appwrite_provider.dart';
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final account = ref.watch(appwriteAccountProvider);
   final database = ref.watch(appwriteDatabaseProvider);
-  return AuthRepository(account: account, database: database);
+  final functions = ref.watch(appwriteFunctionsProvider);
+  return AuthRepository(
+    account: account, 
+    database: database,
+    functions: functions,
+  );
 });
 
 /// Auth Repository
@@ -19,10 +25,12 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 class AuthRepository {
   final Account account;
   final Databases database;
+  final Functions functions;
 
   AuthRepository({
     required this.account,
     required this.database,
+    required this.functions,
   });
 
   /// Login dengan email dan password
@@ -175,6 +183,41 @@ class AuthRepository {
       AppLogger.info('Password reset email sent');
     } catch (e, stackTrace) {
       AppLogger.error('Password reset request failed', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Delete Account (Permanent)
+  /// 
+  /// Deletes the user account and all related data via Appwrite Function
+  Future<void> deleteAccount(String userId, {bool force = false}) async {
+    try {
+      AppLogger.info('Deleting account: $userId (force: $force)');
+      
+      final execution = await functions.createExecution(
+        functionId: AppwriteConfig.deleteUserFunctionId,
+        body: jsonEncode({
+          'userId': userId,
+          'force': force,
+          'deletedBy': userId, // Self delete
+        }),
+      );
+
+      AppLogger.info('Delete function executed: ${execution.$id}');
+
+      final response = jsonDecode(execution.responseBody);
+      
+      if (response['success'] != true) {
+        // Check for specific error code
+        if (response['code'] == 'HAS_ACTIVE_TENANTS') {
+          throw Exception('HAS_ACTIVE_TENANTS');
+        }
+        throw Exception(response['error'] ?? 'Failed to delete account');
+      }
+      
+      AppLogger.info('Account deleted successfully');
+    } catch (e, stackTrace) {
+      AppLogger.error('Delete account failed', e, stackTrace);
       rethrow;
     }
   }

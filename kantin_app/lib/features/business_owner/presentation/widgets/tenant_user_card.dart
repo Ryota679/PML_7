@@ -7,6 +7,7 @@ class TenantUserCard extends StatelessWidget {
   final UserModel user;
   final TenantModel? tenant;
   final VoidCallback onRemove;
+  final VoidCallback onDelete; // NEW: permanent delete
   final Function(bool) onToggleStatus;
 
   const TenantUserCard({
@@ -14,6 +15,7 @@ class TenantUserCard extends StatelessWidget {
     required this.user,
     this.tenant,
     required this.onRemove,
+    required this.onDelete, // NEW
     required this.onToggleStatus,
   });
 
@@ -73,6 +75,9 @@ class TenantUserCard extends StatelessWidget {
                       case 'remove':
                         onRemove();
                         break;
+                      case 'delete': // NEW: permanent delete
+                        onDelete();
+                        break;
                     }
                   },
                   itemBuilder: (context) => [
@@ -96,9 +101,20 @@ class TenantUserCard extends StatelessWidget {
                       value: 'remove',
                       child: Row(
                         children: [
-                          Icon(Icons.person_remove, size: 20, color: Colors.red),
+                          Icon(Icons.person_remove, size: 20, color: Colors.orange),
                           SizedBox(width: 12),
-                          Text('Remove', style: TextStyle(color: Colors.red)),
+                          Text('Unassign', style: TextStyle(color: Colors.orange)),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_forever, size: 20, color: Colors.red),
+                          SizedBox(width: 12),
+                          Text('Delete Permanent', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),

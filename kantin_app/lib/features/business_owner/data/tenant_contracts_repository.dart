@@ -1,6 +1,7 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:kantin_app/core/config/appwrite_config.dart';
+import 'package:kantin_app/core/utils/logger.dart';
 import 'package:kantin_app/shared/models/user_model.dart';
 import 'package:kantin_app/shared/models/tenant_model.dart';
 import 'tenant_user_with_info.dart';
@@ -66,44 +67,60 @@ class TenantContractsRepository {
 
   /// Add contract token (months) to a tenant user
   Future<void> addContractToken(String userDocId, int months) async {
-    // Get current user document
-    final userDoc = await databases.getDocument(
-      databaseId: AppwriteConfig.databaseId,
-      collectionId: AppwriteConfig.usersCollectionId,
-      documentId: userDocId,
-    );
+    try {
+      AppLogger.info('🔵 addContractToken - userDocId: $userDocId, months: $months');
+      
+      // Get current user document
+      final userDoc = await databases.getDocument(
+        databaseId: AppwriteConfig.databaseId,
+        collectionId: AppwriteConfig.usersCollectionId,
+        documentId: userDocId,
+      );
 
-    // Get current contract end date or use now if null
-    DateTime baseDate;
-    final contractEndDateStr = userDoc.data['contract_end_date'] as String?;
-    
-    if (contractEndDateStr != null) {
-      final currentEndDate = DateTime.parse(contractEndDateStr);
-      // If expired, extend from now. Otherwise extend from current end date
-      final now = DateTime.now();
-      baseDate = currentEndDate.isAfter(now) ? currentEndDate : now;
-    } else {
-      baseDate = DateTime.now();
+      AppLogger.info('📄 User document fetched: ${userDoc.$id}');
+
+      // Get current contract end date or use now if null
+      DateTime baseDate;
+      final contractEndDateStr = userDoc.data['contract_end_date'] as String?;
+      
+      if (contractEndDateStr != null) {
+        AppLogger.info('📅 Current contract_end_date: $contractEndDateStr');
+        final currentEndDate = DateTime.parse(contractEndDateStr);
+        // If expired, extend from now. Otherwise extend from current end date
+        final now = DateTime.now();
+        baseDate = currentEndDate.isAfter(now) ? currentEndDate : now;
+        AppLogger.info('📅 Base date for extension: ${baseDate.toIso8601String()}');
+      } else {
+        AppLogger.info('📅 No existing contract_end_date, using now');
+        baseDate = DateTime.now();
+      }
+
+      // Calculate new end date
+      final newEndDate = DateTime(
+        baseDate.year,
+        baseDate.month + months,
+        baseDate.day,
+        baseDate.hour,
+        baseDate.minute,
+        baseDate.second,
+      );
+
+      AppLogger.info('📅 New contract_end_date: ${newEndDate.toIso8601String()}');
+
+      // Update user document
+      await databases.updateDocument(
+        databaseId: AppwriteConfig.databaseId,
+        collectionId: AppwriteConfig.usersCollectionId,
+        documentId: userDocId,
+        data: {
+          'contract_end_date': newEndDate.toIso8601String(),
+        },
+      );
+
+      AppLogger.info('✅ Contract token added successfully');
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ Error adding contract token', e, stackTrace);
+      rethrow;
     }
-
-    // Calculate new end date
-    final newEndDate = DateTime(
-      baseDate.year,
-      baseDate.month + months,
-      baseDate.day,
-      baseDate.hour,
-      baseDate.minute,
-      baseDate.second,
-    );
-
-    // Update user document
-    await databases.updateDocument(
-      databaseId: AppwriteConfig.databaseId,
-      collectionId: AppwriteConfig.usersCollectionId,
-      documentId: userDocId,
-      data: {
-        'contract_end_date': newEndDate.toIso8601String(),
-      },
-    );
   }
 }

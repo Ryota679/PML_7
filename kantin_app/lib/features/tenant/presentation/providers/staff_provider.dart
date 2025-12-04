@@ -8,16 +8,26 @@ import 'package:kantin_app/shared/models/user_model.dart';
 /// Provider untuk manage staff members
 final staffProvider = StateNotifierProvider<StaffNotifier, AsyncValue<List<UserModel>>>((ref) {
   final databases = ref.watch(appwriteDatabasesProvider);
+  final functions = ref.watch(appwriteFunctionsProvider);
   final currentUser = ref.watch(authProvider).user;
   
-  return StaffNotifier(databases: databases, currentUser: currentUser);
+  return StaffNotifier(
+    databases: databases,
+    functions: functions,
+    currentUser: currentUser,
+  );
 });
 
 class StaffNotifier extends StateNotifier<AsyncValue<List<UserModel>>> {
   final Databases databases;
+  final Functions functions;
   final UserModel? currentUser;
 
-  StaffNotifier({required this.databases, required this.currentUser}) : super(const AsyncValue.loading()) {
+  StaffNotifier({
+    required this.databases,
+    required this.functions,
+    required this.currentUser,
+  }) : super(const AsyncValue.loading()) {
     loadStaff();
   }
 
@@ -52,4 +62,29 @@ class StaffNotifier extends StateNotifier<AsyncValue<List<UserModel>>> {
 
   /// Refresh staff list (call after adding new staff)
   Future<void> refresh() => loadStaff();
+
+  /// Delete staff permanently via Appwrite function
+  Future<bool> deleteStaffPermanent(String userDocId, String deletedBy) async {
+    try {
+      // Call delete-user function
+      final execution = await functions.createExecution(
+        functionId: AppwriteConfig.deleteUserFunctionId,
+        body: '{"userId": "$userDocId", "deletedBy": "$deletedBy", "force": false}',
+      );
+
+      // Parse response
+      final responseBody = execution.responseBody;
+      if (responseBody.contains('"success":true')) {
+        // Remove from local state
+        state.whenData((staffList) {
+          final updatedList = staffList.where((s) => s.id != userDocId).toList();
+          state = AsyncValue.data(updatedList);
+        });
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
 }

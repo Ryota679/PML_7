@@ -1187,15 +1187,136 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     }
   }
 
-  Future<void> _handleDeleteUser(UserModel user) async {
+  Future<void> _handleDeleteUser(UserModel user, {bool force = false}) async {
+    // 1. Initial Confirmation (only if not force)
+    if (!force) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.warning, color: Colors.orange),
+              SizedBox(width: 8),
+              Text('Konfirmasi Hapus'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Apakah Anda yakin ingin menghapus user:\n\n'
+                  '${user.fullName}\n${user.email}',
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    border: Border.all(color: Colors.red),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '⚠️ PERINGATAN:',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Tindakan ini akan menghapus akun secara PERMANEN beserta data profilnya.',
+                        style: TextStyle(fontSize: 13, color: Colors.red),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Hapus Permanen'),
+            ),
+          ],
+        ),
+      );
+      
+      if (confirm != true) return;
+    }
+
+    // 2. Execute Delete
+    try {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final success = await ref.read(userManagementProvider.notifier).deleteUser(
+            authUserId: user.userId,
+            documentId: user.id!,
+            force: force,
+          );
+      
+      // Pop loading
+      if (mounted) Navigator.pop(context);
+      
+      if (!mounted) return;
+      
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('User berhasil dihapus secara permanen'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal menghapus user'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Pop loading
+      if (mounted) Navigator.pop(context);
+
+      if (e.toString().contains('HAS_ACTIVE_TENANTS')) {
+        if (mounted) {
+          _showForceDeleteDialog(user);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _showForceDeleteDialog(UserModel user) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Row(
           children: [
-            Icon(Icons.warning, color: Colors.orange),
+            Icon(Icons.warning_amber, color: Colors.red, size: 28),
             SizedBox(width: 8),
-            Text('Konfirmasi Hapus'),
+            Text('Active Tenants Detected'),
           ],
         ),
         content: SingleChildScrollView(
@@ -1204,32 +1325,22 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Apakah Anda yakin ingin menghapus user:\n\n'
-                '${user.fullName}\n${user.email}',
+                'User ${user.fullName} memiliki tenant/kantin yang masih aktif.',
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.orange[50],
-                  border: Border.all(color: Colors.orange),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '⚠️ Important Notes:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      '• Ini hanya menghapus dari database\n'
-                      '• User masih ada di Appwrite Auth\n'
-                      '• Harus dihapus manual dari Console',
-                      style: TextStyle(fontSize: 13),
-                    ),
-                  ],
+              const Text(
+                'Menghapus user ini akan secara OTOMATIS MENGHAPUS:\n'
+                '• Semua Tenant/Kantin milik user ini\n'
+                '• Semua Staff/Karyawan di tenant tersebut\n'
+                '• Semua Produk dan Pesanan',
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Apakah Anda yakin ingin melakukan FORCE DELETE?',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -1243,62 +1354,14 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Hapus dari Database'),
+            child: const Text('FORCE DELETE SEMUA'),
           ),
         ],
       ),
     );
-    
-    if (confirm != true) return;
-    
-    final success = await ref.read(userManagementProvider.notifier).deleteUser(
-          authUserId: user.userId,
-          documentId: user.id!,
-        );
-    
-    if (!mounted) return;
-    
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'User dihapus dari database.\n'
-            'JANGAN LUPA: Hapus dari Auth di Appwrite Console!',
-          ),
-          backgroundColor: Colors.orange,
-          duration: const Duration(seconds: 8),
-          action: SnackBarAction(
-            label: 'Info',
-            textColor: Colors.white,
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Manual Action Required'),
-                  content: SelectableText(
-                    'User ID: ${user.userId}\n\n'
-                    'Go to Appwrite Console:\n'
-                    'Auth → Users → Find & Delete',
-                  ),
-                  actions: [
-                    FilledButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('OK'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal menghapus user'),
-          backgroundColor: Colors.red,
-        ),
-      );
+
+    if (confirm == true && mounted) {
+      _handleDeleteUser(user, force: true);
     }
   }
 

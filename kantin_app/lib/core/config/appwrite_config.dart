@@ -25,7 +25,8 @@ class AppwriteConfig {
   
   // Appwrite Function IDs
   static const String approveRegistrationFunctionId = '691d57860017535b860c';
-  static const String createTenantUserFunctionId = 'createTenantUser';
+  static const String createUserFunctionId = 'create-user'; // Combined function for staff and tenant users
+  static const String deleteUserFunctionId = 'delete-user'; // Delete user with cascading cleanup
 
   // Storage Bucket IDs
   static const String productImagesBucketId = 'product-images';

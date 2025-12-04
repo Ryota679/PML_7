@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/models/user_model.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../providers/tenant_provider.dart';
 import '../providers/tenant_user_provider.dart';
 import 'widgets/assign_user_dialog.dart';
@@ -133,6 +134,7 @@ class _TenantUserManagementPageState
             user: user,
             tenant: tenant,
             onRemove: () => _confirmRemoveUser(context, user),
+            onDelete: () => _confirmDeleteUser(context, user),
             onToggleStatus: (isActive) => _toggleUserStatus(user, isActive),
           );
         },
@@ -190,6 +192,137 @@ class _TenantUserManagementPageState
                 : 'Gagal remove user',
           ),
           backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _confirmDeleteUser(BuildContext context, UserModel user) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Delete User Permanently?'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'This will PERMANENTLY delete "${user.fullName}" and ALL related data:',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            const Text('• User account (cannot login anymore)'),
+            if (user.role == 'tenant') ...[
+              const Text('• All staff users'),
+              const Text('• All products'),
+              const Text('• All orders'),
+            ],
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.red.shade200),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.error, color: Colors.red, size: 20),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'This action CANNOT be undone!',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _deleteUserPermanent(user);
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('DELETE PERMANENT'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteUserPermanent(UserModel user) async {
+    // Show loading
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              ),
+              SizedBox(width: 12),
+              Text('Deleting user permanently...'),
+            ],
+          ),
+          duration: Duration(seconds: 30),
+        ),
+      );
+    }
+
+    // Get current user ID (deletedBy)
+    final auth = ref.read(authProvider);
+    final deletedBy = auth.user?.userId ?? '';
+
+    if (deletedBy.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error: Unable to get current user ID'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Call delete permanent
+    final success = await ref
+        .read(myTenantUsersProvider.notifier)
+        .deleteUserPermanent(user.id!, deletedBy);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'User "${user.fullName}" deleted permanently!'
+                : 'Failed to delete user',
+          ),
+          backgroundColor: success ? Colors.green : Colors.red,
+          duration: const Duration(seconds: 3),
         ),
       );
     }

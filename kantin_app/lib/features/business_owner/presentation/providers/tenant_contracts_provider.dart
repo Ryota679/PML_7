@@ -1,6 +1,7 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kantin_app/core/providers/appwrite_provider.dart';
+import 'package:kantin_app/core/utils/logger.dart';
 import 'package:kantin_app/features/auth/providers/auth_provider.dart';
 import 'package:kantin_app/shared/models/user_model.dart';
 import '../../data/tenant_contracts_repository.dart';
@@ -54,13 +55,16 @@ class TenantContractsNotifier extends StateNotifier<AsyncValue<List<TenantUserWi
   /// Add contract token (months) to a tenant user
   Future<bool> addContractToken(String userDocId, int months) async {
     try {
+      AppLogger.info('🔵 TenantContractsNotifier.addContractToken - userDocId: $userDocId, months: $months');
       await repository.addContractToken(userDocId, months);
       
       // Refresh list
       await loadTenantUsers();
       
+      AppLogger.info('✅ Contract token added successfully in notifier');
       return true;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ Error in TenantContractsNotifier.addContractToken', e, stackTrace);
       // Keep error in state but don't override
       return false;
     }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:appwrite/appwrite.dart';
 import 'package:kantin_app/core/config/appwrite_config.dart';
 import 'package:kantin_app/core/constants/app_constants.dart';
@@ -11,10 +12,13 @@ import 'package:kantin_app/shared/models/user_model.dart';
 /// For Auth operations, use Appwrite Console or Functions
 class UserManagementRepository {
   final Databases _databases;
+  final Functions _functions;
 
   UserManagementRepository({
     required Databases databases,
-  }) : _databases = databases;
+    required Functions functions,
+  }) : _databases = databases,
+       _functions = functions;
 
   /// Get all business owners
   Future<List<UserModel>> getAllBusinessOwners() async {
@@ -94,28 +98,38 @@ class UserManagementRepository {
     }
   }
 
-  /// Delete user (database only - Auth deletion requires manual action)
+  /// Delete user (via Appwrite Function)
   Future<void> deleteUser({
     required String authUserId,
     required String documentId,
+    bool force = false,
+    required String adminId,
   }) async {
     try {
-      AppLogger.info('Deleting user document: $documentId');
+      AppLogger.info('Deleting user: $authUserId (force: $force)');
 
-      // NOTE: This only deletes from database
-      // Admin must manually delete from Appwrite Auth via Console
-      // or implement Appwrite Function for complete deletion
-      await _databases.deleteDocument(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: AppwriteConfig.usersCollectionId,
-        documentId: documentId,
+      final execution = await _functions.createExecution(
+        functionId: AppwriteConfig.deleteUserFunctionId,
+        body: jsonEncode({
+          'userId': authUserId,
+          'force': force,
+          'deletedBy': adminId,
+        }),
       );
+
+      AppLogger.info('Delete function executed: ${execution.$id}');
+
+      final response = jsonDecode(execution.responseBody);
       
-      AppLogger.info('User document deleted');
-      AppLogger.warning(
-        'IMPORTANT: User still exists in Appwrite Auth. '
-        'Manually delete user $authUserId from Appwrite Console > Auth > Users'
-      );
+      if (response['success'] != true) {
+        // Check for specific error code
+        if (response['code'] == 'HAS_ACTIVE_TENANTS') {
+          throw Exception('HAS_ACTIVE_TENANTS');
+        }
+        throw Exception(response['error'] ?? 'Failed to delete user');
+      }
+      
+      AppLogger.info('User deleted successfully');
     } catch (e, stackTrace) {
       AppLogger.error('Error deleting user', e, stackTrace);
       rethrow;

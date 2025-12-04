@@ -19,12 +19,36 @@ class BusinessOwnerDashboard extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Dashboard Business Owner'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              _showLogoutDialog(context, ref);
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'logout') {
+                _showLogoutDialog(context, ref);
+              } else if (value == 'delete_account') {
+                _confirmDeleteAccount(context, ref);
+              }
             },
-            tooltip: 'Logout',
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.black),
+                    SizedBox(width: 8),
+                    Text('Logout'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'delete_account',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_forever, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Delete Account', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -366,6 +390,98 @@ class BusinessOwnerDashboard extends ConsumerWidget {
               Navigator.pop(context);
             },
             child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteAccount(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text(
+          'Are you sure you want to delete your account? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteAccount(context, ref);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteAccount(BuildContext context, WidgetRef ref, {bool force = false}) async {
+    try {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      await ref.read(authProvider.notifier).deleteAccount(force: force);
+
+      // Pop loading
+      if (context.mounted) Navigator.pop(context);
+
+      // Navigation is handled by auth state change
+      
+    } catch (e) {
+      // Pop loading
+      if (context.mounted) Navigator.pop(context);
+
+      if (e.toString().contains('HAS_ACTIVE_TENANTS')) {
+        if (context.mounted) {
+          _showForceDeleteDialog(context, ref);
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete account: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  void _showForceDeleteDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Warning: Active Tenants'),
+          ],
+        ),
+        content: const Text(
+          'You have active tenants. Deleting your account will PERMANENTLY DELETE all tenants, staff, products, and orders associated with your business.\n\nThis action cannot be undone. Are you absolutely sure?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteAccount(context, ref, force: true);
+            },
+            child: const Text('DELETE EVERYTHING'),
           ),
         ],
       ),

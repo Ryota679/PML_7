@@ -221,7 +221,7 @@ class _AddStaffDialogState extends ConsumerState<AddStaffDialog> {
     try {
       // Call Appwrite Function to create staff
       final response = await functions.createExecution(
-        functionId: 'createStaffUser',
+        functionId: 'create-user',
         body: jsonEncode({
           'email': _emailController.text.trim(),
           'password': _passwordController.text,
@@ -232,6 +232,7 @@ class _AddStaffDialogState extends ConsumerState<AddStaffDialog> {
               : null,
           'tenant_id': user!.tenantId!,
           'created_by': user.userId,
+          'user_type': 'staff', // Specify user type for the combined function
           'labels': ['tenant', 'staff'], // Add labels for permissions
         }),
       );

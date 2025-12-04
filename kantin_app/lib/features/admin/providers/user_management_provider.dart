@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kantin_app/features/admin/data/user_management_repository.dart';
 import 'package:kantin_app/shared/models/user_model.dart';
 import 'package:kantin_app/shared/providers/appwrite_provider.dart';
+import 'package:kantin_app/features/auth/providers/auth_provider.dart';
 
 /// User Management State
 class UserManagementState {
@@ -31,21 +32,26 @@ class UserManagementState {
 /// User Management Repository Provider
 final userManagementRepositoryProvider = Provider<UserManagementRepository>((ref) {
   final databases = ref.watch(appwriteDatabaseProvider);
-  return UserManagementRepository(databases: databases);
+  final functions = ref.watch(appwriteFunctionsProvider);
+  return UserManagementRepository(
+    databases: databases,
+    functions: functions,
+  );
 });
 
 /// User Management Provider
 final userManagementProvider =
     StateNotifierProvider<UserManagementNotifier, UserManagementState>((ref) {
   final repository = ref.watch(userManagementRepositoryProvider);
-  return UserManagementNotifier(repository);
+  return UserManagementNotifier(repository, ref);
 });
 
 /// User Management Notifier
 class UserManagementNotifier extends StateNotifier<UserManagementState> {
   final UserManagementRepository _repository;
+  final Ref _ref;
 
-  UserManagementNotifier(this._repository) : super(UserManagementState());
+  UserManagementNotifier(this._repository, this._ref) : super(UserManagementState());
 
   /// Load all business owners
   Future<void> loadBusinessOwners() async {
@@ -91,17 +97,34 @@ class UserManagementNotifier extends StateNotifier<UserManagementState> {
   Future<bool> deleteUser({
     required String authUserId,
     required String documentId,
+    bool force = false,
   }) async {
     try {
+      // Get current admin ID
+      final adminId = _ref.read(appwriteAccountProvider).get();
+      // Note: We can't await here easily without making method async and getting user model
+      // For now, let's assume the current user is the admin.
+      // Better approach: Pass adminId from UI or get it from AuthState
+      
+      // Workaround: Get current user ID from AuthProvider
+      final currentUser = _ref.read(authProvider).user;
+      if (currentUser == null) throw Exception('Admin not logged in');
+
       await _repository.deleteUser(
         authUserId: authUserId,
         documentId: documentId,
+        force: force,
+        adminId: currentUser.id!,
       );
       
       // Reload users
       await loadBusinessOwners();
       return true;
     } catch (e) {
+      // Don't swallow HAS_ACTIVE_TENANTS exception, rethrow it for UI handling
+      if (e.toString().contains('HAS_ACTIVE_TENANTS')) {
+        rethrow;
+      }
       state = state.copyWith(error: e.toString());
       return false;
     }

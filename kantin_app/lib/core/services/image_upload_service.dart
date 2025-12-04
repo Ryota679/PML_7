@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:io'; // Import for file system access on mobile
 import 'package:appwrite/appwrite.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,10 +40,20 @@ class ImageUploadService {
       }
 
       final file = result.files.first;
-      final originalBytes = file.bytes;
+      Uint8List originalBytes;
       
-      if (originalBytes == null) {
-        AppLogger.error('Failed to read file bytes', null, null);
+      // Read bytes differently for web vs mobile
+      if (file.bytes != null) {
+        // Web platform - bytes are directly available
+        AppLogger.info('Reading file bytes from web (file.bytes)');
+        originalBytes = file.bytes!;
+      } else if (file.path != null) {
+        // Mobile/Desktop platform - need to read from path
+        AppLogger.info('Reading file bytes from mobile path: ${file.path}');
+        final fileFromPath = File(file.path!);
+        originalBytes = await fileFromPath.readAsBytes();
+      } else {
+        AppLogger.error('Failed to read file: no bytes or path available', null, null);
         throw Exception('Failed to read file');
       }
 
