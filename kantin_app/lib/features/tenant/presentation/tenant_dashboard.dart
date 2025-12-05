@@ -214,26 +214,60 @@ class TenantDashboard extends ConsumerWidget {
   Widget _buildContractStatusCard(BuildContext context, DateTime contractEndDate) {
     final now = DateTime.now();
     final daysRemaining = contractEndDate.difference(now).inDays;
-    final isExpiringSoon = daysRemaining <= 7 && daysRemaining >= 0;
+    
+    // Thresholds
     final isExpired = daysRemaining < 0;
+    final isCritical = daysRemaining >= 0 && daysRemaining < 7; // RED: < 7 days
+    final isWarning = daysRemaining >= 7 && daysRemaining < 14; // ORANGE: 7-13 days
+    final isActive = daysRemaining >= 14; // GREEN: 14+ days
+
+    // Color scheme
+    Color backgroundColor;
+    Color iconColor;
+    Color textColor;
+    IconData iconData;
+    String statusTitle;
+    String statusMessage;
+
+    if (isExpired) {
+      backgroundColor = Colors.red.shade50;
+      iconColor = Colors.red.shade700;
+      textColor = Colors.red.shade700;
+      iconData = Icons.error;
+      statusTitle = 'Kontrak Habis';
+      statusMessage = '⚠️ Akun Anda akan dihapus otomatis!\nSegera hubungi Business Owner untuk perpanjangan.';
+    } else if (isCritical) {
+      backgroundColor = Colors.red.shade50;
+      iconColor = Colors.red.shade700;
+      textColor = Colors.red.shade700;
+      iconData = Icons.warning_amber;
+      statusTitle = 'Segera Habis!';
+      statusMessage = '🔴 Sisa $daysRemaining hari lagi (${DateFormat('dd MMM yyyy').format(contractEndDate)})\nHubungi Business Owner sekarang untuk perpanjangan!';
+    } else if (isWarning) {
+      backgroundColor = Colors.orange.shade50;
+      iconColor = Colors.orange.shade700;
+      textColor = Colors.orange.shade700;
+      iconData = Icons.access_time;
+      statusTitle = 'Kontrak Akan Berakhir';
+      statusMessage = '🟠 Sisa $daysRemaining hari (${DateFormat('dd MMM yyyy').format(contractEndDate)})\nSegera hubungi Business Owner untuk perpanjangan.';
+    } else {
+      backgroundColor = Colors.green.shade50;
+      iconColor = Colors.green.shade700;
+      textColor = Colors.green.shade700;
+      iconData = Icons.check_circle;
+      statusTitle = 'Kontrak Aktif';
+      statusMessage = 'Sisa $daysRemaining hari (${DateFormat('dd MMM yyyy').format(contractEndDate)})';
+    }
 
     return Card(
-      color: isExpired 
-          ? Colors.red.shade50 
-          : isExpiringSoon 
-              ? Colors.orange.shade50 
-              : Colors.green.shade50,
+      color: backgroundColor,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Icon(
-              isExpired ? Icons.error : Icons.check_circle,
-              color: isExpired 
-                  ? Colors.red 
-                  : isExpiringSoon 
-                      ? Colors.orange 
-                      : Colors.green,
+              iconData,
+              color: iconColor,
               size: 32,
             ),
             const SizedBox(width: 16),
@@ -242,28 +276,19 @@ class TenantDashboard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isExpired ? 'Kontrak Habis' : 'Kontrak Aktif',
+                    statusTitle,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: isExpired 
-                          ? Colors.red.shade700 
-                          : isExpiringSoon 
-                              ? Colors.orange.shade700 
-                              : Colors.green.shade700,
+                      color: textColor,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    isExpired
-                        ? 'Hubungi business owner untuk perpanjangan'
-                        : 'Sisa $daysRemaining hari (${DateFormat('dd MMM yyyy').format(contractEndDate)})',
+                    statusMessage,
                     style: TextStyle(
-                      color: isExpired 
-                          ? Colors.red.shade700 
-                          : isExpiringSoon 
-                              ? Colors.orange.shade700 
-                              : Colors.green.shade700,
+                      color: textColor,
+                      fontSize: 13,
                     ),
                   ),
                 ],

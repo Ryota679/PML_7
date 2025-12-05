@@ -46,6 +46,21 @@ class TenantContractsNotifier extends StateNotifier<AsyncValue<List<TenantUserWi
 
     try {
       final tenantUsers = await repository.getTenantUsersWithInfo(currentUser!.userId);
+      
+      // Sort by contract end date (ascending - soonest to expire first)
+      tenantUsers.sort((a, b) {
+        final aDate = a.user.contractEndDate;
+        final bDate = b.user.contractEndDate;
+        
+        // Null dates go to the end
+        if (aDate == null && bDate == null) return 0;
+        if (aDate == null) return 1;
+        if (bDate == null) return -1;
+        
+        // Sort ascending (earliest date first)
+        return aDate.compareTo(bDate);
+      });
+      
       state = AsyncValue.data(tenantUsers);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

@@ -59,6 +59,21 @@ class UserManagementNotifier extends StateNotifier<UserManagementState> {
     
     try {
       final users = await _repository.getAllBusinessOwners();
+      
+      // Sort by contract end date (ascending - soonest to expire first)
+      users.sort((a, b) {
+        final aDate = a.contractEndDate;
+        final bDate = b.contractEndDate;
+        
+        // Null dates go to the end
+        if (aDate == null && bDate == null) return 0;
+        if (aDate == null) return 1;
+        if (bDate == null) return -1;
+        
+        // Sort ascending (earliest date first)
+        return aDate.compareTo(bDate);
+      });
+      
       state = state.copyWith(
         users: users,
         isLoading: false,

@@ -1,4 +1,4 @@
-import { Client, Databases, Query } from 'node-appwrite';
+import { Client, Databases, Users, Query } from 'node-appwrite';
 
 /**
  * Appwrite Function: Cleanup Expired Contracts
@@ -10,10 +10,15 @@ import { Client, Databases, Query } from 'node-appwrite';
  * 1. Query all users with contract_end_date < now()
  * 2. Filter by role: tenant, owner_business (exclude admin, staff, guest)
  * 3. For each expired user:
- *    - Check if has active orders
- *    - Call delete-user function internally
+ *    - Check if has active orders (grace period)
+ *    - Perform CASCADING DELETE (staff, products, orders)
+ *    - Delete user from Database and Auth
  *    - Log result
  * 4. Generate summary report
+ * 
+ * CASCADING DELETE LOGIC:
+ * - Tenant: Deletes all staff, products, orders for that tenant
+ * - Business Owner: Deletes ALL tenants + their staff/products/orders
  * 
  * Required Environment Variables:
  * - APPWRITE_FUNCTION_ENDPOINT
@@ -22,6 +27,7 @@ import { Client, Databases, Query } from 'node-appwrite';
  * - DATABASE_ID
  * - USERS_COLLECTION_ID
  * - ORDERS_COLLECTION_ID
+ * - PRODUCTS_COLLECTION_ID
  */
 
 export default async ({ req, res, log, error }) => {
@@ -32,11 +38,13 @@ export default async ({ req, res, log, error }) => {
         .setKey(process.env.APPWRITE_FUNCTION_API_KEY || '');
 
     const databases = new Databases(client);
+    const users = new Users(client);
 
     // Configuration
     const databaseId = process.env.DATABASE_ID || 'kantin-db';
     const usersCollectionId = process.env.USERS_COLLECTION_ID || 'users';
     const ordersCollectionId = process.env.ORDERS_COLLECTION_ID || 'orders';
+    const productsCollectionId = process.env.PRODUCTS_COLLECTION_ID || 'products';
 
     const summary = {
         startTime: new Date().toISOString(),
@@ -47,7 +55,13 @@ export default async ({ req, res, log, error }) => {
         errors: 0,
         deletedUsers: [],
         skippedUsers: [],
-        errorDetails: []
+        errorDetails: [],
+        cascadedData: {
+            tenants: 0,
+            staff: 0,
+            products: 0,
+            orders: 0
+        }
     };
 
     try {
@@ -84,14 +98,17 @@ export default async ({ req, res, log, error }) => {
         // Step 2: Process each expired user
         for (const userDoc of usersResponse.documents) {
             const userId = userDoc.$id;
+            const authUserId = userDoc.user_id;
             const userRole = userDoc.role;
+            const userSubRole = userDoc.sub_role;
+            const tenantId = userDoc.tenant_id;
             const contractEndDate = userDoc.contract_end_date;
             const userInfo = `${userDoc.username || userDoc.email} (${userRole})`;
 
             log(`\n📋 Processing user: ${userInfo}`);
             log(`   Contract expired: ${contractEndDate}`);
 
-            // Filter by role - only delete tenant and business owner
+            // Filter by role - only delete tenant and business owner (not staff directly)
             if (userRole !== 'tenant' && userRole !== 'owner_bussines' && userRole !== 'owner_business') {
                 log(`   ⏭️  Skipping - role '${userRole}' not eligible for auto-cleanup`);
                 summary.skipped++;
@@ -102,16 +119,27 @@ export default async ({ req, res, log, error }) => {
                 continue;
             }
 
+            // Skip staff (they are deleted when their tenant is deleted)
+            if (userSubRole === 'staff') {
+                log(`   ⏭️  Skipping - staff will be deleted with their tenant`);
+                summary.skipped++;
+                summary.skippedUsers.push({
+                    userId: userId,
+                    reason: 'Staff - will be cascade deleted with tenant'
+                });
+                continue;
+            }
+
             summary.expired++;
 
             // Check for active orders (grace period for pending transactions)
             try {
-                if (userDoc.tenant_id) {
+                if (tenantId) {
                     const ordersResponse = await databases.listDocuments(
                         databaseId,
                         ordersCollectionId,
                         [
-                            Query.equal('tenant_id', userDoc.tenant_id),
+                            Query.equal('tenant_id', tenantId),
                             Query.equal('status', ['pending', 'confirmed', 'preparing'])
                         ]
                     );
@@ -131,33 +159,194 @@ export default async ({ req, res, log, error }) => {
                 log(`   ⚠️  Failed to check orders: ${orderCheckError.message}`);
             }
 
-            // Delete user via internal HTTP call to delete-user function
+            // ========== CASCADING DELETE ==========
             try {
-                log(`   🗑️  Deleting user...`);
+                log(`   🗑️  Starting cascading delete...`);
 
-                // Direct deletion via database API (simpler than calling another function)
-                const deleteUserClient = new Client()
-                    .setEndpoint(process.env.APPWRITE_FUNCTION_ENDPOINT || 'https://fra.cloud.appwrite.io/v1')
-                    .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID || '')
-                    .setKey(process.env.APPWRITE_FUNCTION_API_KEY || '');
+                // --- TENANT DELETION ---
+                if (userRole === 'tenant' && tenantId) {
+                    log(`   🏪 TENANT deletion - cascading delete staff, products, orders...`);
 
-                const deleteDb = new Databases(deleteUserClient);
-
-                // Delete user document
-                await deleteDb.deleteDocument(
-                    databaseId,
-                    usersCollectionId,
-                    userId
-                );
-
-                // Delete from Auth (if user_id exists)
-                if (userDoc.user_id) {
-                    const { Users } = await import('node-appwrite');
-                    const deleteUsers = new Users(deleteUserClient);
+                    // Delete all STAFF for this tenant
                     try {
-                        await deleteUsers.delete(userDoc.user_id);
+                        const staffResponse = await databases.listDocuments(
+                            databaseId,
+                            usersCollectionId,
+                            [
+                                Query.equal('tenant_id', tenantId),
+                                Query.notEqual('$id', userId) // Exclude self
+                            ]
+                        );
+
+                        for (const staffUser of staffResponse.documents) {
+                            try {
+                                if (staffUser.user_id) {
+                                    try {
+                                        await users.delete(staffUser.user_id);
+                                    } catch (e) {
+                                        if (!(e.code === 404 || e.message?.includes('could not be found'))) {
+                                            throw e;
+                                        }
+                                    }
+                                }
+                                await databases.deleteDocument(databaseId, usersCollectionId, staffUser.$id);
+                                summary.cascadedData.staff++;
+                            } catch (e) {
+                                error(`     Failed to delete staff: ${e.message}`);
+                            }
+                        }
+                        log(`     ✅ Deleted ${staffResponse.documents.length} staff`);
+                    } catch (e) {
+                        error(`     Failed to query staff: ${e.message}`);
+                    }
+
+                    // Delete PRODUCTS
+                    try {
+                        const productsResponse = await databases.listDocuments(
+                            databaseId,
+                            productsCollectionId,
+                            [Query.equal('tenant_id', tenantId)]
+                        );
+
+                        for (const product of productsResponse.documents) {
+                            await databases.deleteDocument(databaseId, productsCollectionId, product.$id);
+                            summary.cascadedData.products++;
+                        }
+                        log(`     ✅ Deleted ${productsResponse.documents.length} products`);
+                    } catch (e) {
+                        error(`     Failed to delete products: ${e.message}`);
+                    }
+
+                    // Delete ORDERS
+                    try {
+                        const ordersResponse = await databases.listDocuments(
+                            databaseId,
+                            ordersCollectionId,
+                            [Query.equal('tenant_id', tenantId)]
+                        );
+
+                        for (const order of ordersResponse.documents) {
+                            await databases.deleteDocument(databaseId, ordersCollectionId, order.$id);
+                            summary.cascadedData.orders++;
+                        }
+                        log(`     ✅ Deleted ${ordersResponse.documents.length} orders`);
+                    } catch (e) {
+                        error(`     Failed to delete orders: ${e.message}`);
+                    }
+                }
+
+                // --- BUSINESS OWNER DELETION ---
+                if (userRole === 'owner_bussines' || userRole === 'owner_business') {
+                    log(`   🏢 BUSINESS OWNER deletion - cascading delete ALL tenants...`);
+
+                    try {
+                        const tenantsResponse = await databases.listDocuments(
+                            databaseId,
+                            usersCollectionId,
+                            [
+                                Query.equal('role', 'tenant'),
+                                Query.equal('created_by', authUserId)
+                            ]
+                        );
+
+                        log(`     Found ${tenantsResponse.documents.length} tenants to delete`);
+
+                        for (const tenant of tenantsResponse.documents) {
+                            const tId = tenant.tenant_id;
+                            const tAuthId = tenant.user_id;
+
+                            log(`\n     📦 Deleting tenant: ${tenant.username}`);
+
+                            // Delete tenant's STAFF
+                            try {
+                                const staffResponse = await databases.listDocuments(
+                                    databaseId,
+                                    usersCollectionId,
+                                    [Query.equal('tenant_id', tId)]
+                                );
+
+                                for (const staffUser of staffResponse.documents) {
+                                    try {
+                                        if (staffUser.user_id) {
+                                            try {
+                                                await users.delete(staffUser.user_id);
+                                            } catch (e) {
+                                                if (!(e.code === 404 || e.message?.includes('could not be found'))) {
+                                                    throw e;
+                                                }
+                                            }
+                                        }
+                                        await databases.deleteDocument(databaseId, usersCollectionId, staffUser.$id);
+                                        summary.cascadedData.staff++;
+                                    } catch (e) { }
+                                }
+                                log(`       ✅ Deleted ${staffResponse.documents.length} staff`);
+                            } catch (e) { }
+
+                            // Delete tenant's PRODUCTS
+                            try {
+                                const productsResponse = await databases.listDocuments(
+                                    databaseId,
+                                    productsCollectionId,
+                                    [Query.equal('tenant_id', tId)]
+                                );
+
+                                for (const product of productsResponse.documents) {
+                                    await databases.deleteDocument(databaseId, productsCollectionId, product.$id);
+                                    summary.cascadedData.products++;
+                                }
+                                log(`       ✅ Deleted ${productsResponse.documents.length} products`);
+                            } catch (e) { }
+
+                            // Delete tenant's ORDERS
+                            try {
+                                const ordersResponse = await databases.listDocuments(
+                                    databaseId,
+                                    ordersCollectionId,
+                                    [Query.equal('tenant_id', tId)]
+                                );
+
+                                for (const order of ordersResponse.documents) {
+                                    await databases.deleteDocument(databaseId, ordersCollectionId, order.$id);
+                                    summary.cascadedData.orders++;
+                                }
+                                log(`       ✅ Deleted ${ordersResponse.documents.length} orders`);
+                            } catch (e) { }
+
+                            // Delete tenant AUTH
+                            if (tAuthId) {
+                                try {
+                                    await users.delete(tAuthId);
+                                } catch (e) {
+                                    if (!(e.code === 404 || e.message?.includes('could not be found'))) {
+                                        error(`       Failed to delete tenant Auth: ${e.message}`);
+                                    }
+                                }
+                            }
+
+                            // Delete tenant DOCUMENT
+                            await databases.deleteDocument(databaseId, usersCollectionId, tenant.$id);
+                            summary.cascadedData.tenants++;
+                        }
+
+                        log(`\n     ✅ Deleted ${summary.cascadedData.tenants} tenants total`);
+                    } catch (e) {
+                        error(`     Failed to delete business owner tenants: ${e.message}`);
+                    }
+                }
+
+                // ========== DELETE MAIN USER ==========
+                // Delete user document
+                await databases.deleteDocument(databaseId, usersCollectionId, userId);
+
+                // Delete from Auth
+                if (authUserId) {
+                    try {
+                        await users.delete(authUserId);
                     } catch (authError) {
-                        log(`   ⚠️  Auth deletion failed (user may not exist): ${authError.message}`);
+                        if (!(authError.code === 404 || authError.message?.includes('could not be found'))) {
+                            log(`   ⚠️  Auth deletion failed: ${authError.message}`);
+                        }
                     }
                 }
 
@@ -192,6 +381,11 @@ export default async ({ req, res, log, error }) => {
         log(`   ✅ Deleted: ${summary.deleted}`);
         log(`   ⏭️  Skipped: ${summary.skipped}`);
         log(`   ❌ Errors: ${summary.errors}`);
+        log('\n📦 Cascaded Data Deleted:');
+        log(`   🏪 Tenants: ${summary.cascadedData.tenants}`);
+        log(`   👥 Staff: ${summary.cascadedData.staff}`);
+        log(`   🍔 Products: ${summary.cascadedData.products}`);
+        log(`   📝 Orders: ${summary.cascadedData.orders}`);
 
         if (summary.errors > 0) {
             log('\n⚠️  Partial success - some deletions failed');

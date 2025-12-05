@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kantin_app/features/auth/providers/auth_provider.dart';
+import 'package:badges/badges.dart' as badges;
 import 'tenant_management_page.dart';
 import 'tenant_user_management_page.dart';
 import 'pages/tenant_contracts_page.dart';
+import 'providers/tenant_contracts_provider.dart';
 
 /// Business Owner Dashboard
 /// 
@@ -136,18 +138,36 @@ class BusinessOwnerDashboard extends ConsumerWidget {
                     );
                   },
                 ),
-                _buildMenuCard(
-                  context,
-                  icon: Icons.calendar_month,
-                  title: 'Kelola Kontrak',
-                  subtitle: 'Atur kontrak tenant',
-                  color: Colors.teal,
-                  onTap: () {
-                    Navigator.push(
+                // Kelola Kontrak with Badge
+                Consumer(
+                  builder: (context, ref, child) {
+                    final tenantUsersAsync = ref.watch(tenantContractsProvider);
+                    
+                    int expiringCount = 0;
+                    tenantUsersAsync.whenData((users) {
+                      final now = DateTime.now();
+                      expiringCount = users.where((tenantUserInfo) {
+                        if (tenantUserInfo.user.contractEndDate == null) return false;
+                        final daysRemaining = tenantUserInfo.user.contractEndDate!.difference(now).inDays;
+                        return daysRemaining < 14 && daysRemaining >= 0; // Expiring within 14 days
+                      }).length;
+                    });
+                    
+                    return _buildMenuCardWithBadge(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const TenantContractsPage(),
-                      ),
+                      icon: Icons.calendar_month,
+                      title: 'Kelola Kontrak',
+                      subtitle: 'Atur kontrak tenant',
+                      color: Colors.teal,
+                      badgeCount: expiringCount,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TenantContractsPage(),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -350,6 +370,68 @@ class BusinessOwnerDashboard extends ConsumerWidget {
                   icon,
                   size: 32,
                   color: color,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Menu card with badge for notifications
+  Widget _buildMenuCardWithBadge(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required int badgeCount,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              badges.Badge(
+                showBadge: badgeCount > 0,
+                badgeContent: Text(
+                  '$badgeCount',
+                  style: const TextStyle(color: Colors.white, fontSize: 10),
+                ),
+                badgeStyle: badges.BadgeStyle(
+                  badgeColor: Colors.red.shade600,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 32,
+                    color: color,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
