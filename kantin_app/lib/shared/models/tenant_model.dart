@@ -15,6 +15,17 @@ class TenantModel {
   final String? tenantCode; // 6-character code for customer access
   final DateTime createdAt;
   final DateTime updatedAt;
+  
+  // ===== NEW: Freemium Counter Fields =====
+  
+  /// Current number of products (denormalized counter)
+  final int currentProductsCount;
+  
+  /// Current number of staff members (denormalized counter)
+  final int currentStaffCount;
+  
+  /// Selected for free tier (when user downgraded from trial)
+  final bool? selectedForFreeTier;
 
   TenantModel({
     required this.id,
@@ -29,6 +40,9 @@ class TenantModel {
     this.tenantCode,
     required this.createdAt,
     required this.updatedAt,
+    this.currentProductsCount = 0,
+    this.currentStaffCount = 0,
+    this.selectedForFreeTier,
   });
 
   /// Create TenantModel from Appwrite Document
@@ -46,6 +60,10 @@ class TenantModel {
       tenantCode: doc.data['tenant_code'] as String?,
       createdAt: DateTime.parse(doc.$createdAt),
       updatedAt: DateTime.parse(doc.$updatedAt),
+      // Freemium counters
+      currentProductsCount: doc.data['current_products_count'] as int? ?? 0,
+      currentStaffCount: doc.data['current_staff_count'] as int? ?? 0,
+      selectedForFreeTier: doc.data['selected_for_free_tier'] as bool?,
     );
   }
 
@@ -61,6 +79,9 @@ class TenantModel {
       'phone': phone,
       'display_order': displayOrder,
       'tenant_code': tenantCode,
+      // Freemium counters
+      'current_products_count': currentProductsCount,
+      'current_staff_count': currentStaffCount,
     };
   }
 
@@ -82,6 +103,8 @@ class TenantModel {
     int? displayOrder,
     DateTime? createdAt,
     DateTime? updatedAt,
+    int? currentProductsCount,
+    int? currentStaffCount,
   }) {
     return TenantModel(
       id: id ?? this.id,
@@ -95,6 +118,8 @@ class TenantModel {
       displayOrder: displayOrder ?? this.displayOrder,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      currentProductsCount: currentProductsCount ?? this.currentProductsCount,
+      currentStaffCount: currentStaffCount ?? this.currentStaffCount,
     );
   }
 

@@ -6,6 +6,8 @@ import 'tenant_management_page.dart';
 import 'tenant_user_management_page.dart';
 import 'pages/tenant_contracts_page.dart';
 import 'providers/tenant_contracts_provider.dart';
+import 'widgets/trial_warning_banner.dart';
+import '../utils/tenant_selection_helper.dart';
 
 /// Business Owner Dashboard
 /// 
@@ -59,6 +61,10 @@ class BusinessOwnerDashboard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Trial Warning Banner (D-7, D-3, D-1)
+            if (user != null)
+              TrialWarningBanner(user: user),
+            
             // Welcome Card
             Card(
               child: Padding(
@@ -88,9 +94,14 @@ class BusinessOwnerDashboard extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             
-            // Contract Status Card
-            _buildContractCard(context, user),
-            const SizedBox(height: 24),
+            // Contract Status Card (ONLY for tenant/staff, not for owner_business)
+            // Business owners use subscription_expires_at instead
+            if (user?.role != 'owner_business' && user?.role != 'owner_bussines')
+              _buildContractCard(context, user),
+            
+            // Add spacing only if contract card is shown
+            if (user?.role != 'owner_business' && user?.role != 'owner_bussines')
+              const SizedBox(height: 24),
             
             // Menu Grid
             Text(
@@ -188,17 +199,18 @@ class BusinessOwnerDashboard extends ConsumerWidget {
                 ),
                 _buildMenuCard(
                   context,
-                  icon: Icons.category,
-                  title: 'Kategori',
-                  subtitle: 'Kelola kategori produk',
-                  color: Colors.purple,
-                  onTap: () {
-                    // TODO: Navigate to categories
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Fitur akan tersedia di Sprint 2'),
-                      ),
-                    );
+                  icon: Icons.swap_horiz,
+                  title: 'Test: Pilih Tenant',
+                  subtitle: 'Uji fitur pilih 2 tenant',
+                  color: Colors.deepPurple,
+                  onTap: () async {
+                    if (user != null) {
+                      await TenantSelectionHelper.showSelectionDialog(
+                        context,
+                        user: user,
+                        isSwap: false,
+                      );
+                    }
                   },
                 ),
               ],

@@ -1,41 +1,41 @@
-- = Modified/Enhanced
-- 🔄 = Dalam Progress
-- ⏳ = Belum Dikerjakan
-- ⚠️ = Modified/Enhanced
+﻿- = Modified/Enhanced
+- ðŸ”„ = Dalam Progress
+- â³ = Belum Dikerjakan
+- âš ï¸ = Modified/Enhanced
 
 ---
 
-#### **Sprint 1: Fondasi & Autentikasi (Minggu 1-2)** ✅ **SELESAI**
+#### **Sprint 1: Fondasi & Autentikasi (Minggu 1-2)** âœ… **SELESAI**
 **Tujuan Sprint:** Menyiapkan infrastruktur Appwrite dan mengimplementasikan alur login yang fungsional untuk peran `owner_business` dan `tenant`.
 
-* ✅ **[1.1] [Appwrite]** Setup proyek di Appwrite Cloud.
-* ✅ **[1.2] [Appwrite]** Buat koleksi database inti: `users`, `registration_requests` (tambahan).
-* ✅ **[1.3] [Appwrite]** Konfigurasi Appwrite Authentication.
-* ⚠️ **[1.4] [Appwrite]** ~~Definisikan alur onboarding untuk `owner_business`~~ → **UPGRADED:** Implementasi sistem registrasi publik + approval workflow oleh Admin.
-* ✅ **[1.5] [Front-end]** Setup proyek Flutter, arsitektur (Riverpod + GoRouter), dependensi, dan integrasikan **Appwrite SDK**.
-* ✅ **[1.6] [Front-end]** Buat UI untuk halaman Login.
-* ✅ **[1.7] [Front-end]** Integrasikan UI dengan **Appwrite Authentication** (login, logout, session management).
-* ✅ **[1.8] [Front-end]** Implementasikan pengalihan rute (Routing) berdasarkan status login dan `role` dari koleksi `users`.
+* âœ… **[1.1] [Appwrite]** Setup proyek di Appwrite Cloud.
+* âœ… **[1.2] [Appwrite]** Buat koleksi database inti: `users`, `registration_requests` (tambahan).
+* âœ… **[1.3] [Appwrite]** Konfigurasi Appwrite Authentication.
+* âš ï¸ **[1.4] [Appwrite]** ~~Definisikan alur onboarding untuk `owner_business`~~ â†’ **UPGRADED:** Implementasi sistem registrasi publik + approval workflow oleh Admin.
+* âœ… **[1.5] [Front-end]** Setup proyek Flutter, arsitektur (Riverpod + GoRouter), dependensi, dan integrasikan **Appwrite SDK**.
+* âœ… **[1.6] [Front-end]** Buat UI untuk halaman Login.
+* âœ… **[1.7] [Front-end]** Integrasikan UI dengan **Appwrite Authentication** (login, logout, session management).
+* âœ… **[1.8] [Front-end]** Implementasikan pengalihan rute (Routing) berdasarkan status login dan `role` dari koleksi `users`.
 
-#### **Fitur Tambahan Sprint 1 (Bonus Features)** ✅
-* ✅ **[1.9] [Front-end]** Business Owner Registration Page (form registrasi publik dengan validasi).
-* ✅ **[1.10] [Appwrite]** Appwrite Function `approve-registration` (auto-create user di Auth + Database).
-* ✅ **[1.11] [Front-end]** Admin Dashboard dengan 2 tab: Registrasi & Kelola Users.
-* ✅ **[1.12] [Front-end]** Admin approval workflow (approve/reject registration requests).
-* ✅ **[1.13] [Feature]** Token-based Contract Management System:
+#### **Fitur Tambahan Sprint 1 (Bonus Features)** âœ…
+* âœ… **[1.9] [Front-end]** Business Owner Registration Page (form registrasi publik dengan validasi).
+* âœ… **[1.10] [Appwrite]** Appwrite Function `approve-registration` (auto-create user di Auth + Database).
+* âœ… **[1.11] [Front-end]** Admin Dashboard dengan 2 tab: Registrasi & Kelola Users.
+* âœ… **[1.12] [Front-end]** Admin approval workflow (approve/reject registration requests).
+* âœ… **[1.13] [Feature]** Token-based Contract Management System:
   - 1 token = +30 days masa kontrak
   - Auto-grant 30 days pada approval pertama
   - Admin dapat menambah token via UI
   - Auto-disable user jika kontrak expired
-* ✅ **[1.14] [Front-end]** Business Owner Dashboard dengan Contract Duration Display:
+* âœ… **[1.14] [Front-end]** Business Owner Dashboard dengan Contract Duration Display:
   - Real-time contract status (Active/Expired/Warning)
   - Days remaining calculation
   - Color-coded status indicators
-* ✅ **[1.15] [DevOps]** Build configuration updates:
-  - Upgrade Gradle 8.7 → 8.11.1
-  - Upgrade Kotlin 2.0.21 → 2.1.0
-  - Upgrade Appwrite SDK 13.0.0 → 20.3.2
-  - Upgrade Android Gradle Plugin 8.7.2 → 8.9.1
+* âœ… **[1.15] [DevOps]** Build configuration updates:
+  - Upgrade Gradle 8.7 â†’ 8.11.1
+  - Upgrade Kotlin 2.0.21 â†’ 2.1.0
+  - Upgrade Appwrite SDK 13.0.0 â†’ 20.3.2
+  - Upgrade Android Gradle Plugin 8.7.2 â†’ 8.9.1
 
 ---
 
@@ -54,84 +54,84 @@
 ### **Session 26 Nov 2025: Tenant & User Management**
 
 #### **1. Tenant Management System (Tasks 2.1-2.4)**
-- ✅ Created `tenants` collection dengan schema lengkap:
+- âœ… Created `tenants` collection dengan schema lengkap:
   - Fields: owner_id, name, type (enum), description, is_active, logo_url, phone, display_order
   - Permissions: Any (Read) + Users (CRUD)
   - Indexes untuk query optimization
-- ✅ Tenant CRUD UI di Business Owner Dashboard:
+- âœ… Tenant CRUD UI di Business Owner Dashboard:
   - Create tenant dengan form validation
   - Edit tenant (inline editing)
   - Delete tenant dengan confirmation
   - Toggle tenant active status
   - Filter by tenant type
-- ✅ Repository pattern dengan Riverpod state management
-- ✅ Real-time UI updates setelah CRUD operations
+- âœ… Repository pattern dengan Riverpod state management
+- âœ… Real-time UI updates setelah CRUD operations
 
 #### **2. Tenant User Management (Tasks 2.5-2.6)**
-- ✅ "Kelola User" page dengan dual functionality:
+- âœ… "Kelola User" page dengan dual functionality:
   - **Tab 1: Assign Existing User** - Assign user yang sudah ada ke tenant
   - **Tab 2: Create New User** - Buat tenant user baru langsung dari dialog
-- ✅ Create user form dengan validasi:
+- âœ… Create user form dengan validasi:
   - Username (required, unique, alphanumeric + underscore)
   - Full name (required)
   - Email (required, email format)
   - Password (required, min 8 chars)
   - Phone (optional)
   - Tenant selection (required)
-- ✅ User card display dengan badges:
+- âœ… User card display dengan badges:
   - Avatar dengan status color
   - "Admin Tenant" badge
   - Active/Inactive status badge
   - Tenant info dengan icon
   - Action menu (Remove, Toggle Status)
-- ✅ Assign/Remove user dari tenant
-- ✅ Toggle user active/inactive status
+- âœ… Assign/Remove user dari tenant
+- âœ… Toggle user active/inactive status
 
 #### **3. Database Schema Updates**
-- ✅ Added `username` field ke collection `users` (required, indexed)
-- ✅ Updated UserModel untuk support username field
-- ✅ Created unique index untuk username
+- âœ… Added `username` field ke collection `users` (required, indexed)
+- âœ… Updated UserModel untuk support username field
+- âœ… Created unique index untuk username
 
 #### **4. Permission System Fixes**
-- ✅ Fixed permission approach:
+- âœ… Fixed permission approach:
   - **Old:** Label-based permissions (complex, requires Auth labels)
   - **New:** Any + Users permissions (simple, role-based di app layer)
-- ✅ Collection `users` permissions: Any (Read) + Users (CRUD)
-- ✅ Collection `tenants` permissions: Any (Read) + Users (CRUD)
-- ✅ Authorization logic di app layer berdasarkan role dari database
+- âœ… Collection `users` permissions: Any (Read) + Users (CRUD)
+- âœ… Collection `tenants` permissions: Any (Read) + Users (CRUD)
+- âœ… Authorization logic di app layer berdasarkan role dari database
 
 #### **5. Bug Fixes**
-- ✅ Fixed TypeError di tenant user list (orElse null handling)
-- ✅ Fixed form validation untuk create user
-- ✅ Fixed dropdown sizing issues di dialog
-- ✅ Fixed user refresh setelah create/assign
+- âœ… Fixed TypeError di tenant user list (orElse null handling)
+- âœ… Fixed form validation untuk create user
+- âœ… Fixed dropdown sizing issues di dialog
+- âœ… Fixed user refresh setelah create/assign
 
 ---
 
-## **🎯 Key Achievements (Session 24 Nov 2025)**
+## **ðŸŽ¯ Key Achievements (Session 24 Nov 2025)**
 
 ### **1. User Registration & Approval System**
-- ✅ Public registration page untuk business owner
-- ✅ Admin dapat approve/reject registrations
-- ✅ Appwrite Function untuk auto-create user setelah approval
-- ✅ Auto-grant 30 days contract pada approval
+- âœ… Public registration page untuk business owner
+- âœ… Admin dapat approve/reject registrations
+- âœ… Appwrite Function untuk auto-create user setelah approval
+- âœ… Auto-grant 30 days contract pada approval
 
 ### **2. Token-Based Contract Management**
-- ✅ 1 token = 30 days contract extension
-- ✅ Admin UI untuk menambah token
-- ✅ Auto-disable logic jika kontrak expired
-- ✅ Real-time contract status tracking
+- âœ… 1 token = 30 days contract extension
+- âœ… Admin UI untuk menambah token
+- âœ… Auto-disable logic jika kontrak expired
+- âœ… Real-time contract status tracking
 
 ### **3. Multi-Role Dashboard System**
-- ✅ Admin Dashboard (2 tabs: Registrasi & Kelola Users)
-- ✅ Business Owner Dashboard dengan contract display
-- ✅ Role-based routing (adminsystem/owner_bussines/tenant/guest)
+- âœ… Admin Dashboard (2 tabs: Registrasi & Kelola Users)
+- âœ… Business Owner Dashboard dengan contract display
+- âœ… Role-based routing (adminsystem/owner_bussines/tenant/guest)
 
 ### **4. Technical Improvements**
-- ✅ Fixed enum typo handling (`owner_bussines` vs `owner_business`)
-- ✅ Permission setup untuk collection `users`
-- ✅ Appwrite Function deployment & testing
-- ✅ Build configuration untuk production-ready app
+- âœ… Fixed enum typo handling (`owner_bussines` vs `owner_business`)
+- âœ… Permission setup untuk collection `users`
+- âœ… Appwrite Function deployment & testing
+- âœ… Build configuration untuk production-ready app
 
 ---
 
@@ -156,10 +156,10 @@
 
 ---
 
-## **📝 Known Issues & Notes**
+## **ðŸ“ Known Issues & Notes**
 
 ### **Database Enum Typo:**
-⚠️ Collection `users` memiliki enum typo: `owner_bussines` (seharusnya `owner_business`)
+âš ï¸ Collection `users` memiliki enum typo: `owner_bussines` (seharusnya `owner_business`)
 - **Current Status:** Workaround implemented di AppConstants
 - **Impact:** Minimal, aplikasi berjalan normal
 - **Recommendation:** Fix di database saat ada maintenance window
@@ -181,12 +181,12 @@
 #### **URL Structure:**
 ```
 Master QR (di entrance kantin):
-└─ kantin.app/biz/[owner_id]
-   └─ Landing page dengan list semua tenant
+â””â”€ kantin.app/biz/[owner_id]
+   â””â”€ Landing page dengan list semua tenant
 
 Tenant QR (di stand tenant - optional):
-└─ kantin.app/biz/[owner_id]/t/[tenant_id]
-   └─ Direct ke menu 1 tenant
+â””â”€ kantin.app/biz/[owner_id]/t/[tenant_id]
+   â””â”€ Direct ke menu 1 tenant
 ```
 
 #### **User Flow:**
@@ -198,7 +198,7 @@ Tenant QR (di stand tenant - optional):
    - Grid/List view semua tenant
    - Kategori filter (Makanan, Minuman, Snack)
    - Search bar (opsional)
-3. Tap tenant → Langsung lihat menu
+3. Tap tenant â†’ Langsung lihat menu
 4. Breadcrumb untuk kembali ke list tenant
 5. Bisa browse tenant lain tanpa scan ulang
 ```
@@ -207,7 +207,7 @@ Tenant QR (di stand tenant - optional):
 ```
 1. Scan QR di stand "Warung Mie Bu Ani"
 2. Langsung muncul menu Warung Mie
-3. Ada breadcrumb: "← Kembali ke Kantin XYZ"
+3. Ada breadcrumb: "â† Kembali ke Kantin XYZ"
 4. Bisa navigate ke tenant lain via list
 ```
 
@@ -232,11 +232,56 @@ Tenant QR (di stand tenant - optional):
 ---
 
 ### **Next Session Priorities:**
-1. ✅ ~~Buat collection `tenants` dengan schema yang proper~~ **DONE**
-2. ✅ ~~Implement tenant management UI untuk business owner~~ **DONE**
-3. 🔄 Buat collection `categories` dan `products` **NEXT**
-4. 🔄 Implement product management untuk tenant **NEXT**
-5. ⏳ Design & implement Hierarchical QR Code system
+1. âœ… ~~Buat collection `tenants` dengan schema yang proper~~ **DONE**
+2. âœ… ~~Implement tenant management UI untuk business owner~~ **DONE**
+3. ðŸ”„ Buat collection `categories` dan `products` **NEXT**
+4. ðŸ”„ Implement product management untuk tenant **NEXT**
+5. â³ Design & implement Hierarchical QR Code system
+
+---
+
+**Last Updated:** 8 Desember 2025, 16:45 WIB
+
+---
+
+## âš ï¸ **Cleanup Function Testing Note (8 Dec 2025)**
+
+**Status:** Code complete, deployment deferred  
+**Issue:** Deployment shows old code despite multiple upload attempts (manual, CLI, fresh package)  
+**Code Location:** `functions/cleanup-expired-contracts/src/main.js` (local file verified correct)  
+**Package:** `d:\projek_mobile\PML_7\functions\cleanup-final-20251208-1636.tar.gz`
+
+### **What's Ready:**
+- âœ… 5-hour invitation code expiry (from 7 days)
+- âœ… 30-day trial support (from 7 days)
+- âœ… Auto-select 2 newest tenants on trial downgrade
+- âœ… Swap deadline finalization (1 week grace period)
+- âœ… Enhanced logging with detailed statistics
+
+### **To Test Later (when deployment resolves):**
+
+**Prerequisites:**
+1. Create test trial user with expired subscription
+2. Create 5+ test tenants for that user
+3. Create test invitation codes (older than 5 hours)
+
+**Expected Behavior:**
+- Trial user downgraded from premium â†’ free
+- 2 newest tenants auto-selected
+- Swap deadline set to 7 days from downgrade
+- Invitation codes older than 5 hours marked expired
+- Logs show new sections:
+  ```
+  ðŸŽŸï¸  Cleaning up expired invitation codes...
+  ðŸ’³ Downgrading expired trial subscriptions...
+  ðŸ”’ Finalizing tenant selections...
+  Invitation Codes: Checked: X, Expired: X
+  Trial Subscriptions: Downgraded: X, Auto-selected: X
+  Swap Deadlines: Finalized: X
+  Tenants: Deactivated: X
+  ```
+
+**Testing File:** See `C:\Users\Ryan\.gemini\antigravity\brain\...\day3_implementation_plan.md` for detailed test scenarios
 
 ---
 
@@ -246,32 +291,32 @@ Tenant QR (di stand tenant - optional):
 **Files Modified:** 10+ files (Models, Repositories, Providers, UI Pages)
 **Features Delivered:** 
 - Sprint 2 Tasks 2.1-2.6 (Tenant & User Management)
-- Permission system redesign (Label-based → Simple Any+Users)
+- Permission system redesign (Label-based â†’ Simple Any+Users)
 - Username field addition to users collection
 
 ---
 
-## **🎯 Key Achievements (Session 26 Nov 2025 PM: Appwrite Functions & Image Upload)**
+## **ðŸŽ¯ Key Achievements (Session 26 Nov 2025 PM: Appwrite Functions & Image Upload)**
 
 ### **1. Create Tenant User Function - Deployment Success**
 
 #### **Problem Solved:**
-- ❌ **Before:** Tenant users created via Flutter only added to `users` collection, NOT to Appwrite Auth
-- ❌ **Impact:** Users couldn't login (no Auth credentials)
-- ✅ **Solution:** Deploy Appwrite Function to create user in BOTH Auth and Database
+- âŒ **Before:** Tenant users created via Flutter only added to `users` collection, NOT to Appwrite Auth
+- âŒ **Impact:** Users couldn't login (no Auth credentials)
+- âœ… **Solution:** Deploy Appwrite Function to create user in BOTH Auth and Database
 
 #### **Implementation:**
-- ✅ Created `functions/create-tenant-user/` dengan complete logic:
+- âœ… Created `functions/create-tenant-user/` dengan complete logic:
   - Create user in Appwrite Auth with email & password  
   - Add `tenant` label to Auth user
   - Create document in `users` collection
   - Rollback mechanism (delete Auth user if DB fails)
   - Comprehensive error handling & validation
-- ✅ Function Environment Variables:
+- âœ… Function Environment Variables:
   - `APPWRITE_FUNCTION_API_KEY` - Using Function-Approve Registration key (8 scopes)
   - `DATABASE_ID` - kantin-db
   - `USERS_COLLECTION_ID` - users
-- ✅ Deployment Details:
+- âœ… Deployment Details:
   - **Function ID:** `createTenantUser`
   - **Runtime:** Node.js 18.0
   - **Size:** 2.74 MB (complete dependencies)
@@ -279,61 +324,61 @@ Tenant QR (di stand tenant - optional):
   - **Execute Permission:** `any` (accessible by authenticated users)
 
 #### **Flutter Integration Fixes:**
-- ✅ Fixed `assign_user_dialog.dart`:
-  - ❌ Removed invalid header: `x-appwrite-key`
-  - ✅ Corrected function ID: `'createTenantUser'`
-  - ✅ Removed invalid `async` parameter
-  - ✅ Added `full_name` and `email` to document creation
-- ✅ Phone number validation: Support international format (`+62xxx`)
+- âœ… Fixed `assign_user_dialog.dart`:
+  - âŒ Removed invalid header: `x-appwrite-key`
+  - âœ… Corrected function ID: `'createTenantUser'`
+  - âœ… Removed invalid `async` parameter
+  - âœ… Added `full_name` and `email` to document creation
+- âœ… Phone number validation: Support international format (`+62xxx`)
 
 #### **Testing Results:**
-- ✅ Function successfully creates user in Auth
-- ✅ User document created in database with correct fields
-- ✅ Tenant users can login with created credentials
-- ✅ Auto-redirect to Tenant Dashboard works
+- âœ… Function successfully creates user in Auth
+- âœ… User document created in database with correct fields
+- âœ… Tenant users can login with created credentials
+- âœ… Auto-redirect to Tenant Dashboard works
 
 ---
 
-### **2. Image Upload System with Compression** 🖼️
+### **2. Image Upload System with Compression** ðŸ–¼ï¸
 
 #### **Features Implemented:**
-- ✅ **Image Picker** - Select images from device storage (folder internal)
-- ✅ **Auto Compression** - Compress to max 500KB
-- ✅ **Smart Resize** - Auto resize to max 1200px (maintain aspect ratio)
-- ✅ **Quality Adjustment** - Start at 85%, reduce to 70% if needed
-- ✅ **Appwrite Storage** Integration
-- ✅ **Image Preview** - Preview uploaded image in dialog
-- ✅ **Manual URL Fallback** - Can still paste URL manually
+- âœ… **Image Picker** - Select images from device storage (folder internal)
+- âœ… **Auto Compression** - Compress to max 500KB
+- âœ… **Smart Resize** - Auto resize to max 1200px (maintain aspect ratio)
+- âœ… **Quality Adjustment** - Start at 85%, reduce to 70% if needed
+- âœ… **Appwrite Storage** Integration
+- âœ… **Image Preview** - Preview uploaded image in dialog
+- âœ… **Manual URL Fallback** - Can still paste URL manually
 
 #### **Technical Implementation:**
 
 **New Files Created:**
-- ✅ `lib/core/services/image_upload_service.dart` (167 lines)
+- âœ… `lib/core/services/image_upload_service.dart` (167 lines)
   - `pickAndUploadImage()` - Main upload method
   - `_compressImage()` - Compression algorithm
   - `_getFileUrl()` - Generate public URL
   - `deleteImage()` - Delete from storage
 
 **Files Modified:**
-- ✅ `pubspec.yaml`:
+- âœ… `pubspec.yaml`:
   - Added: `file_picker: ^10.3.7`
   - Added: `image: ^4.5.4`
-- ✅ `lib/core/config/appwrite_config.dart`:
+- âœ… `lib/core/config/appwrite_config.dart`:
   - Added: `productImagesBucketId = 'product-images'`
-- ✅ `lib/core/providers/appwrite_provider.dart`:
+- âœ… `lib/core/providers/appwrite_provider.dart`:
   - Added: `appwriteStorageProvider`
-- ✅ `lib/features/tenant/presentation/widgets/product_dialog.dart`:
+- âœ… `lib/features/tenant/presentation/widgets/product_dialog.dart`:
   - Added upload button dengan loading state
   - Added image preview (120px height)
   - Added compressed file size display
   - Added error handling
 
 **Appwrite Storage Setup:**
-- ✅ Bucket ID: `product-images`
-- ✅ Permissions:
+- âœ… Bucket ID: `product-images`
+- âœ… Permissions:
   - **Read:** `Any` (public can view product images)
   - **Create/Update/Delete:** `Users` (authenticated users only)
-- ✅ File Settings:
+- âœ… File Settings:
   - Max file size: 5MB
   - Allowed extensions: jpg, jpeg, png, webp
 
@@ -341,43 +386,43 @@ Tenant QR (di stand tenant - optional):
 ```javascript
 1. Decode image bytes
 2. Check dimensions:
-   - If width/height > 1200px → Resize (maintain aspect ratio)
+   - If width/height > 1200px â†’ Resize (maintain aspect ratio)
 3. Encode as JPEG with quality 85%
 4. Check file size:
-   - If > 500KB → Reduce quality to 80%, 75%, 70%
+   - If > 500KB â†’ Reduce quality to 80%, 75%, 70%
 5. Upload compressed bytes to Appwrite Storage
 6. Return public URL
 ```
 
 #### **Performance Impact:**
-- 📊 **Average Compression:** 80-85% size reduction
-- 📊 **Example:** 2.5MB image → ~450KB (82% smaller)
-- 📊 **Storage Savings:** 100 products = ~210MB saved
-- ⚡ **Page Load:** Significantly faster with compressed images
+- ðŸ“Š **Average Compression:** 80-85% size reduction
+- ðŸ“Š **Example:** 2.5MB image â†’ ~450KB (82% smaller)
+- ðŸ“Š **Storage Savings:** 100 products = ~210MB saved
+- âš¡ **Page Load:** Significantly faster with compressed images
 
 ---
 
 ### **3. Bug Fixes & Improvements**
 
 #### **Bug Fixes:**
-- ✅ Fixed duplicate class definition in `appwrite_config.dart`
-- ✅ Fixed duplicate Storage provider in `appwrite_provider.dart`
-- ✅ Fixed phone validation to support international format
-- ✅ Fixed missing `full_name` field in user document creation
-- ✅ Fixed function permissions (users → any)
+- âœ… Fixed duplicate class definition in `appwrite_config.dart`
+- âœ… Fixed duplicate Storage provider in `appwrite_provider.dart`
+- âœ… Fixed phone validation to support international format
+- âœ… Fixed missing `full_name` field in user document creation
+- âœ… Fixed function permissions (users â†’ any)
 
 #### **Code Quality:**
-- ✅ Added comprehensive error handling
-- ✅ Added loading indicators for async operations
-- ✅ Added success/error snackbar messages
-- ✅ Added image preview functionality
-- ✅ Repository pattern maintained
+- âœ… Added comprehensive error handling
+- âœ… Added loading indicators for async operations
+- âœ… Added success/error snackbar messages
+- âœ… Added image preview functionality
+- âœ… Repository pattern maintained
 
 ---
 
 ### **4. Git Push to GitHub**
 
-✅ **Successfully pushed to:** `https://github.com/Ryota679/PML_7.git`
+âœ… **Successfully pushed to:** `https://github.com/Ryota679/PML_7.git`
 - **Commit:** `1dd9d9f`
 - **Branch:** `main`
 - **Objects:** 324 files
@@ -401,37 +446,37 @@ feat: Add image upload with compression for product images
 
 ## ** Updated Progress Summary**
 
-### **Sprint 1: ✅ 100% SELESAI + Bonus Features**
+### **Sprint 1: âœ… 100% SELESAI + Bonus Features**
 - **Original Tasks:** 8/8 selesai (100%)
 - **Bonus Features:** 7 fitur tambahan major
 - **Status:** Sprint 1 EXCEEDED expectations
 
-### **Sprint 2: ✅ 100% COMPLETE + BONUS FEATURES**
-- **Original Tasks:** 9 tasks COMPLETE (100%) ✅
+### **Sprint 2: âœ… 100% COMPLETE + BONUS FEATURES**
+- **Original Tasks:** 9 tasks COMPLETE (100%) âœ…
 - **Bonus Features:** 2 major additions:
   1. Appwrite Function: Create Tenant User (deployed & working)
   2. Image Upload System with Compression 
 - **Status:** Sprint 2 COMPLETE dengan quality improvements
 
-### **Sprint 3: ⏳ Belum Dimulai (0%)**
+### **Sprint 3: â³ Belum Dimulai (0%)**
 - **Target:** Guest ordering flow
-- **Dependencies:** Sprint 2 ✅ DONE
+- **Dependencies:** Sprint 2 âœ… DONE
 
-### **Sprint 4: ⏳ Belum Dimulai (0%)**
+### **Sprint 4: â³ Belum Dimulai (0%)**
 - **Target:** Real-time order management
 - **Dependencies:** Sprint 3
 
 ---
 
 ### **Next Session Priorities:**
-1. ✅ ~~Deploy Create Tenant User function~~ **DONE**
-2. ✅ ~~Implement image upload dengan compression~~ **DONE**
-3. 🔄 Test image upload end-to-end **NEXT**
-1. ✅ ~~Buat collection `tenants` dengan schema yang proper~~ **DONE**
-2. ✅ ~~Implement tenant management UI untuk business owner~~ **DONE**
-3. 🔄 Buat collection `categories` dan `products` **NEXT**
-4. 🔄 Implement product management untuk tenant **NEXT**
-5. ⏳ Design & implement Hierarchical QR Code system
+1. âœ… ~~Deploy Create Tenant User function~~ **DONE**
+2. âœ… ~~Implement image upload dengan compression~~ **DONE**
+3. ðŸ”„ Test image upload end-to-end **NEXT**
+1. âœ… ~~Buat collection `tenants` dengan schema yang proper~~ **DONE**
+2. âœ… ~~Implement tenant management UI untuk business owner~~ **DONE**
+3. ðŸ”„ Buat collection `categories` dan `products` **NEXT**
+4. ðŸ”„ Implement product management untuk tenant **NEXT**
+5. â³ Design & implement Hierarchical QR Code system
 
 ---
 
@@ -441,32 +486,32 @@ feat: Add image upload with compression for product images
 **Files Modified:** 10+ files (Models, Repositories, Providers, UI Pages)
 **Features Delivered:** 
 - Sprint 2 Tasks 2.1-2.6 (Tenant & User Management)
-- Permission system redesign (Label-based → Simple Any+Users)
+- Permission system redesign (Label-based â†’ Simple Any+Users)
 - Username field addition to users collection
 
 ---
 
-## **🎯 Key Achievements (Session 26 Nov 2025 PM: Appwrite Functions & Image Upload)**
+## **ðŸŽ¯ Key Achievements (Session 26 Nov 2025 PM: Appwrite Functions & Image Upload)**
 
 ### **1. Create Tenant User Function - Deployment Success**
 
 #### **Problem Solved:**
-- ❌ **Before:** Tenant users created via Flutter only added to `users` collection, NOT to Appwrite Auth
-- ❌ **Impact:** Users couldn't login (no Auth credentials)
-- ✅ **Solution:** Deploy Appwrite Function to create user in BOTH Auth and Database
+- âŒ **Before:** Tenant users created via Flutter only added to `users` collection, NOT to Appwrite Auth
+- âŒ **Impact:** Users couldn't login (no Auth credentials)
+- âœ… **Solution:** Deploy Appwrite Function to create user in BOTH Auth and Database
 
 #### **Implementation:**
-- ✅ Created `functions/create-tenant-user/` dengan complete logic:
+- âœ… Created `functions/create-tenant-user/` dengan complete logic:
   - Create user in Appwrite Auth with email & password  
   - Add `tenant` label to Auth user
   - Create document in `users` collection
   - Rollback mechanism (delete Auth user if DB fails)
   - Comprehensive error handling & validation
-- ✅ Function Environment Variables:
+- âœ… Function Environment Variables:
   - `APPWRITE_FUNCTION_API_KEY` - Using Function-Approve Registration key (8 scopes)
   - `DATABASE_ID` - kantin-db
   - `USERS_COLLECTION_ID` - users
-- ✅ Deployment Details:
+- âœ… Deployment Details:
   - **Function ID:** `createTenantUser`
   - **Runtime:** Node.js 18.0
   - **Size:** 2.74 MB (complete dependencies)
@@ -474,61 +519,61 @@ feat: Add image upload with compression for product images
   - **Execute Permission:** `any` (accessible by authenticated users)
 
 #### **Flutter Integration Fixes:**
-- ✅ Fixed `assign_user_dialog.dart`:
-  - ❌ Removed invalid header: `x-appwrite-key`
-  - ✅ Corrected function ID: `'createTenantUser'`
-  - ✅ Removed invalid `async` parameter
-  - ✅ Added `full_name` and `email` to document creation
-- ✅ Phone number validation: Support international format (`+62xxx`)
+- âœ… Fixed `assign_user_dialog.dart`:
+  - âŒ Removed invalid header: `x-appwrite-key`
+  - âœ… Corrected function ID: `'createTenantUser'`
+  - âœ… Removed invalid `async` parameter
+  - âœ… Added `full_name` and `email` to document creation
+- âœ… Phone number validation: Support international format (`+62xxx`)
 
 #### **Testing Results:**
-- ✅ Function successfully creates user in Auth
-- ✅ User document created in database with correct fields
-- ✅ Tenant users can login with created credentials
-- ✅ Auto-redirect to Tenant Dashboard works
+- âœ… Function successfully creates user in Auth
+- âœ… User document created in database with correct fields
+- âœ… Tenant users can login with created credentials
+- âœ… Auto-redirect to Tenant Dashboard works
 
 ---
 
-### **2. Image Upload System with Compression** 🖼️
+### **2. Image Upload System with Compression** ðŸ–¼ï¸
 
 #### **Features Implemented:**
-- ✅ **Image Picker** - Select images from device storage (folder internal)
-- ✅ **Auto Compression** - Compress to max 500KB
-- ✅ **Smart Resize** - Auto resize to max 1200px (maintain aspect ratio)
-- ✅ **Quality Adjustment** - Start at 85%, reduce to 70% if needed
-- ✅ **Appwrite Storage** Integration
-- ✅ **Image Preview** - Preview uploaded image in dialog
-- ✅ **Manual URL Fallback** - Can still paste URL manually
+- âœ… **Image Picker** - Select images from device storage (folder internal)
+- âœ… **Auto Compression** - Compress to max 500KB
+- âœ… **Smart Resize** - Auto resize to max 1200px (maintain aspect ratio)
+- âœ… **Quality Adjustment** - Start at 85%, reduce to 70% if needed
+- âœ… **Appwrite Storage** Integration
+- âœ… **Image Preview** - Preview uploaded image in dialog
+- âœ… **Manual URL Fallback** - Can still paste URL manually
 
 #### **Technical Implementation:**
 
 **New Files Created:**
-- ✅ `lib/core/services/image_upload_service.dart` (167 lines)
+- âœ… `lib/core/services/image_upload_service.dart` (167 lines)
   - `pickAndUploadImage()` - Main upload method
   - `_compressImage()` - Compression algorithm
   - `_getFileUrl()` - Generate public URL
   - `deleteImage()` - Delete from storage
 
 **Files Modified:**
-- ✅ `pubspec.yaml`:
+- âœ… `pubspec.yaml`:
   - Added: `file_picker: ^10.3.7`
   - Added: `image: ^4.5.4`
-- ✅ `lib/core/config/appwrite_config.dart`:
+- âœ… `lib/core/config/appwrite_config.dart`:
   - Added: `productImagesBucketId = 'product-images'`
-- ✅ `lib/core/providers/appwrite_provider.dart`:
+- âœ… `lib/core/providers/appwrite_provider.dart`:
   - Added: `appwriteStorageProvider`
-- ✅ `lib/features/tenant/presentation/widgets/product_dialog.dart`:
+- âœ… `lib/features/tenant/presentation/widgets/product_dialog.dart`:
   - Added upload button dengan loading state
   - Added image preview (120px height)
   - Added compressed file size display
   - Added error handling
 
 **Appwrite Storage Setup:**
-- ✅ Bucket ID: `product-images`
-- ✅ Permissions:
+- âœ… Bucket ID: `product-images`
+- âœ… Permissions:
   - **Read:** `Any` (public can view product images)
   - **Create/Update/Delete:** `Users` (authenticated users only)
-- ✅ File Settings:
+- âœ… File Settings:
   - Max file size: 5MB
   - Allowed extensions: jpg, jpeg, png, webp
 
@@ -536,43 +581,43 @@ feat: Add image upload with compression for product images
 ```javascript
 1. Decode image bytes
 2. Check dimensions:
-   - If width/height > 1200px → Resize (maintain aspect ratio)
+   - If width/height > 1200px â†’ Resize (maintain aspect ratio)
 3. Encode as JPEG with quality 85%
 4. Check file size:
-   - If > 500KB → Reduce quality to 80%, 75%, 70%
+   - If > 500KB â†’ Reduce quality to 80%, 75%, 70%
 5. Upload compressed bytes to Appwrite Storage
 6. Return public URL
 ```
 
 #### **Performance Impact:**
-- 📊 **Average Compression:** 80-85% size reduction
-- 📊 **Example:** 2.5MB image → ~450KB (82% smaller)
-- 📊 **Storage Savings:** 100 products = ~210MB saved
-- ⚡ **Page Load:** Significantly faster with compressed images
+- ðŸ“Š **Average Compression:** 80-85% size reduction
+- ðŸ“Š **Example:** 2.5MB image â†’ ~450KB (82% smaller)
+- ðŸ“Š **Storage Savings:** 100 products = ~210MB saved
+- âš¡ **Page Load:** Significantly faster with compressed images
 
 ---
 
 ### **3. Bug Fixes & Improvements**
 
 #### **Bug Fixes:**
-- ✅ Fixed duplicate class definition in `appwrite_config.dart`
-- ✅ Fixed duplicate Storage provider in `appwrite_provider.dart`
-- ✅ Fixed phone validation to support international format
-- ✅ Fixed missing `full_name` field in user document creation
-- ✅ Fixed function permissions (users → any)
+- âœ… Fixed duplicate class definition in `appwrite_config.dart`
+- âœ… Fixed duplicate Storage provider in `appwrite_provider.dart`
+- âœ… Fixed phone validation to support international format
+- âœ… Fixed missing `full_name` field in user document creation
+- âœ… Fixed function permissions (users â†’ any)
 
 #### **Code Quality:**
-- ✅ Added comprehensive error handling
-- ✅ Added loading indicators for async operations
-- ✅ Added success/error snackbar messages
-- ✅ Added image preview functionality
-- ✅ Repository pattern maintained
+- âœ… Added comprehensive error handling
+- âœ… Added loading indicators for async operations
+- âœ… Added success/error snackbar messages
+- âœ… Added image preview functionality
+- âœ… Repository pattern maintained
 
 ---
 
 ### **4. Git Push to GitHub**
 
-✅ **Successfully pushed to:** `https://github.com/Ryota679/PML_7.git`
+âœ… **Successfully pushed to:** `https://github.com/Ryota679/PML_7.git`
 - **Commit:** `1dd9d9f`
 - **Branch:** `main`
 - **Objects:** 324 files
@@ -596,34 +641,34 @@ feat: Add image upload with compression for product images
 
 ## ** Updated Progress Summary**
 
-### **Sprint 1: ✅ 100% SELESAI + Bonus Features**
+### **Sprint 1: âœ… 100% SELESAI + Bonus Features**
 - **Original Tasks:** 8/8 selesai (100%)
 - **Bonus Features:** 7 fitur tambahan major
 - **Status:** Sprint 1 EXCEEDED expectations
 
-### **Sprint 2: ✅ 100% COMPLETE + BONUS FEATURES**
-- **Original Tasks:** 9 tasks COMPLETE (100%) ✅
+### **Sprint 2: âœ… 100% COMPLETE + BONUS FEATURES**
+- **Original Tasks:** 9 tasks COMPLETE (100%) âœ…
 - **Bonus Features:** 2 major additions:
   1. Appwrite Function: Create Tenant User (deployed & working)
   2. Image Upload System with Compression 
 - **Status:** Sprint 2 COMPLETE dengan quality improvements
 
-### **Sprint 3: ⏳ Belum Dimulai (0%)**
+### **Sprint 3: â³ Belum Dimulai (0%)**
 - **Target:** Guest ordering flow
-- **Dependencies:** Sprint 2 ✅ DONE
+- **Dependencies:** Sprint 2 âœ… DONE
 
-### **Sprint 4: ⏳ Belum Dimulai (0%)**
+### **Sprint 4: â³ Belum Dimulai (0%)**
 - **Target:** Real-time order management
 - **Dependencies:** Sprint 3
 
 ---
 
 ### **Next Session Priorities:**
-1. ✅ ~~Deploy Create Tenant User function~~ **DONE**
-2. ✅ ~~Implement image upload dengan compression~~ **DONE**
-3. 🔄 Test image upload end-to-end **NEXT**
-4. 🔄 Start Sprint 3: Guest ordering flow **NEXT**
-5. ⏳ Design & implement Hierarchical QR Code system
+1. âœ… ~~Deploy Create Tenant User function~~ **DONE**
+2. âœ… ~~Implement image upload dengan compression~~ **DONE**
+3. ðŸ”„ Test image upload end-to-end **NEXT**
+4. ðŸ”„ Start Sprint 3: Guest ordering flow **NEXT**
+5. â³ Design & implement Hierarchical QR Code system
 
 ---
 
@@ -639,42 +684,42 @@ feat: Add image upload with compression for product images
 
 ---
 
-## **🎯 Key Achievements (Session 27 Nov 2025: Staff & Contract Management)**
+## **ðŸŽ¯ Key Achievements (Session 27 Nov 2025: Staff & Contract Management)**
 
 ### **1. Staff Management System (Tenant Side)**
-- ✅ **Appwrite Function `create-staff-user`**:
+- âœ… **Appwrite Function `create-staff-user`**:
   - Auto-create staff in Auth & Database
   - Role assignment: `tenant` (role), `staff` (sub_role)
-  - Phone number normalization (08xx → +628xx)
-- ✅ **Staff Management UI**:
+  - Phone number normalization (08xx â†’ +628xx)
+- âœ… **Staff Management UI**:
   - List staff members with status
   - Add staff dialog with validation
   - Role-based access (Staff cannot manage other staff)
 
 ### **2. Tenant Contract Management (Business Owner Side)**
-- ✅ **Contract Management UI**:
+- âœ… **Contract Management UI**:
   - New menu "Kelola Kontrak" in Business Owner Dashboard
   - List tenants with contract status (Active/Warning/Expired)
   - Display **Tenant Name** & Manager Name prominently
-- ✅ **Token System Implementation**:
+- âœ… **Token System Implementation**:
   - "Tambah Token" dialog (1, 3, 6, 12 months)
   - Auto-calculate new end date (extend from now if expired)
   - Real-time UI updates
 
 ### **3. Dashboard Improvements**
-- ✅ **Tenant Dashboard**:
+- âœ… **Tenant Dashboard**:
   - **Contract Status Card**: Green/Orange/Red indicators based on remaining days
-  - **Welcome Card**: Now shows Tenant Name & Type (with icon 🍜/🥤)
-- ✅ **Business Owner Dashboard**:
+  - **Welcome Card**: Now shows Tenant Name & Type (with icon ðŸœ/ðŸ¥¤)
+- âœ… **Business Owner Dashboard**:
   - Integrated "Kelola Kontrak" menu
   - Improved navigation flow
 
 ### **4. Bug Fixes & Polish**
 ```
-  - ✅ Fixed `TenantType` icon compilation error
-  - ✅ Fixed environment variable access in providers
-  - ✅ Fixed import paths in contract modules
-  - ✅ Improved error handling and loading states
+  - âœ… Fixed `TenantType` icon compilation error
+  - âœ… Fixed environment variable access in providers
+  - âœ… Fixed import paths in contract modules
+  - âœ… Improved error handling and loading states
 
 ---
 
@@ -684,19 +729,19 @@ feat: Add image upload with compression for product images
 
 ---
 
-## **🎯 Key Achievements (Session 28 Nov 2025: QR Code & Tenant Code System)**
+## **ðŸŽ¯ Key Achievements (Session 28 Nov 2025: QR Code & Tenant Code System)**
 
 ### **1. QR Code Generation System**
 
 #### **Implementation:**
-- ✅ **QR Code Display Page** (`qr_code_display_page.dart`):
+- âœ… **QR Code Display Page** (`qr_code_display_page.dart`):
   - Large, prominent tenant code display (6-character format: `Q8L2PH`)
   - QR code generation using `qr_flutter ^4.1.0`
   - Dual access methods: Code entry OR QR scan
   - Copy code functionality with feedback
   - Share link option
   - Professional UI with instructions
-- ✅ **Tenant Dashboard Integration**:
+- âœ… **Tenant Dashboard Integration**:
   - "QR Code" card (purple) in tenant dashboard
   - Navigate to QR display page with tenant data
   - Tenant name displayed prominently
@@ -709,74 +754,74 @@ feat: Add image upload with compression for product images
 
 ---
 
-### **2. Tenant Code Lookup System** 🔑
+### **2. Tenant Code Lookup System** ðŸ”‘
 
 #### **Problem Solved:**
-- ❌ **Before:** QR codes with localhost URLs don't work on customer phones
-- ❌ **Impact:** Customers can't access menu via QR scan during development
-- ✅ **Solution:** Simple 6-character code system that works in development & production
+- âŒ **Before:** QR codes with localhost URLs don't work on customer phones
+- âŒ **Impact:** Customers can't access menu via QR scan during development
+- âœ… **Solution:** Simple 6-character code system that works in development & production
 
 #### **Implementation:**
 
 ##### **A. Code Generation (`tenant_code_generator.dart`)**
-- ✅ Auto-generate unique code from tenant ID
-- ✅ Base-32 encoding (exclude confusing characters)
-- ✅ Guaranteed unique (derived from database ID)
-- ✅ Short & memorable (6 characters)
-- ✅ Examples: `Q8L2PH`, `K7N2M8`
+- âœ… Auto-generate unique code from tenant ID
+- âœ… Base-32 encoding (exclude confusing characters)
+- âœ… Guaranteed unique (derived from database ID)
+- âœ… Short & memorable (6 characters)
+- âœ… Examples: `Q8L2PH`, `K7N2M8`
 
 ##### **B. Database Schema**
-- ✅ Added `tenant_code` field to `tenants` collection:
+- âœ… Added `tenant_code` field to `tenants` collection:
   - Type: String (size: 6)
   - Required: false (backward compatible)
   - Indexed: Unique index (`idx_tenant_code`)
-- ✅ Manual setup via Appwrite Console (documented)
+- âœ… Manual setup via Appwrite Console (documented)
 
 ##### **C. Auto-Save on Tenant Creation**
-- ✅ Updated `TenantRepository.createTenant()`:
+- âœ… Updated `TenantRepository.createTenant()`:
   - Auto-generate code after tenant created
   - Save to database immediately
   - Graceful fallback if save fails (on-the-fly generation)
-- ✅ New tenants automatically get codes
-- ✅ Existing tenants need one-time manual populate
+- âœ… New tenants automatically get codes
+- âœ… Existing tenants need one-time manual populate
 
 ##### **D. Customer Code Entry** (`customer_code_entry_page.dart`)
-- ✅ Clean, focused code input UI:
+- âœ… Clean, focused code input UI:
   - 6-character input field (auto-uppercase)
   - Character validation (alphanumeric only)
   - Clear placeholder (`Contoh: K7N2M8`)
   - Loading states during lookup
-- ✅ **Tenant Lookup Logic**:
+- âœ… **Tenant Lookup Logic**:
   - Query database by `tenant_code`
   - Validate code exists
   - Navigate to correct guest menu
   - Error handling with helpful messages
-- ✅ **Repository Method** (`getTenantByCode()`):
+- âœ… **Repository Method** (`getTenantByCode()`):
   - Search by code (case-insensitive)
   - Return TenantModel or null
   - Logging for debugging
 
 ##### **E. Guest Landing Page** (`guest_landing_page.dart`)
-- ✅ First screen for non-authenticated users
-- ✅ Prominent "Masukkan Kode Tenant" CTA
-- ✅ Beautiful gradient design
-- ✅ Clear navigation flow
-- ✅ Info about how to get tenant code
+- âœ… First screen for non-authenticated users
+- âœ… Prominent "Masukkan Kode Tenant" CTA
+- âœ… Beautiful gradient design
+- âœ… Clear navigation flow
+- âœ… Info about how to get tenant code
 
 ---
 
 ### **3. Router & Navigation Updates**
 
 #### **New Routes:**
-- ✅ `/guest` - Guest landing page (default for non-auth users)
-- ✅ `/enter-code` - Code entry page
-- ✅ `/menu/:tenantId` - Guest menu (public access)
-- ✅ `/cart/:tenantId` - Shopping cart (public access)
+- âœ… `/guest` - Guest landing page (default for non-auth users)
+- âœ… `/enter-code` - Code entry page
+- âœ… `/menu/:tenantId` - Guest menu (public access)
+- âœ… `/cart/:tenantId` - Shopping cart (public access)
 
 #### **Redirect Logic:**
-- ✅ Non-authenticated users → `/guest` (instead of `/login`)
-- ✅ Public routes accessible without auth
-- ✅ Authenticated users → role-based dashboard
+- âœ… Non-authenticated users â†’ `/guest` (instead of `/login`)
+- âœ… Public routes accessible without auth
+- âœ… Authenticated users â†’ role-based dashboard
 
 ---
 
@@ -804,7 +849,7 @@ feat: Add image upload with compression for product images
 
 #### **Flow 1: Tenant Gets Code**
 ```
-1. Login as Tenant → Dashboard
+1. Login as Tenant â†’ Dashboard
 2. Click "QR Code" card (purple)
 3. See large code display (Q8L2PH)
 4. Copy code and share with customers
@@ -818,7 +863,7 @@ feat: Add image upload with compression for product images
 3. Click "Mulai Order"
 4. Enter 6-char code (Q8L2PH)
 5. Click "Lanjutkan"
-6. Navigate to guest menu automatically ✅
+6. Navigate to guest menu automatically âœ…
 ```
 
 #### **Flow 3: Create New Tenant (Auto-Code)**
@@ -834,7 +879,7 @@ feat: Add image upload with compression for product images
 ### **6. Database Migration**
 
 #### **Manual Setup Required:**
-✅ **Documented in:** `TENANT_CODE_SETUP.md`
+âœ… **Documented in:** `TENANT_CODE_SETUP.md`
 
 **Steps:**
 1. Add `tenant_code` attribute (String, size 6, optional)
@@ -842,88 +887,88 @@ feat: Add image upload with compression for product images
 3. Populate existing tenant with code (one-time)
 
 **Status:** 
-- ✅ Migration script created
-- ✅ Documentation complete
-- ⏳ Manual execution needed (5 minutes via Console)
+- âœ… Migration script created
+- âœ… Documentation complete
+- â³ Manual execution needed (5 minutes via Console)
 
 ---
 
 ### **7. Testing & Validation**
 
 #### **Development Testing:**
-- ✅ Code generation works correctly
-- ✅ QR code displays properly
-- ✅ Copy functionality works
-- ✅ Code entry UI validates input
-- ⏳ End-to-end lookup (needs DB field setup)
+- âœ… Code generation works correctly
+- âœ… QR code displays properly
+- âœ… Copy functionality works
+- âœ… Code entry UI validates input
+- â³ End-to-end lookup (needs DB field setup)
 
 #### **Production Readiness:**
-- ✅ Auto-save for new tenants
-- ✅ Graceful fallback mechanisms
-- ✅ Error handling and user feedback
-- ✅ Backward compatible (nullable field)
+- âœ… Auto-save for new tenants
+- âœ… Graceful fallback mechanisms
+- âœ… Error handling and user feedback
+- âœ… Backward compatible (nullable field)
 
 ---
 
-## **📊 Sprint 3 Progress Update**
+## **ðŸ“Š Sprint 3 Progress Update**
 
-### **Sprint 3: 🔄 IN PROGRESS (40% Complete)**
+### **Sprint 3: ðŸ”„ IN PROGRESS (40% Complete)**
 
 **Original Tasks:**
-- ✅ **[3.1]** Public access permissions setup
-- ✅ **[3.2]** Guest menu page (DONE in previous session)
-- ✅ **[3.3]** Shopping cart functionality (DONE in previous session)
-- ✅ **[Sprint 3C - BONUS]** QR Code Generation System (COMPLETE)
-- ✅ **[Sprint 3C - BONUS]** Tenant Code Lookup System (COMPLETE)
-- ⏳ **[3.4]** Checkout page UI
-- ⏳ **[3.5]** Create Order function
-- ⏳ **[3.6]** Checkout integration
-- ⏳ **[3.7]** Order tracking page
+- âœ… **[3.1]** Public access permissions setup
+- âœ… **[3.2]** Guest menu page (DONE in previous session)
+- âœ… **[3.3]** Shopping cart functionality (DONE in previous session)
+- âœ… **[Sprint 3C - BONUS]** QR Code Generation System (COMPLETE)
+- âœ… **[Sprint 3C - BONUS]** Tenant Code Lookup System (COMPLETE)
+- â³ **[3.4]** Checkout page UI
+- â³ **[3.5]** Create Order function
+- â³ **[3.6]** Checkout integration
+- â³ **[3.7]** Order tracking page
 
 **Bonus Features Added:**
-1. ✅ Guest landing page
-2. ✅ Tenant code system (alternative to QR for development)
-3. ✅ Auto-save tenant codes
-4. ✅ Utility page for bulk code population
+1. âœ… Guest landing page
+2. âœ… Tenant code system (alternative to QR for development)
+3. âœ… Auto-save tenant codes
+4. âœ… Utility page for bulk code population
 
 **Target:** Guest ordering flow end-to-end
 **Status:** Core navigation & access methods complete, checkout flow next
 
 ---
 
-## **🔧 Technical Improvements**
+## **ðŸ”§ Technical Improvements**
 
 ### **Code Quality:**
-- ✅ Repository pattern maintained
-- ✅ Comprehensive error handling
-- ✅ Loading states for async operations
-- ✅ User feedback (SnackBars, error messages)
-- ✅ Input validation and sanitization
+- âœ… Repository pattern maintained
+- âœ… Comprehensive error handling
+- âœ… Loading states for async operations
+- âœ… User feedback (SnackBars, error messages)
+- âœ… Input validation and sanitization
 
 ### **Performance:**
-- ✅ Efficient code generation (O(1) lookup by tenant_code index)
-- ✅ Minimal memory footprint
-- ✅ Fast navigation (no unnecessary API calls)
+- âœ… Efficient code generation (O(1) lookup by tenant_code index)
+- âœ… Minimal memory footprint
+- âœ… Fast navigation (no unnecessary API calls)
 
 ### **Documentation:**
-- ✅ Setup guides created
-- ✅ Code comments added
-- ✅ User flow documentation
-- ✅ Troubleshooting guide
+- âœ… Setup guides created
+- âœ… Code comments added
+- âœ… User flow documentation
+- âœ… Troubleshooting guide
 
 ---
 
-## **📝 Known Issues & Notes**
+## **ðŸ“ Known Issues & Notes**
 
 ### **Development Limitation:**
-⚠️ **QR Code URLs use localhost during development**
+âš ï¸ **QR Code URLs use localhost during development**
 - **Issue:** QR codes contain `localhost:port` URLs
 - **Impact:** QR scan from physical devices won't work in dev
 - **Workaround:** Use tenant code system instead
 - **Production Fix:** Update URL to production domain before deployment
 
 ### **Manual Setup Required:**
-⏳ **Tenant code field needs one-time setup**
+â³ **Tenant code field needs one-time setup**
 - **What:** Add `tenant_code` field via Appwrite Console
 - **Why:** Appwrite CLI command not available
 - **Duration:** ~5 minutes
@@ -931,47 +976,47 @@ feat: Add image upload with compression for product images
 
 ---
 
-## **🎯 Next Session Priorities**
+## **ðŸŽ¯ Next Session Priorities**
 
 ### **Immediate (Sprint 3B - Checkout Flow):**
-1. ⏳ Complete tenant_code field setup in database
-2. ⏳ Test end-to-end code lookup flow
-3. ⏳ Build checkout page UI
-4. ⏳ Implement order creation logic
-5. ⏳ Add order confirmation page
+1. â³ Complete tenant_code field setup in database
+2. â³ Test end-to-end code lookup flow
+3. â³ Build checkout page UI
+4. â³ Implement order creation logic
+5. â³ Add order confirmation page
 
 ### **Future Enhancements:**
-- 🔮 QR scanner functionality (mobile camera)
-- 🔮 Production URL configuration
+- ðŸ”® QR scanner functionality (mobile camera)
+- ðŸ”® Production URL configuration
   - Validate code exists
   - Navigate to correct guest menu
   - Error handling with helpful messages
-- ✅ **Repository Method** (`getTenantByCode()`):
+- âœ… **Repository Method** (`getTenantByCode()`):
   - Search by code (case-insensitive)
   - Return TenantModel or null
   - Logging for debugging
 
 ##### **E. Guest Landing Page** (`guest_landing_page.dart`)
-- ✅ First screen for non-authenticated users
-- ✅ Prominent "Masukkan Kode Tenant" CTA
-- ✅ Beautiful gradient design
-- ✅ Clear navigation flow
-- ✅ Info about how to get tenant code
+- âœ… First screen for non-authenticated users
+- âœ… Prominent "Masukkan Kode Tenant" CTA
+- âœ… Beautiful gradient design
+- âœ… Clear navigation flow
+- âœ… Info about how to get tenant code
 
 ---
 
 ### **3. Router & Navigation Updates**
 
 #### **New Routes:**
-- ✅ `/guest` - Guest landing page (default for non-auth users)
-- ✅ `/enter-code` - Code entry page
-- ✅ `/menu/:tenantId` - Guest menu (public access)
-- ✅ `/cart/:tenantId` - Shopping cart (public access)
+- âœ… `/guest` - Guest landing page (default for non-auth users)
+- âœ… `/enter-code` - Code entry page
+- âœ… `/menu/:tenantId` - Guest menu (public access)
+- âœ… `/cart/:tenantId` - Shopping cart (public access)
 
 #### **Redirect Logic:**
-- ✅ Non-authenticated users → `/guest` (instead of `/login`)
-- ✅ Public routes accessible without auth
-- ✅ Authenticated users → role-based dashboard
+- âœ… Non-authenticated users â†’ `/guest` (instead of `/login`)
+- âœ… Public routes accessible without auth
+- âœ… Authenticated users â†’ role-based dashboard
 
 ---
 
@@ -999,7 +1044,7 @@ feat: Add image upload with compression for product images
 
 #### **Flow 1: Tenant Gets Code**
 ```
-1. Login as Tenant → Dashboard
+1. Login as Tenant â†’ Dashboard
 2. Click "QR Code" card (purple)
 3. See large code display (Q8L2PH)
 4. Copy code and share with customers
@@ -1013,7 +1058,7 @@ feat: Add image upload with compression for product images
 3. Click "Mulai Order"
 4. Enter 6-char code (Q8L2PH)
 5. Click "Lanjutkan"
-6. Navigate to guest menu automatically ✅
+6. Navigate to guest menu automatically âœ…
 ```
 
 #### **Flow 3: Create New Tenant (Auto-Code)**
@@ -1029,7 +1074,7 @@ feat: Add image upload with compression for product images
 ### **6. Database Migration**
 
 #### **Manual Setup Required:**
-✅ **Documented in:** `TENANT_CODE_SETUP.md`
+âœ… **Documented in:** `TENANT_CODE_SETUP.md`
 
 **Steps:**
 1. Add `tenant_code` attribute (String, size 6, optional)
@@ -1037,88 +1082,88 @@ feat: Add image upload with compression for product images
 3. Populate existing tenant with code (one-time)
 
 **Status:** 
-- ✅ Migration script created
-- ✅ Documentation complete
-- ⏳ Manual execution needed (5 minutes via Console)
+- âœ… Migration script created
+- âœ… Documentation complete
+- â³ Manual execution needed (5 minutes via Console)
 
 ---
 
 ### **7. Testing & Validation**
 
 #### **Development Testing:**
-- ✅ Code generation works correctly
-- ✅ QR code displays properly
-- ✅ Copy functionality works
-- ✅ Code entry UI validates input
-- ⏳ End-to-end lookup (needs DB field setup)
+- âœ… Code generation works correctly
+- âœ… QR code displays properly
+- âœ… Copy functionality works
+- âœ… Code entry UI validates input
+- â³ End-to-end lookup (needs DB field setup)
 
 #### **Production Readiness:**
-- ✅ Auto-save for new tenants
-- ✅ Graceful fallback mechanisms
-- ✅ Error handling and user feedback
-- ✅ Backward compatible (nullable field)
+- âœ… Auto-save for new tenants
+- âœ… Graceful fallback mechanisms
+- âœ… Error handling and user feedback
+- âœ… Backward compatible (nullable field)
 
 ---
 
-## **📊 Sprint 3 Progress Update**
+## **ðŸ“Š Sprint 3 Progress Update**
 
-### **Sprint 3: 🔄 IN PROGRESS (40% Complete)**
+### **Sprint 3: ðŸ”„ IN PROGRESS (40% Complete)**
 
 **Original Tasks:**
-- ✅ **[3.1]** Public access permissions setup
-- ✅ **[3.2]** Guest menu page (DONE in previous session)
-- ✅ **[3.3]** Shopping cart functionality (DONE in previous session)
-- ✅ **[Sprint 3C - BONUS]** QR Code Generation System (COMPLETE)
-- ✅ **[Sprint 3C - BONUS]** Tenant Code Lookup System (COMPLETE)
-- ⏳ **[3.4]** Checkout page UI
-- ⏳ **[3.5]** Create Order function
-- ⏳ **[3.6]** Checkout integration
-- ⏳ **[3.7]** Order tracking page
+- âœ… **[3.1]** Public access permissions setup
+- âœ… **[3.2]** Guest menu page (DONE in previous session)
+- âœ… **[3.3]** Shopping cart functionality (DONE in previous session)
+- âœ… **[Sprint 3C - BONUS]** QR Code Generation System (COMPLETE)
+- âœ… **[Sprint 3C - BONUS]** Tenant Code Lookup System (COMPLETE)
+- â³ **[3.4]** Checkout page UI
+- â³ **[3.5]** Create Order function
+- â³ **[3.6]** Checkout integration
+- â³ **[3.7]** Order tracking page
 
 **Bonus Features Added:**
-1. ✅ Guest landing page
-2. ✅ Tenant code system (alternative to QR for development)
-3. ✅ Auto-save tenant codes
-4. ✅ Utility page for bulk code population
+1. âœ… Guest landing page
+2. âœ… Tenant code system (alternative to QR for development)
+3. âœ… Auto-save tenant codes
+4. âœ… Utility page for bulk code population
 
 **Target:** Guest ordering flow end-to-end
 **Status:** Core navigation & access methods complete, checkout flow next
 
 ---
 
-## **🔧 Technical Improvements**
+## **ðŸ”§ Technical Improvements**
 
 ### **Code Quality:**
-- ✅ Repository pattern maintained
-- ✅ Comprehensive error handling
-- ✅ Loading states for async operations
-- ✅ User feedback (SnackBars, error messages)
-- ✅ Input validation and sanitization
+- âœ… Repository pattern maintained
+- âœ… Comprehensive error handling
+- âœ… Loading states for async operations
+- âœ… User feedback (SnackBars, error messages)
+- âœ… Input validation and sanitization
 
 ### **Performance:**
-- ✅ Efficient code generation (O(1) lookup by tenant_code index)
-- ✅ Minimal memory footprint
-- ✅ Fast navigation (no unnecessary API calls)
+- âœ… Efficient code generation (O(1) lookup by tenant_code index)
+- âœ… Minimal memory footprint
+- âœ… Fast navigation (no unnecessary API calls)
 
 ### **Documentation:**
-- ✅ Setup guides created
-- ✅ Code comments added
-- ✅ User flow documentation
-- ✅ Troubleshooting guide
+- âœ… Setup guides created
+- âœ… Code comments added
+- âœ… User flow documentation
+- âœ… Troubleshooting guide
 
 ---
 
-## **📝 Known Issues & Notes**
+## **ðŸ“ Known Issues & Notes**
 
 ### **Development Limitation:**
-⚠️ **QR Code URLs use localhost during development**
+âš ï¸ **QR Code URLs use localhost during development**
 - **Issue:** QR codes contain `localhost:port` URLs
 - **Impact:** QR scan from physical devices won't work in dev
 - **Workaround:** Use tenant code system instead
 - **Production Fix:** Update URL to production domain before deployment
 
 ### **Manual Setup Required:**
-⏳ **Tenant code field needs one-time setup**
+â³ **Tenant code field needs one-time setup**
 - **What:** Add `tenant_code` field via Appwrite Console
 - **Why:** Appwrite CLI command not available
 - **Duration:** ~5 minutes
@@ -1126,20 +1171,20 @@ feat: Add image upload with compression for product images
 
 ---
 
-## **🎯 Next Session Priorities**
+## **ðŸŽ¯ Next Session Priorities**
 
 ### **Immediate (Sprint 3B - Checkout Flow):**
-1. ⏳ Complete tenant_code field setup in database
-2. ⏳ Test end-to-end code lookup flow
-3. ⏳ Build checkout page UI
-4. ⏳ Implement order creation logic
-5. ⏳ Add order confirmation page
+1. â³ Complete tenant_code field setup in database
+2. â³ Test end-to-end code lookup flow
+3. â³ Build checkout page UI
+4. â³ Implement order creation logic
+5. â³ Add order confirmation page
 
 ### **Future Enhancements:**
-- 🔮 QR scanner functionality (mobile camera)
-- 🔮 Production URL configuration
-- 🔮 QR code download feature
-- 🔮 Analytics (track code vs QR usage)
+- ðŸ”® QR scanner functionality (mobile camera)
+- ðŸ”® Production URL configuration
+- ðŸ”® QR code download feature
+- ðŸ”® Analytics (track code vs QR usage)
 
 ---
 
@@ -1169,16 +1214,16 @@ feat: Add image upload with compression for product images
 
 ---
 
-## **🎯 Key Achievements (Session 30 Nov 2025: Sprint 3.4-3.7 - Checkout Flow)**
+## **ðŸŽ¯ Key Achievements (Session 30 Nov 2025: Sprint 3.4-3.7 - Checkout Flow)**
 
-### **Sprint 3 Progress Update:** 🔄 **40% → 80% COMPLETE**
+### **Sprint 3 Progress Update:** ðŸ”„ **40% â†’ 80% COMPLETE**
 
 #### **Completed Features:**
 
 ##### **1. Order Management System (Sprint 3.4-3.5)**
 
 **Database Schema - `orders` Collection:**
-- ✅ Collection created dengan schema lengkap:
+- âœ… Collection created dengan schema lengkap:
   - `order_number` (String, 50) - Format: ORD-YYYYMMDD-HHMMSS-XXX
   - `tenant_id` (String, 255) - FK to tenants
   - `customer_name` (String, 255) - Required
@@ -1191,23 +1236,23 @@ feat: Add image upload with compression for product images
   - `status` (String, 50) - Enum: pending, confirmed, preparing, ready, completed, cancelled
   - Timestamps: `$createdAt`, `$updatedAt`
 
-- ✅ Indexes created:
+- âœ… Indexes created:
   - `idx_order_number` (unique)
   - `idx_tenant_id`, `idx_customer_id`, `idx_status`, `idx_created_at`
 
-- ✅ Permissions configured:
+- âœ… Permissions configured:
   - **Create:** `Any` (guest dapat membuat order tanpa auth)
   - **Read:** `Any` (guest dapat tracking order via order number)
   - **Update/Delete:** Label `tenant` + Label `staff` (authenticated users only)
 
 **Models Created:**
-- ✅ **OrderItemModel** (`lib/shared/models/order_item_model.dart` - 66 lines):
+- âœ… **OrderItemModel** (`lib/shared/models/order_item_model.dart` - 66 lines):
   - Removed dependency on separate `order_items` collection
   - Added `fromJson()` and `toJson()` methods
   - Items stored as JSON array in `orders.items` field (size: 100KB)
   - Auto-calculated subtotal getter
 
-- ✅ **OrderModel** (`lib/shared/models/order_model.dart` - 233 lines):
+- âœ… **OrderModel** (`lib/shared/models/order_model.dart` - 233 lines):
   - Parses items from JSON string stored in database
   - Correct field mapping: `customer_phone`, `total_price`, `customer_notes`
   - OrderStatus enum with 6 states + colors + labels
@@ -1215,7 +1260,7 @@ feat: Add image upload with compression for product images
   - Guest order tracking support
 
 **Repository Created:**
-- ✅ **OrderRepository** (`lib/shared/repositories/order_repository.dart` - 200 lines):
+- âœ… **OrderRepository** (`lib/shared/repositories/order_repository.dart` - 200 lines):
   - `createOrder()` - Direct SDK call (NO Appwrite Function)
   - `getOrderByNumber()` - For guest tracking
   - `getOrderById()` - By document ID
@@ -1224,7 +1269,7 @@ feat: Add image upload with compression for product images
   - `deleteOrder()` - Cancel orders
 
 **Providers Created:**
-- ✅ **Order Providers** (`lib/features/guest/providers/order_provider.dart` - 38 lines):
+- âœ… **Order Providers** (`lib/features/guest/providers/order_provider.dart` - 38 lines):
   - `orderRepositoryProvider` - Repository instance
   - `orderByNumberProvider` - Fetch by order number (guest tracking)
   - `orderByIdProvider` - Fetch by document ID
@@ -1234,7 +1279,7 @@ feat: Add image upload with compression for product images
 ##### **2. Checkout Page Implementation (Sprint 3.6)**
 
 **Checkout Page UI:**
-- ✅ **CheckoutPage** (`lib/features/guest/presentation/pages/checkout_page.dart` - 371 lines):
+- âœ… **CheckoutPage** (`lib/features/guest/presentation/pages/checkout_page.dart` - 371 lines):
   - Customer information form with validation:
     - Name (required) - Text capitalization
     - Phone (required) - Digit-only, 10-13 characters
@@ -1247,10 +1292,10 @@ feat: Add image upload with compression for product images
   - Navigation to order tracking after success
 
 **Integration:**
-- ✅ Updated `cart_page.dart`:
+- âœ… Updated `cart_page.dart`:
   - Added checkout button: "Lanjut ke Checkout"
   - Navigate to `/checkout/:tenantId`
-- ✅ Updated `app_router.dart`:
+- âœ… Updated `app_router.dart`:
   - Added route: `/checkout/:tenantId`
   - Added route: `/order/:orderNumber`
   - Updated public routes to allow guest access
@@ -1258,7 +1303,7 @@ feat: Add image upload with compression for product images
 ##### **3. Order Tracking Page (Sprint 3.7)**
 
 **Order Tracking UI:**
-- ✅ **OrderTrackingPage** (`lib/features/guest/presentation/pages/order_tracking_page.dart` - 410 lines):
+- âœ… **OrderTrackingPage** (`lib/features/guest/presentation/pages/order_tracking_page.dart` - 410 lines):
   - Success confirmation with icon
   - Order number display (large, highlighted)
   - Order status with color-coded badges
@@ -1275,12 +1320,12 @@ feat: Add image upload with compression for product images
 **Decision 1: Direct SDK Approach (No Appwrite Function)**
 
 **Rationale:**
-- ✅ Free tier limited to 5 functions (4 already used)
-- ✅ `createOrder` doesn't need complex server-side logic
-- ✅ Permission `Any` allows direct guest access
-- ✅ Saves 1 function slot for Sprint 4's `updateOrderStatus`
-- ✅ Faster execution (no function cold start)
-- ✅ Simpler codebase (less moving parts)
+- âœ… Free tier limited to 5 functions (4 already used)
+- âœ… `createOrder` doesn't need complex server-side logic
+- âœ… Permission `Any` allows direct guest access
+- âœ… Saves 1 function slot for Sprint 4's `updateOrderStatus`
+- âœ… Faster execution (no function cold start)
+- âœ… Simpler codebase (less moving parts)
 
 **Implementation:**
 ```dart
@@ -1294,62 +1339,62 @@ final doc = await _databases.createDocument(
 ```
 
 **Security:**
-- ✅ Collection permission: Create = `Any` (guest access)
-- ✅ Client-side validation ensures data quality
-- ✅ Order status locked to 'pending' on creation
-- ✅ Update/delete requires authentication (tenant/staff labels)
+- âœ… Collection permission: Create = `Any` (guest access)
+- âœ… Client-side validation ensures data quality
+- âœ… Order status locked to 'pending' on creation
+- âœ… Update/delete requires authentication (tenant/staff labels)
 
 **Decision 2: Items as JSON String (Not Separate Collection)**
 
 **Rationale:**
-- ✅ Simpler than separate `order_items` collection
-- ✅ Single database call to get full order
-- ✅ 100KB size limit = ~600 items per order (sufficient)
-- ✅ Easier to implement and maintain
-- ✅ Better performance (no joins needed)
+- âœ… Simpler than separate `order_items` collection
+- âœ… Single database call to get full order
+- âœ… 100KB size limit = ~600 items per order (sufficient)
+- âœ… Easier to implement and maintain
+- âœ… Better performance (no joins needed)
 
 **Decision 3: Customer Phone Required**
 
 **Rationale:**
-- ✅ User request for follow-up if order not picked up
-- ✅ Better customer service
-- ✅ Can use for future SMS notifications
+- âœ… User request for follow-up if order not picked up
+- âœ… Better customer service
+- âœ… Can use for future SMS notifications
 
 ---
 
 ### **Files Created (Sprint 3.4-3.7):**
 
-1. ✅ `lib/shared/models/order_item_model.dart` (66 lines)
-2. ✅ `lib/shared/models/order_model.dart` (233 lines)
-3. ✅ `lib/shared/repositories/order_repository.dart` (200 lines)
-4. ✅ `lib/features/guest/providers/order_provider.dart` (38 lines)
-5. ✅ `lib/features/guest/presentation/pages/checkout_page.dart` (371 lines)
-6. ✅ `lib/features/guest/presentation/pages/order_tracking_page.dart` (410 lines)
+1. âœ… `lib/shared/models/order_item_model.dart` (66 lines)
+2. âœ… `lib/shared/models/order_model.dart` (233 lines)
+3. âœ… `lib/shared/repositories/order_repository.dart` (200 lines)
+4. âœ… `lib/features/guest/providers/order_provider.dart` (38 lines)
+5. âœ… `lib/features/guest/presentation/pages/checkout_page.dart` (371 lines)
+6. âœ… `lib/features/guest/presentation/pages/order_tracking_page.dart` (410 lines)
 
 **Total New Code:** ~1,318 lines
 
 ### **Files Modified:**
 
-1. ✅ `lib/features/guest/presentation/cart_page.dart` - Added checkout button
-2. ✅ `lib/core/router/app_router.dart` - Added checkout and order tracking routes
+1. âœ… `lib/features/guest/presentation/cart_page.dart` - Added checkout button
+2. âœ… `lib/core/router/app_router.dart` - Added checkout and order tracking routes
 
 ---
 
 ### **Testing Status:**
 
 #### **Completed:**
-- ✅ Models compile successfully
-- ✅ Repository compiles successfully
-- ✅ Pages compile successfully
-- ✅ Router configuration valid
-- ✅ No blocking compilation errors
+- âœ… Models compile successfully
+- âœ… Repository compiles successfully
+- âœ… Pages compile successfully
+- âœ… Router configuration valid
+- âœ… No blocking compilation errors
 
 #### **Pending (requires running app):**
-- ⏳ End-to-end flow testing: Menu → Cart → Checkout → Order Tracking
-- ⏳ Database integration testing (create order, fetch order)
-- ⏳ Form validation testing
-- ⏳ Error handling scenarios (network errors, invalid data)
-- ⏳ UI/UX polish and animations
+- â³ End-to-end flow testing: Menu â†’ Cart â†’ Checkout â†’ Order Tracking
+- â³ Database integration testing (create order, fetch order)
+- â³ Form validation testing
+- â³ Error handling scenarios (network errors, invalid data)
+- â³ UI/UX polish and animations
 
 ---
 
@@ -1357,126 +1402,126 @@ final doc = await _databases.createDocument(
 
 **Current Status: 4/5 Functions Used (1 Slot Reserved)**
 
-1. ✅ `approve-registration` - Approve business owner registration
-2. ✅ `create-tenant-user` - Create tenant with Auth + Database
-3. ✅ `create-staff-user` - Create staff with Auth + Database (merged with tenant user)
-4. ✅ `activate-business-owner` - Activate business owner account
-5. ⏳ **RESERVED for Sprint 4:** `updateOrderStatus` - Update order status with authorization
+1. âœ… `approve-registration` - Approve business owner registration
+2. âœ… `create-tenant-user` - Create tenant with Auth + Database
+3. âœ… `create-staff-user` - Create staff with Auth + Database (merged with tenant user)
+4. âœ… `activate-business-owner` - Activate business owner account
+5. â³ **RESERVED for Sprint 4:** `updateOrderStatus` - Update order status with authorization
 
 **Saved 1 Slot by:**
-- ❌ NOT creating `createOrder` function
-- ✅ Using direct SDK call instead
+- âŒ NOT creating `createOrder` function
+- âœ… Using direct SDK call instead
 
 ---
 
 ### **Sprint 3 Progress Summary:**
 
 #### **Completed (80%):**
-- ✅ Sprint 3A: Guest Landing & Menu System (COMPLETE)
-- ✅ Sprint 3B: Shopping Cart (COMPLETE)
-- ✅ Sprint 3C: QR Code & Tenant Lookup (COMPLETE)
-- ✅ Sprint 3.4-3.7: Checkout Flow (COMPLETE)
+- âœ… Sprint 3A: Guest Landing & Menu System (COMPLETE)
+- âœ… Sprint 3B: Shopping Cart (COMPLETE)
+- âœ… Sprint 3C: QR Code & Tenant Lookup (COMPLETE)
+- âœ… Sprint 3.4-3.7: Checkout Flow (COMPLETE)
 
 #### **Remaining (20%):**
-- ⏳ Sprint 3.8 (Bonus): QR Scanner dengan `mobile_scanner: ^7.1.3`
-- ⏳ End-to-end testing & bug fixes
-- ⏳ UI polish & animations
-- ⏳ Documentation updates
+- â³ Sprint 3.8 (Bonus): QR Scanner dengan `mobile_scanner: ^7.1.3`
+- â³ End-to-end testing & bug fixes
+- â³ UI polish & animations
+- â³ Documentation updates
 
 ---
 
 ### **Technical Improvements:**
 
 #### **Code Quality:**
-- ✅ Consistent naming conventions
-- ✅ Comprehensive error handling
-- ✅ User-friendly error messages
-- ✅ Loading states for async operations
-- ✅ Form validation with helpful hints
+- âœ… Consistent naming conventions
+- âœ… Comprehensive error handling
+- âœ… User-friendly error messages
+- âœ… Loading states for async operations
+- âœ… Form validation with helpful hints
 
 #### **Performance:**
-- ✅ Single database call per order creation
-- ✅ Optimized JSON serialization
-- ✅ Efficient Riverpod state management
-- ✅ No unnecessary re-renders
+- âœ… Single database call per order creation
+- âœ… Optimized JSON serialization
+- âœ… Efficient Riverpod state management
+- âœ… No unnecessary re-renders
 
 #### **Architecture:**
-- ✅ Clean separation: Models → Repository → Providers → UI
-- ✅ Reusable components (OrderItemModel for both cart and orders)
-- ✅ Scalable structure (easy to add features)
-- ✅ Type-safe with Dart strong typing
+- âœ… Clean separation: Models â†’ Repository â†’ Providers â†’ UI
+- âœ… Reusable components (OrderItemModel for both cart and orders)
+- âœ… Scalable structure (easy to add features)
+- âœ… Type-safe with Dart strong typing
 
 ---
 
 ### **Known Issues & Notes:**
 
 **Minor Analysis Warnings:**
-- ⚠️ Deprecated `updateDocument` warnings in `tenant_repository.dart` (unrelated to our changes)
-- ⚠️ Some `avoid_print` warnings (debug code, will be removed in production)
+- âš ï¸ Deprecated `updateDocument` warnings in `tenant_repository.dart` (unrelated to our changes)
+- âš ï¸ Some `avoid_print` warnings (debug code, will be removed in production)
 
 **No Blocking Issues:**
-- ✅ All Sprint 3.4-3.7 features implemented
-- ✅ Code compiles successfully
-- ✅ Ready for runtime testing
+- âœ… All Sprint 3.4-3.7 features implemented
+- âœ… Code compiles successfully
+- âœ… Ready for runtime testing
 
 ---
 
 ### **Next Session Priorities:**
 
 #### **Immediate (Testing & Polish):**
-1. ⏳ Run app and test end-to-end checkout flow
-2. ⏳ Verify database integration (orders collection)
-3. ⏳ Test error scenarios (network errors, invalid input)
-4. ⏳ Fix any bugs found during testing
-5. ⏳ UI polish and animations
+1. â³ Run app and test end-to-end checkout flow
+2. â³ Verify database integration (orders collection)
+3. â³ Test error scenarios (network errors, invalid input)
+4. â³ Fix any bugs found during testing
+5. â³ UI polish and animations
 
 #### **Sprint 3.8 (Bonus - Optional):**
-1. ⏳ Implement QR Scanner using `mobile_scanner: ^7.1.3`
-2. ⏳ Integrate scanner with tenant lookup flow
-3. ⏳ Test QR scan → Menu flow
+1. â³ Implement QR Scanner using `mobile_scanner: ^7.1.3`
+2. â³ Integrate scanner with tenant lookup flow
+3. â³ Test QR scan â†’ Menu flow
 
 #### **Sprint 4 Preparation:**
-1. ⏳ Design tenant order management dashboard
-2. ⏳ Plan `updateOrderStatus` Appwrite Function
-3. ⏳ Real-time order updates (WebSocket/Polling)
+1. â³ Design tenant order management dashboard
+2. â³ Plan `updateOrderStatus` Appwrite Function
+3. â³ Real-time order updates (WebSocket/Polling)
 
 ---
 
-**Session Completion:** ✅ **Sprint 3.4-3.7 Implementation COMPLETE**  
+**Session Completion:** âœ… **Sprint 3.4-3.7 Implementation COMPLETE**  
 **Next Milestone:** Sprint 4 - Order Management & Stabilization  
 **Overall Progress:** Sprint 3 is now **80% COMPLETE**
 
 ---
 
-## **🎯 Key Achievements (Session 1 Dec 2025: Checkout Verification & Enhancements)**
+## **ðŸŽ¯ Key Achievements (Session 1 Dec 2025: Checkout Verification & Enhancements)**
 
 ### **1. Guest Checkout Flow Verification**
-- ✅ **End-to-End Testing**:
+- âœ… **End-to-End Testing**:
   - Menu browsing -> Add to cart -> Checkout -> Order Tracking
   - Verified data persistence in `orders` collection
   - Verified UI states (loading, success, error)
 
 ### **2. Order Tracking Enhancements**
-- ✅ **Tenant Name Display**:
+- âœ… **Tenant Name Display**:
   - Added `tenant_detail_provider` to fetch tenant info
   - Displayed "Pesan di: [Tenant Name]" on tracking page
-- ✅ **Queue Number System**:
+- âœ… **Queue Number System**:
   - Implemented pseudo-queue number using last 3 digits of Order ID
   - Replaced "No. Meja" with "No. Antrian" as primary display
   - "No. Meja" moved to secondary "Lokasi" field
-- ✅ **Checkout Page Updates**:
+- âœ… **Checkout Page Updates**:
   - Updated input label to "No. Meja / Lokasi (Opsional)"
 
 ```
 **Decision 1: Direct SDK Approach (No Appwrite Function)**
 
 **Rationale:**
-- ✅ Free tier limited to 5 functions (4 already used)
-- ✅ `createOrder` doesn't need complex server-side logic
-- ✅ Permission `Any` allows direct guest access
-- ✅ Saves 1 function slot for Sprint 4's `updateOrderStatus`
-- ✅ Faster execution (no function cold start)
-- ✅ Simpler codebase (less moving parts)
+- âœ… Free tier limited to 5 functions (4 already used)
+- âœ… `createOrder` doesn't need complex server-side logic
+- âœ… Permission `Any` allows direct guest access
+- âœ… Saves 1 function slot for Sprint 4's `updateOrderStatus`
+- âœ… Faster execution (no function cold start)
+- âœ… Simpler codebase (less moving parts)
 
 **Implementation:**
 ```dart
@@ -1490,62 +1535,62 @@ final doc = await _databases.createDocument(
 ```
 
 **Security:**
-- ✅ Collection permission: Create = `Any` (guest access)
-- ✅ Client-side validation ensures data quality
-- ✅ Order status locked to 'pending' on creation
-- ✅ Update/delete requires authentication (tenant/staff labels)
+- âœ… Collection permission: Create = `Any` (guest access)
+- âœ… Client-side validation ensures data quality
+- âœ… Order status locked to 'pending' on creation
+- âœ… Update/delete requires authentication (tenant/staff labels)
 
 **Decision 2: Items as JSON String (Not Separate Collection)**
 
 **Rationale:**
-- ✅ Simpler than separate `order_items` collection
-- ✅ Single database call to get full order
-- ✅ 100KB size limit = ~600 items per order (sufficient)
-- ✅ Easier to implement and maintain
-- ✅ Better performance (no joins needed)
+- âœ… Simpler than separate `order_items` collection
+- âœ… Single database call to get full order
+- âœ… 100KB size limit = ~600 items per order (sufficient)
+- âœ… Easier to implement and maintain
+- âœ… Better performance (no joins needed)
 
 **Decision 3: Customer Phone Required**
 
 **Rationale:**
-- ✅ User request for follow-up if order not picked up
-- ✅ Better customer service
-- ✅ Can use for future SMS notifications
+- âœ… User request for follow-up if order not picked up
+- âœ… Better customer service
+- âœ… Can use for future SMS notifications
 
 ---
 
 ### **Files Created (Sprint 3.4-3.7):**
 
-1. ✅ `lib/shared/models/order_item_model.dart` (66 lines)
-2. ✅ `lib/shared/models/order_model.dart` (233 lines)
-3. ✅ `lib/shared/repositories/order_repository.dart` (200 lines)
-4. ✅ `lib/features/guest/providers/order_provider.dart` (38 lines)
-5. ✅ `lib/features/guest/presentation/pages/checkout_page.dart` (371 lines)
-6. ✅ `lib/features/guest/presentation/pages/order_tracking_page.dart` (410 lines)
+1. âœ… `lib/shared/models/order_item_model.dart` (66 lines)
+2. âœ… `lib/shared/models/order_model.dart` (233 lines)
+3. âœ… `lib/shared/repositories/order_repository.dart` (200 lines)
+4. âœ… `lib/features/guest/providers/order_provider.dart` (38 lines)
+5. âœ… `lib/features/guest/presentation/pages/checkout_page.dart` (371 lines)
+6. âœ… `lib/features/guest/presentation/pages/order_tracking_page.dart` (410 lines)
 
 **Total New Code:** ~1,318 lines
 
 ### **Files Modified:**
 
-1. ✅ `lib/features/guest/presentation/cart_page.dart` - Added checkout button
-2. ✅ `lib/core/router/app_router.dart` - Added checkout and order tracking routes
+1. âœ… `lib/features/guest/presentation/cart_page.dart` - Added checkout button
+2. âœ… `lib/core/router/app_router.dart` - Added checkout and order tracking routes
 
 ---
 
 ### **Testing Status:**
 
 #### **Completed:**
-- ✅ Models compile successfully
-- ✅ Repository compiles successfully
-- ✅ Pages compile successfully
-- ✅ Router configuration valid
-- ✅ No blocking compilation errors
+- âœ… Models compile successfully
+- âœ… Repository compiles successfully
+- âœ… Pages compile successfully
+- âœ… Router configuration valid
+- âœ… No blocking compilation errors
 
 #### **Pending (requires running app):**
-- ⏳ End-to-end flow testing: Menu → Cart → Checkout → Order Tracking
-- ⏳ Database integration testing (create order, fetch order)
-- ⏳ Form validation testing
-- ⏳ Error handling scenarios (network errors, invalid data)
-- ⏳ UI/UX polish and animations
+- â³ End-to-end flow testing: Menu â†’ Cart â†’ Checkout â†’ Order Tracking
+- â³ Database integration testing (create order, fetch order)
+- â³ Form validation testing
+- â³ Error handling scenarios (network errors, invalid data)
+- â³ UI/UX polish and animations
 
 ---
 
@@ -1553,120 +1598,120 @@ final doc = await _databases.createDocument(
 
 **Current Status: 4/5 Functions Used (1 Slot Reserved)**
 
-1. ✅ `approve-registration` - Approve business owner registration
-2. ✅ `create-tenant-user` - Create tenant with Auth + Database
-3. ✅ `create-staff-user` - Create staff with Auth + Database (merged with tenant user)
-4. ✅ `activate-business-owner` - Activate business owner account
-5. ⏳ **RESERVED for Sprint 4:** `updateOrderStatus` - Update order status with authorization
+1. âœ… `approve-registration` - Approve business owner registration
+2. âœ… `create-tenant-user` - Create tenant with Auth + Database
+3. âœ… `create-staff-user` - Create staff with Auth + Database (merged with tenant user)
+4. âœ… `activate-business-owner` - Activate business owner account
+5. â³ **RESERVED for Sprint 4:** `updateOrderStatus` - Update order status with authorization
 
 **Saved 1 Slot by:**
-- ❌ NOT creating `createOrder` function
-- ✅ Using direct SDK call instead
+- âŒ NOT creating `createOrder` function
+- âœ… Using direct SDK call instead
 
 ---
 
 ### **Sprint 3 Progress Summary:**
 
 #### **Completed (80%):**
-- ✅ Sprint 3A: Guest Landing & Menu System (COMPLETE)
-- ✅ Sprint 3B: Shopping Cart (COMPLETE)
-- ✅ Sprint 3C: QR Code & Tenant Lookup (COMPLETE)
-- ✅ Sprint 3.4-3.7: Checkout Flow (COMPLETE)
+- âœ… Sprint 3A: Guest Landing & Menu System (COMPLETE)
+- âœ… Sprint 3B: Shopping Cart (COMPLETE)
+- âœ… Sprint 3C: QR Code & Tenant Lookup (COMPLETE)
+- âœ… Sprint 3.4-3.7: Checkout Flow (COMPLETE)
 
 #### **Remaining (20%):**
-- ⏳ Sprint 3.8 (Bonus): QR Scanner dengan `mobile_scanner: ^7.1.3`
-- ⏳ End-to-end testing & bug fixes
-- ⏳ UI polish & animations
-- ⏳ Documentation updates
+- â³ Sprint 3.8 (Bonus): QR Scanner dengan `mobile_scanner: ^7.1.3`
+- â³ End-to-end testing & bug fixes
+- â³ UI polish & animations
+- â³ Documentation updates
 
 ---
 
 ### **Technical Improvements:**
 
 #### **Code Quality:**
-- ✅ Consistent naming conventions
-- ✅ Comprehensive error handling
-- ✅ User-friendly error messages
-- ✅ Loading states for async operations
-- ✅ Form validation with helpful hints
+- âœ… Consistent naming conventions
+- âœ… Comprehensive error handling
+- âœ… User-friendly error messages
+- âœ… Loading states for async operations
+- âœ… Form validation with helpful hints
 
 #### **Performance:**
-- ✅ Single database call per order creation
-- ✅ Optimized JSON serialization
-- ✅ Efficient Riverpod state management
-- ✅ No unnecessary re-renders
+- âœ… Single database call per order creation
+- âœ… Optimized JSON serialization
+- âœ… Efficient Riverpod state management
+- âœ… No unnecessary re-renders
 
 #### **Architecture:**
-- ✅ Clean separation: Models → Repository → Providers → UI
-- ✅ Reusable components (OrderItemModel for both cart and orders)
-- ✅ Scalable structure (easy to add features)
-- ✅ Type-safe with Dart strong typing
+- âœ… Clean separation: Models â†’ Repository â†’ Providers â†’ UI
+- âœ… Reusable components (OrderItemModel for both cart and orders)
+- âœ… Scalable structure (easy to add features)
+- âœ… Type-safe with Dart strong typing
 
 ---
 
 ### **Known Issues & Notes:**
 
 **Minor Analysis Warnings:**
-- ⚠️ Deprecated `updateDocument` warnings in `tenant_repository.dart` (unrelated to our changes)
-- ⚠️ Some `avoid_print` warnings (debug code, will be removed in production)
+- âš ï¸ Deprecated `updateDocument` warnings in `tenant_repository.dart` (unrelated to our changes)
+- âš ï¸ Some `avoid_print` warnings (debug code, will be removed in production)
 
 **No Blocking Issues:**
-- ✅ All Sprint 3.4-3.7 features implemented
-- ✅ Code compiles successfully
-- ✅ Ready for runtime testing
+- âœ… All Sprint 3.4-3.7 features implemented
+- âœ… Code compiles successfully
+- âœ… Ready for runtime testing
 
 ---
 
 ### **Next Session Priorities:**
 
 #### **Immediate (Testing & Polish):**
-1. ⏳ Run app and test end-to-end checkout flow
-2. ⏳ Verify database integration (orders collection)
-3. ⏳ Test error scenarios (network errors, invalid input)
-4. ⏳ Fix any bugs found during testing
-5. ⏳ UI polish and animations
+1. â³ Run app and test end-to-end checkout flow
+2. â³ Verify database integration (orders collection)
+3. â³ Test error scenarios (network errors, invalid input)
+4. â³ Fix any bugs found during testing
+5. â³ UI polish and animations
 
 #### **Sprint 3.8 (Bonus - Optional):**
-1. ⏳ Implement QR Scanner using `mobile_scanner: ^7.1.3`
-2. ⏳ Integrate scanner with tenant lookup flow
-3. ⏳ Test QR scan → Menu flow
+1. â³ Implement QR Scanner using `mobile_scanner: ^7.1.3`
+2. â³ Integrate scanner with tenant lookup flow
+3. â³ Test QR scan â†’ Menu flow
 
 #### **Sprint 4 Preparation:**
-1. ⏳ Design tenant order management dashboard
-2. ⏳ Plan `updateOrderStatus` Appwrite Function
-3. ⏳ Real-time order updates (WebSocket/Polling)
+1. â³ Design tenant order management dashboard
+2. â³ Plan `updateOrderStatus` Appwrite Function
+3. â³ Real-time order updates (WebSocket/Polling)
 
 ---
 
-**Session Completion:** ✅ **Sprint 3.4-3.7 Implementation COMPLETE**  
+**Session Completion:** âœ… **Sprint 3.4-3.7 Implementation COMPLETE**  
 **Next Milestone:** Sprint 4 - Order Management & Stabilization  
 **Overall Progress:** Sprint 3 is now **80% COMPLETE**
 
 ---
 
-## **🎯 Key Achievements (Session 1 Dec 2025: Checkout Verification & Enhancements)**
+## **ðŸŽ¯ Key Achievements (Session 1 Dec 2025: Checkout Verification & Enhancements)**
 
 ### **1. Guest Checkout Flow Verification**
-- ✅ **End-to-End Testing**:
+- âœ… **End-to-End Testing**:
   - Menu browsing -> Add to cart -> Checkout -> Order Tracking
   - Verified data persistence in `orders` collection
   - Verified UI states (loading, success, error)
 
 ### **2. Order Tracking Enhancements**
-- ✅ **Tenant Name Display**:
+- âœ… **Tenant Name Display**:
   - Added `tenant_detail_provider` to fetch tenant info
   - Displayed "Pesan di: [Tenant Name]" on tracking page
-- ✅ **Queue Number System**:
+- âœ… **Queue Number System**:
   - Implemented pseudo-queue number using last 3 digits of Order ID
   - Replaced "No. Meja" with "No. Antrian" as primary display
   - "No. Meja" moved to secondary "Lokasi" field
-- ✅ **Checkout Page Updates**:
+- âœ… **Checkout Page Updates**:
   - Updated input label to "No. Meja / Lokasi (Opsional)"
 
 ### **3. Database Verification**
-- ✅ Confirmed existing schema supports new UI requirements
-- ✅ No database changes needed for Queue Number (derived from ID)
-- ✅ No database changes needed for Tenant Name (fetched via relation)
+- âœ… Confirmed existing schema supports new UI requirements
+- âœ… No database changes needed for Queue Number (derived from ID)
+- âœ… No database changes needed for Tenant Name (fetched via relation)
 
 ---
 
@@ -1674,73 +1719,73 @@ final doc = await _databases.createDocument(
 **Session Focus:** Sprint 3 Completion & Verification + QR Scanner
 **Status:** Sprint 3 COMPLETE (100% + Sprint 3.8 Bonus)
 
-## **🎯 Sprint 3.8: QR Code Scanner** ✅ **COMPLETE** (1 Des 2025)
+## **ðŸŽ¯ Sprint 3.8: QR Code Scanner** âœ… **COMPLETE** (1 Des 2025)
 
 ### **Implementation Details:**
-- ✅ Package: `mobile_scanner: ^7.1.3`
-- ✅ QR scanner page with camera view & custom overlay
-- ✅ Barcode detection + tenant code validation (6 chars)
-- ✅ Auto-navigate to menu on successful scan
-- ✅ Flash toggle, camera switch, error handling
+- âœ… Package: `mobile_scanner: ^7.1.3`
+- âœ… QR scanner page with camera view & custom overlay
+- âœ… Barcode detection + tenant code validation (6 chars)
+- âœ… Auto-navigate to menu on successful scan
+- âœ… Flash toggle, camera switch, error handling
 ```
 
 **Security:**
-- ✅ Collection permission: Create = `Any` (guest access)
-- ✅ Client-side validation ensures data quality
-- ✅ Order status locked to 'pending' on creation
-- ✅ Update/delete requires authentication (tenant/staff labels)
+- âœ… Collection permission: Create = `Any` (guest access)
+- âœ… Client-side validation ensures data quality
+- âœ… Order status locked to 'pending' on creation
+- âœ… Update/delete requires authentication (tenant/staff labels)
 
 **Decision 2: Items as JSON String (Not Separate Collection)**
 
 **Rationale:**
-- ✅ Simpler than separate `order_items` collection
-- ✅ Single database call to get full order
-- ✅ 100KB size limit = ~600 items per order (sufficient)
-- ✅ Easier to implement and maintain
-- ✅ Better performance (no joins needed)
+- âœ… Simpler than separate `order_items` collection
+- âœ… Single database call to get full order
+- âœ… 100KB size limit = ~600 items per order (sufficient)
+- âœ… Easier to implement and maintain
+- âœ… Better performance (no joins needed)
 
 **Decision 3: Customer Phone Required**
 
 **Rationale:**
-- ✅ User request for follow-up if order not picked up
-- ✅ Better customer service
-- ✅ Can use for future SMS notifications
+- âœ… User request for follow-up if order not picked up
+- âœ… Better customer service
+- âœ… Can use for future SMS notifications
 
 ---
 
 ### **Files Created (Sprint 3.4-3.7):**
 
-1. ✅ `lib/shared/models/order_item_model.dart` (66 lines)
-2. ✅ `lib/shared/models/order_model.dart` (233 lines)
-3. ✅ `lib/shared/repositories/order_repository.dart` (200 lines)
-4. ✅ `lib/features/guest/providers/order_provider.dart` (38 lines)
-5. ✅ `lib/features/guest/presentation/pages/checkout_page.dart` (371 lines)
-6. ✅ `lib/features/guest/presentation/pages/order_tracking_page.dart` (410 lines)
+1. âœ… `lib/shared/models/order_item_model.dart` (66 lines)
+2. âœ… `lib/shared/models/order_model.dart` (233 lines)
+3. âœ… `lib/shared/repositories/order_repository.dart` (200 lines)
+4. âœ… `lib/features/guest/providers/order_provider.dart` (38 lines)
+5. âœ… `lib/features/guest/presentation/pages/checkout_page.dart` (371 lines)
+6. âœ… `lib/features/guest/presentation/pages/order_tracking_page.dart` (410 lines)
 
 **Total New Code:** ~1,318 lines
 
 ### **Files Modified:**
 
-1. ✅ `lib/features/guest/presentation/cart_page.dart` - Added checkout button
-2. ✅ `lib/core/router/app_router.dart` - Added checkout and order tracking routes
+1. âœ… `lib/features/guest/presentation/cart_page.dart` - Added checkout button
+2. âœ… `lib/core/router/app_router.dart` - Added checkout and order tracking routes
 
 ---
 
 ### **Testing Status:**
 
 #### **Completed:**
-- ✅ Models compile successfully
-- ✅ Repository compiles successfully
-- ✅ Pages compile successfully
-- ✅ Router configuration valid
-- ✅ No blocking compilation errors
+- âœ… Models compile successfully
+- âœ… Repository compiles successfully
+- âœ… Pages compile successfully
+- âœ… Router configuration valid
+- âœ… No blocking compilation errors
 
 #### **Pending (requires running app):**
-- ⏳ End-to-end flow testing: Menu → Cart → Checkout → Order Tracking
-- ⏳ Database integration testing (create order, fetch order)
-- ⏳ Form validation testing
-- ⏳ Error handling scenarios (network errors, invalid data)
-- ⏳ UI/UX polish and animations
+- â³ End-to-end flow testing: Menu â†’ Cart â†’ Checkout â†’ Order Tracking
+- â³ Database integration testing (create order, fetch order)
+- â³ Form validation testing
+- â³ Error handling scenarios (network errors, invalid data)
+- â³ UI/UX polish and animations
 
 ---
 
@@ -1748,120 +1793,120 @@ final doc = await _databases.createDocument(
 
 **Current Status: 4/5 Functions Used (1 Slot Reserved)**
 
-1. ✅ `approve-registration` - Approve business owner registration
-2. ✅ `create-tenant-user` - Create tenant with Auth + Database
-3. ✅ `create-staff-user` - Create staff with Auth + Database (merged with tenant user)
-4. ✅ `activate-business-owner` - Activate business owner account
-5. ⏳ **RESERVED for Sprint 4:** `updateOrderStatus` - Update order status with authorization
+1. âœ… `approve-registration` - Approve business owner registration
+2. âœ… `create-tenant-user` - Create tenant with Auth + Database
+3. âœ… `create-staff-user` - Create staff with Auth + Database (merged with tenant user)
+4. âœ… `activate-business-owner` - Activate business owner account
+5. â³ **RESERVED for Sprint 4:** `updateOrderStatus` - Update order status with authorization
 
 **Saved 1 Slot by:**
-- ❌ NOT creating `createOrder` function
-- ✅ Using direct SDK call instead
+- âŒ NOT creating `createOrder` function
+- âœ… Using direct SDK call instead
 
 ---
 
 ### **Sprint 3 Progress Summary:**
 
 #### **Completed (80%):**
-- ✅ Sprint 3A: Guest Landing & Menu System (COMPLETE)
-- ✅ Sprint 3B: Shopping Cart (COMPLETE)
-- ✅ Sprint 3C: QR Code & Tenant Lookup (COMPLETE)
-- ✅ Sprint 3.4-3.7: Checkout Flow (COMPLETE)
+- âœ… Sprint 3A: Guest Landing & Menu System (COMPLETE)
+- âœ… Sprint 3B: Shopping Cart (COMPLETE)
+- âœ… Sprint 3C: QR Code & Tenant Lookup (COMPLETE)
+- âœ… Sprint 3.4-3.7: Checkout Flow (COMPLETE)
 
 #### **Remaining (20%):**
-- ⏳ Sprint 3.8 (Bonus): QR Scanner dengan `mobile_scanner: ^7.1.3`
-- ⏳ End-to-end testing & bug fixes
-- ⏳ UI polish & animations
-- ⏳ Documentation updates
+- â³ Sprint 3.8 (Bonus): QR Scanner dengan `mobile_scanner: ^7.1.3`
+- â³ End-to-end testing & bug fixes
+- â³ UI polish & animations
+- â³ Documentation updates
 
 ---
 
 ### **Technical Improvements:**
 
 #### **Code Quality:**
-- ✅ Consistent naming conventions
-- ✅ Comprehensive error handling
-- ✅ User-friendly error messages
-- ✅ Loading states for async operations
-- ✅ Form validation with helpful hints
+- âœ… Consistent naming conventions
+- âœ… Comprehensive error handling
+- âœ… User-friendly error messages
+- âœ… Loading states for async operations
+- âœ… Form validation with helpful hints
 
 #### **Performance:**
-- ✅ Single database call per order creation
-- ✅ Optimized JSON serialization
-- ✅ Efficient Riverpod state management
-- ✅ No unnecessary re-renders
+- âœ… Single database call per order creation
+- âœ… Optimized JSON serialization
+- âœ… Efficient Riverpod state management
+- âœ… No unnecessary re-renders
 
 #### **Architecture:**
-- ✅ Clean separation: Models → Repository → Providers → UI
-- ✅ Reusable components (OrderItemModel for both cart and orders)
-- ✅ Scalable structure (easy to add features)
-- ✅ Type-safe with Dart strong typing
+- âœ… Clean separation: Models â†’ Repository â†’ Providers â†’ UI
+- âœ… Reusable components (OrderItemModel for both cart and orders)
+- âœ… Scalable structure (easy to add features)
+- âœ… Type-safe with Dart strong typing
 
 ---
 
 ### **Known Issues & Notes:**
 
 **Minor Analysis Warnings:**
-- ⚠️ Deprecated `updateDocument` warnings in `tenant_repository.dart` (unrelated to our changes)
-- ⚠️ Some `avoid_print` warnings (debug code, will be removed in production)
+- âš ï¸ Deprecated `updateDocument` warnings in `tenant_repository.dart` (unrelated to our changes)
+- âš ï¸ Some `avoid_print` warnings (debug code, will be removed in production)
 
 **No Blocking Issues:**
-- ✅ All Sprint 3.4-3.7 features implemented
-- ✅ Code compiles successfully
-- ✅ Ready for runtime testing
+- âœ… All Sprint 3.4-3.7 features implemented
+- âœ… Code compiles successfully
+- âœ… Ready for runtime testing
 
 ---
 
 ### **Next Session Priorities:**
 
 #### **Immediate (Testing & Polish):**
-1. ⏳ Run app and test end-to-end checkout flow
-2. ⏳ Verify database integration (orders collection)
-3. ⏳ Test error scenarios (network errors, invalid input)
-4. ⏳ Fix any bugs found during testing
-5. ⏳ UI polish and animations
+1. â³ Run app and test end-to-end checkout flow
+2. â³ Verify database integration (orders collection)
+3. â³ Test error scenarios (network errors, invalid input)
+4. â³ Fix any bugs found during testing
+5. â³ UI polish and animations
 
 #### **Sprint 3.8 (Bonus - Optional):**
-1. ⏳ Implement QR Scanner using `mobile_scanner: ^7.1.3`
-2. ⏳ Integrate scanner with tenant lookup flow
-3. ⏳ Test QR scan → Menu flow
+1. â³ Implement QR Scanner using `mobile_scanner: ^7.1.3`
+2. â³ Integrate scanner with tenant lookup flow
+3. â³ Test QR scan â†’ Menu flow
 
 #### **Sprint 4 Preparation:**
-1. ⏳ Design tenant order management dashboard
-2. ⏳ Plan `updateOrderStatus` Appwrite Function
-3. ⏳ Real-time order updates (WebSocket/Polling)
+1. â³ Design tenant order management dashboard
+2. â³ Plan `updateOrderStatus` Appwrite Function
+3. â³ Real-time order updates (WebSocket/Polling)
 
 ---
 
-**Session Completion:** ✅ **Sprint 3.4-3.7 Implementation COMPLETE**  
+**Session Completion:** âœ… **Sprint 3.4-3.7 Implementation COMPLETE**  
 **Next Milestone:** Sprint 4 - Order Management & Stabilization  
 **Overall Progress:** Sprint 3 is now **80% COMPLETE**
 
 ---
 
-## **🎯 Key Achievements (Session 1 Dec 2025: Checkout Verification & Enhancements)**
+## **ðŸŽ¯ Key Achievements (Session 1 Dec 2025: Checkout Verification & Enhancements)**
 
 ### **1. Guest Checkout Flow Verification**
-- ✅ **End-to-End Testing**:
+- âœ… **End-to-End Testing**:
   - Menu browsing -> Add to cart -> Checkout -> Order Tracking
   - Verified data persistence in `orders` collection
   - Verified UI states (loading, success, error)
 
 ### **2. Order Tracking Enhancements**
-- ✅ **Tenant Name Display**:
+- âœ… **Tenant Name Display**:
   - Added `tenant_detail_provider` to fetch tenant info
   - Displayed "Pesan di: [Tenant Name]" on tracking page
-- ✅ **Queue Number System**:
+- âœ… **Queue Number System**:
   - Implemented pseudo-queue number using last 3 digits of Order ID
   - Replaced "No. Meja" with "No. Antrian" as primary display
   - "No. Meja" moved to secondary "Lokasi" field
-- ✅ **Checkout Page Updates**:
+- âœ… **Checkout Page Updates**:
   - Updated input label to "No. Meja / Lokasi (Opsional)"
 
 ### **3. Database Verification**
-- ✅ Confirmed existing schema supports new UI requirements
-- ✅ No database changes needed for Queue Number (derived from ID)
-- ✅ No database changes needed for Tenant Name (fetched via relation)
+- âœ… Confirmed existing schema supports new UI requirements
+- âœ… No database changes needed for Queue Number (derived from ID)
+- âœ… No database changes needed for Tenant Name (fetched via relation)
 
 ---
 
@@ -1869,26 +1914,26 @@ final doc = await _databases.createDocument(
 **Session Focus:** Sprint 3 Completion & Verification + QR Scanner
 **Status:** Sprint 3 COMPLETE (100% + Sprint 3.8 Bonus)
 
-## **🎯 Sprint 3.8: QR Code Scanner** ✅ **COMPLETE** (1 Des 2025)
+## **ðŸŽ¯ Sprint 3.8: QR Code Scanner** âœ… **COMPLETE** (1 Des 2025)
 
 ### **Implementation Details:**
-- ✅ Package: `mobile_scanner: ^7.1.3`
-- ✅ QR scanner page with camera view & custom overlay
-- ✅ Barcode detection + tenant code validation (6 chars)
-- ✅ Auto-navigate to menu on successful scan
-- ✅ Flash toggle, camera switch, error handling
-- ✅ Android camera permissions configured
-- ✅ Route: `/scan-qr` integrated with code entry page
+- âœ… Package: `mobile_scanner: ^7.1.3`
+- âœ… QR scanner page with camera view & custom overlay
+- âœ… Barcode detection + tenant code validation (6 chars)
+- âœ… Auto-navigate to menu on successful scan
+- âœ… Flash toggle, camera switch, error handling
+- âœ… Android camera permissions configured
+- âœ… Route: `/scan-qr` integrated with code entry page
 
-**User Flow:** Tap "Scan QR Code" → Camera opens → Scan tenant code → Auto lookup → Navigate to menu
+**User Flow:** Tap "Scan QR Code" â†’ Camera opens â†’ Scan tenant code â†’ Auto lookup â†’ Navigate to menu
 
 ---
 
-## **🎯 Session 1 December 2025 PM: Sprint 4 Phase 1**
+## **ðŸŽ¯ Session 1 December 2025 PM: Sprint 4 Phase 1**
 
-### **Sprint 4 Phase 1: Real-time Order Dashboard** ✅ **COMPLETE**
+### **Sprint 4 Phase 1: Real-time Order Dashboard** âœ… **COMPLETE**
 
-#### **1. Architecture Decision: Polling → Real-time WebSocket**
+#### **1. Architecture Decision: Polling â†’ Real-time WebSocket**
 
 **User Question:** "Apakah auto-refresh setiap 10s tidak membebani server?"
 
@@ -1903,27 +1948,27 @@ final doc = await _databases.createDocument(
 | Scalability | Poor (100 tenants = 600 req/min) | Excellent |
 
 #### **2. Appwrite Realtime Implementation**
-- ✅ Added `realtimeProvider` to `appwrite_provider.dart`
-- ✅ WebSocket: `wss://fra.cloud.appwrite.io/v1/realtime`
-- ✅ Subscribe: `databases.{db}.collections.orders.documents`
-- ✅ Auto-refresh on events: create, update, delete
-- ✅ Notification: "📋 Pesanan baru masuk!" on new orders
-- ✅ **No Appwrite Console changes needed** (enabled by default)
+- âœ… Added `realtimeProvider` to `appwrite_provider.dart`
+- âœ… WebSocket: `wss://fra.cloud.appwrite.io/v1/realtime`
+- âœ… Subscribe: `databases.{db}.collections.orders.documents`
+- âœ… Auto-refresh on events: create, update, delete
+- âœ… Notification: "ðŸ“‹ Pesanan baru masuk!" on new orders
+- âœ… **No Appwrite Console changes needed** (enabled by default)
 
 #### **3. Tenant Order Dashboard Features**
-- ✅ Created `TenantOrderDashboardPage` (690 lines)
-- ✅ Real-time order list with WebSocket auto-updates
-- ✅ Status filter tabs (All/Pending/Confirmed/Preparing/Ready/Completed)
-- ✅ Order cards: queue number, status badge, customer info
-- ✅ Items summary (first 3 shown, rest collapsed)
-- ✅ Total amount & next-status action buttons
-- ✅ Detailed modal view (draggable bottom sheet)
-- ✅ Pull-to-refresh, empty states, error handling
+- âœ… Created `TenantOrderDashboardPage` (690 lines)
+- âœ… Real-time order list with WebSocket auto-updates
+- âœ… Status filter tabs (All/Pending/Confirmed/Preparing/Ready/Completed)
+- âœ… Order cards: queue number, status badge, customer info
+- âœ… Items summary (first 3 shown, rest collapsed)
+- âœ… Total amount & next-status action buttons
+- âœ… Detailed modal view (draggable bottom sheet)
+- âœ… Pull-to-refresh, empty states, error handling
 
 #### **4. Queue Number System**
-- ✅ Added `getQueueNumber()` method to OrderModel
-- ✅ Uses last 3 characters of order ID
-- ✅ Displayed on order cards & tracking page
+- âœ… Added `getQueueNumber()` method to OrderModel
+- âœ… Uses last 3 characters of order ID
+- âœ… Displayed on order cards & tracking page
 
 #### **5. Files Created/Modified**
 **New:**
@@ -1938,9 +1983,9 @@ final doc = await _databases.createDocument(
 
 ---
 
-## **📊 Sprint 4 Progress**
+## **ðŸ“Š Sprint 4 Progress**
 
-**Phase 1: Tenant Dashboard** ✅ COMPLETE
+**Phase 1: Tenant Dashboard** âœ… COMPLETE
 - [x] Setup & architecture
 - [x] Backend setup (queries, permissions)
 - [x] UI implementation with real-time updates
@@ -1949,7 +1994,7 @@ final doc = await _databases.createDocument(
 
 **Phase 2: Order Status Management** (NEXT)
 - [ ] Create `updateOrderStatus` Appwrite Function
-- [ ] Status transition validation (pending→confirmed→preparing→ready→completed)
+- [ ] Status transition validation (pendingâ†’confirmedâ†’preparingâ†’readyâ†’completed)
 - [ ] UI for status update with confirmation
 - [ ] Authorization check (tenant can only update own orders)
 
@@ -1965,7 +2010,7 @@ final doc = await _databases.createDocument(
 
 ---
 
-## **🚀 Next Steps**
+## **ðŸš€ Next Steps**
 
 **Immediate (Phase 2):** Order Status Management
 1. Create Appwrite Function `updateOrderStatus`
@@ -1975,89 +2020,89 @@ final doc = await _databases.createDocument(
 ```
 
 #### **Code Quality:**
-- ✅ Consistent naming conventions
-- ✅ Comprehensive error handling
-- ✅ User-friendly error messages
-- ✅ Loading states for async operations
-- ✅ Form validation with helpful hints
+- âœ… Consistent naming conventions
+- âœ… Comprehensive error handling
+- âœ… User-friendly error messages
+- âœ… Loading states for async operations
+- âœ… Form validation with helpful hints
 
 #### **Performance:**
-- ✅ Single database call per order creation
-- ✅ Optimized JSON serialization
-- ✅ Efficient Riverpod state management
-- ✅ No unnecessary re-renders
+- âœ… Single database call per order creation
+- âœ… Optimized JSON serialization
+- âœ… Efficient Riverpod state management
+- âœ… No unnecessary re-renders
 
 #### **Architecture:**
-- ✅ Clean separation: Models → Repository → Providers → UI
-- ✅ Reusable components (OrderItemModel for both cart and orders)
-- ✅ Scalable structure (easy to add features)
-- ✅ Type-safe with Dart strong typing
+- âœ… Clean separation: Models â†’ Repository â†’ Providers â†’ UI
+- âœ… Reusable components (OrderItemModel for both cart and orders)
+- âœ… Scalable structure (easy to add features)
+- âœ… Type-safe with Dart strong typing
 
 ---
 
 ### **Known Issues & Notes:**
 
 **Minor Analysis Warnings:**
-- ⚠️ Deprecated `updateDocument` warnings in `tenant_repository.dart` (unrelated to our changes)
-- ⚠️ Some `avoid_print` warnings (debug code, will be removed in production)
+- âš ï¸ Deprecated `updateDocument` warnings in `tenant_repository.dart` (unrelated to our changes)
+- âš ï¸ Some `avoid_print` warnings (debug code, will be removed in production)
 
 **No Blocking Issues:**
-- ✅ All Sprint 3.4-3.7 features implemented
-- ✅ Code compiles successfully
-- ✅ Ready for runtime testing
+- âœ… All Sprint 3.4-3.7 features implemented
+- âœ… Code compiles successfully
+- âœ… Ready for runtime testing
 
 ---
 
 ### **Next Session Priorities:**
 
 #### **Immediate (Testing & Polish):**
-1. ⏳ Run app and test end-to-end checkout flow
-2. ⏳ Verify database integration (orders collection)
-3. ⏳ Test error scenarios (network errors, invalid input)
-4. ⏳ Fix any bugs found during testing
-5. ⏳ UI polish and animations
+1. â³ Run app and test end-to-end checkout flow
+2. â³ Verify database integration (orders collection)
+3. â³ Test error scenarios (network errors, invalid input)
+4. â³ Fix any bugs found during testing
+5. â³ UI polish and animations
 
 #### **Sprint 3.8 (Bonus - Optional):**
-1. ⏳ Implement QR Scanner using `mobile_scanner: ^7.1.3`
-2. ⏳ Integrate scanner with tenant lookup flow
-3. ⏳ Test QR scan → Menu flow
+1. â³ Implement QR Scanner using `mobile_scanner: ^7.1.3`
+2. â³ Integrate scanner with tenant lookup flow
+3. â³ Test QR scan â†’ Menu flow
 
 #### **Sprint 4 Preparation:**
-1. ⏳ Design tenant order management dashboard
-2. ⏳ Plan `updateOrderStatus` Appwrite Function
-3. ⏳ Real-time order updates (WebSocket/Polling)
+1. â³ Design tenant order management dashboard
+2. â³ Plan `updateOrderStatus` Appwrite Function
+3. â³ Real-time order updates (WebSocket/Polling)
 
 ---
 
-**Session Completion:** ✅ **Sprint 3.4-3.7 Implementation COMPLETE**  
+**Session Completion:** âœ… **Sprint 3.4-3.7 Implementation COMPLETE**  
 **Next Milestone:** Sprint 4 - Order Management & Stabilization  
 **Overall Progress:** Sprint 3 is now **80% COMPLETE**
 
 ---
 
-## **🎯 Key Achievements (Session 1 Dec 2025: Checkout Verification & Enhancements)**
+## **ðŸŽ¯ Key Achievements (Session 1 Dec 2025: Checkout Verification & Enhancements)**
 
 ### **1. Guest Checkout Flow Verification**
-- ✅ **End-to-End Testing**:
+- âœ… **End-to-End Testing**:
   - Menu browsing -> Add to cart -> Checkout -> Order Tracking
   - Verified data persistence in `orders` collection
   - Verified UI states (loading, success, error)
 
 ### **2. Order Tracking Enhancements**
-- ✅ **Tenant Name Display**:
+- âœ… **Tenant Name Display**:
   - Added `tenant_detail_provider` to fetch tenant info
   - Displayed "Pesan di: [Tenant Name]" on tracking page
-- ✅ **Queue Number System**:
+- âœ… **Queue Number System**:
   - Implemented pseudo-queue number using last 3 digits of Order ID
   - Replaced "No. Meja" with "No. Antrian" as primary display
   - "No. Meja" moved to secondary "Lokasi" field
-- ✅ **Checkout Page Updates**:
+- âœ… **Checkout Page Updates**:
   - Updated input label to "No. Meja / Lokasi (Opsional)"
 
 ### **3. Database Verification**
-- ✅ Confirmed existing schema supports new UI requirements
-- ✅ No database changes needed for Queue Number (derived from ID)
-- ✅ No database changes needed for Tenant Name (fetched via relation)
+- âœ… Confirmed existing schema supports new UI requirements
+- âœ… No database changes needed for Queue Number (derived from ID)
+- âœ… No database changes needed for Tenant Name (fetched via relation)
 
 ---
 
@@ -2065,26 +2110,26 @@ final doc = await _databases.createDocument(
 **Session Focus:** Sprint 3 Completion & Verification + QR Scanner
 **Status:** Sprint 3 COMPLETE (100% + Sprint 3.8 Bonus)
 
-## **🎯 Sprint 3.8: QR Code Scanner** ✅ **COMPLETE** (1 Des 2025)
+## **ðŸŽ¯ Sprint 3.8: QR Code Scanner** âœ… **COMPLETE** (1 Des 2025)
 
 ### **Implementation Details:**
-- ✅ Package: `mobile_scanner: ^7.1.3`
-- ✅ QR scanner page with camera view & custom overlay
-- ✅ Barcode detection + tenant code validation (6 chars)
-- ✅ Auto-navigate to menu on successful scan
-- ✅ Flash toggle, camera switch, error handling
-- ✅ Android camera permissions configured
-- ✅ Route: `/scan-qr` integrated with code entry page
+- âœ… Package: `mobile_scanner: ^7.1.3`
+- âœ… QR scanner page with camera view & custom overlay
+- âœ… Barcode detection + tenant code validation (6 chars)
+- âœ… Auto-navigate to menu on successful scan
+- âœ… Flash toggle, camera switch, error handling
+- âœ… Android camera permissions configured
+- âœ… Route: `/scan-qr` integrated with code entry page
 
-**User Flow:** Tap "Scan QR Code" → Camera opens → Scan tenant code → Auto lookup → Navigate to menu
+**User Flow:** Tap "Scan QR Code" â†’ Camera opens â†’ Scan tenant code â†’ Auto lookup â†’ Navigate to menu
 
 ---
 
-## **🎯 Session 1 December 2025 PM: Sprint 4 Phase 1**
+## **ðŸŽ¯ Session 1 December 2025 PM: Sprint 4 Phase 1**
 
-### **Sprint 4 Phase 1: Real-time Order Dashboard** ✅ **COMPLETE**
+### **Sprint 4 Phase 1: Real-time Order Dashboard** âœ… **COMPLETE**
 
-#### **1. Architecture Decision: Polling → Real-time WebSocket**
+#### **1. Architecture Decision: Polling â†’ Real-time WebSocket**
 
 **User Question:** "Apakah auto-refresh setiap 10s tidak membebani server?"
 
@@ -2099,27 +2144,27 @@ final doc = await _databases.createDocument(
 | Scalability | Poor (100 tenants = 600 req/min) | Excellent |
 
 #### **2. Appwrite Realtime Implementation**
-- ✅ Added `realtimeProvider` to `appwrite_provider.dart`
-- ✅ WebSocket: `wss://fra.cloud.appwrite.io/v1/realtime`
-- ✅ Subscribe: `databases.{db}.collections.orders.documents`
-- ✅ Auto-refresh on events: create, update, delete
-- ✅ Notification: "📋 Pesanan baru masuk!" on new orders
-- ✅ **No Appwrite Console changes needed** (enabled by default)
+- âœ… Added `realtimeProvider` to `appwrite_provider.dart`
+- âœ… WebSocket: `wss://fra.cloud.appwrite.io/v1/realtime`
+- âœ… Subscribe: `databases.{db}.collections.orders.documents`
+- âœ… Auto-refresh on events: create, update, delete
+- âœ… Notification: "ðŸ“‹ Pesanan baru masuk!" on new orders
+- âœ… **No Appwrite Console changes needed** (enabled by default)
 
 #### **3. Tenant Order Dashboard Features**
-- ✅ Created `TenantOrderDashboardPage` (690 lines)
-- ✅ Real-time order list with WebSocket auto-updates
-- ✅ Status filter tabs (All/Pending/Confirmed/Preparing/Ready/Completed)
-- ✅ Order cards: queue number, status badge, customer info
-- ✅ Items summary (first 3 shown, rest collapsed)
-- ✅ Total amount & next-status action buttons
-- ✅ Detailed modal view (draggable bottom sheet)
-- ✅ Pull-to-refresh, empty states, error handling
+- âœ… Created `TenantOrderDashboardPage` (690 lines)
+- âœ… Real-time order list with WebSocket auto-updates
+- âœ… Status filter tabs (All/Pending/Confirmed/Preparing/Ready/Completed)
+- âœ… Order cards: queue number, status badge, customer info
+- âœ… Items summary (first 3 shown, rest collapsed)
+- âœ… Total amount & next-status action buttons
+- âœ… Detailed modal view (draggable bottom sheet)
+- âœ… Pull-to-refresh, empty states, error handling
 
 #### **4. Queue Number System**
-- ✅ Added `getQueueNumber()` method to OrderModel
-- ✅ Uses last 3 characters of order ID
-- ✅ Displayed on order cards & tracking page
+- âœ… Added `getQueueNumber()` method to OrderModel
+- âœ… Uses last 3 characters of order ID
+- âœ… Displayed on order cards & tracking page
 
 #### **5. Files Created/Modified**
 **New:**
@@ -2134,9 +2179,9 @@ final doc = await _databases.createDocument(
 
 ---
 
-## **📊 Sprint 4 Progress**
+## **ðŸ“Š Sprint 4 Progress**
 
-**Phase 1: Tenant Dashboard** ✅ COMPLETE
+**Phase 1: Tenant Dashboard** âœ… COMPLETE
 - [x] Setup & architecture
 - [x] Backend setup (queries, permissions)
 - [x] UI implementation with real-time updates
@@ -2145,7 +2190,7 @@ final doc = await _databases.createDocument(
 
 **Phase 2: Order Status Management** (NEXT)
 - [ ] Create `updateOrderStatus` Appwrite Function
-- [ ] Status transition validation (pending→confirmed→preparing→ready→completed)
+- [ ] Status transition validation (pendingâ†’confirmedâ†’preparingâ†’readyâ†’completed)
 - [ ] UI for status update with confirmation
 - [ ] Authorization check (tenant can only update own orders)
 
@@ -2161,7 +2206,7 @@ final doc = await _databases.createDocument(
 
 ---
 
-## **🚀 Next Steps**
+## **ðŸš€ Next Steps**
 
 **Immediate (Phase 2):** Order Status Management
 1. Create Appwrite Function `updateOrderStatus`
@@ -2170,10 +2215,10 @@ final doc = await _databases.createDocument(
 4. Test authorization & validation
 
 **MVP Status:** **~78% Complete**
-- Sprint 1: ✅ 100%
-- Sprint 2: ✅ 100%
-- Sprint 3: ✅ 100% (including 3.8 QR Scanner)
-- Sprint 4: 🔄 25% (Phase 1/4 complete)
+- Sprint 1: âœ… 100%
+- Sprint 2: âœ… 100%
+- Sprint 3: âœ… 100% (including 3.8 QR Scanner)
+- Sprint 4: ðŸ”„ 25% (Phase 1/4 complete)
 
 ---
 
@@ -2183,17 +2228,17 @@ final doc = await _databases.createDocument(
 
 ---
 
-## **🎯 Key Achievements (Session 4 Dec 2025: User Lifecycle Management)**
+## **ðŸŽ¯ Key Achievements (Session 4 Dec 2025: User Lifecycle Management)**
 
 ### **Planning: Delete User & Auto-Cleanup System**
 
 #### **Context & Requirements:**
-- ✅ **Function Limit:** Appwrite Free tier = 5 functions max
-- ✅ **Current Functions (3/5):**
+- âœ… **Function Limit:** Appwrite Free tier = 5 functions max
+- âœ… **Current Functions (3/5):**
   1. `create-user` (merged createStaffUser + createTenantUser)
   2. `approve-registration`
   3. `activateBusinessOwner`
-- ⚠️ **Functions to Delete:**
+- âš ï¸ **Functions to Delete:**
   - `createStaffUser` (deprecated, replaced by create-user)
   - `createTenantUser` (deprecated, replaced by create-user)
 
@@ -2208,26 +2253,26 @@ final doc = await _databases.createDocument(
 
 ---
 
-### **1. Delete User System** 🗑️
+### **1. Delete User System** ðŸ—‘ï¸
 
 #### **Problems Solved:**
-- ❌ **Before:** "Remove User" only unassigns tenant, data remains in database
-- ❌ **Impact:** Orphaned users accumulated, can't truly delete accounts
-- ✅ **Solution:** Proper delete dengan cascading cleanup (Auth + Database + Related Data)
+- âŒ **Before:** "Remove User" only unassigns tenant, data remains in database
+- âŒ **Impact:** Orphaned users accumulated, can't truly delete accounts
+- âœ… **Solution:** Proper delete dengan cascading cleanup (Auth + Database + Related Data)
 
 #### **Appwrite Function: `delete-user`**
 
 **Functionality:**
-- ✅ Validate user exists
-- ✅ Get user role from database
-- ✅ Cascading delete by role:
+- âœ… Validate user exists
+- âœ… Get user role from database
+- âœ… Cascading delete by role:
   - **Tenant:** Delete products, orders, order_items
   - **Staff:** Delete order assignments
   - **Business Owner:** Prevent delete if has active tenants (unless force=true)
-- ✅ Delete user document from `users` collection
-- ✅ Delete account from Appwrite Auth
-- ✅ Rollback mechanism on error
-- ✅ Comprehensive logging
+- âœ… Delete user document from `users` collection
+- âœ… Delete account from Appwrite Auth
+- âœ… Rollback mechanism on error
+- âœ… Comprehensive logging
 
 **Input Payload:**
 ```json
@@ -2260,25 +2305,25 @@ final doc = await _databases.createDocument(
 
 ---
 
-### **2. Auto-Cleanup Expired Contracts** ⏰
+### **2. Auto-Cleanup Expired Contracts** â°
 
 #### **Problems Solved:**
-- ❌ **Before:** Tenant/Business Owner dengan kontrak habis tetap aktif
-- ❌ **Impact:** Manual cleanup needed, data bloat
-- ✅ **Solution:** Scheduled function untuk auto-delete expired users
+- âŒ **Before:** Tenant/Business Owner dengan kontrak habis tetap aktif
+- âŒ **Impact:** Manual cleanup needed, data bloat
+- âœ… **Solution:** Scheduled function untuk auto-delete expired users
 
 #### **Appwrite Function: `cleanup-expired-contracts`**
 
 **Functionality:**
-- ✅ Query users dengan `contract_end_date < now()`
-- ✅ Filter by role: `tenant`, `owner_business` (exclude admin, staff)
-- ✅ For each expired user:
+- âœ… Query users dengan `contract_end_date < now()`
+- âœ… Filter by role: `tenant`, `owner_business` (exclude admin, staff)
+- âœ… For each expired user:
   - Check active orders/products
   - Call `delete-user` function internally
   - Log deletion
-- ✅ Generate summary report
-- ✅ Error handling untuk partial failures
-- ✅ Comprehensive logging
+- âœ… Generate summary report
+- âœ… Error handling untuk partial failures
+- âœ… Comprehensive logging
 
 **Schedule:**
 - **Cron:** `0 0 * * *` (daily at 00:00 UTC / 07:00 WIB)
@@ -2308,30 +2353,30 @@ final doc = await _databases.createDocument(
 ### **3. Flutter UI Updates**
 
 #### **A. User Management Page (Business Owner)**
-- ✅ **Rename Action:** "Remove User" → "Delete User"
-- ✅ **Enhanced Confirmation Dialog:**
+- âœ… **Rename Action:** "Remove User" â†’ "Delete User"
+- âœ… **Enhanced Confirmation Dialog:**
   - Warning message about permanent deletion
   - List of data yang akan dihapus (products, orders)
   - Require explicit confirmation
-- ✅ **Loading States:** Show progress during deletion
-- ✅ **Error Handling:** Display detailed error messages
-- ✅ **Auto Refresh:** Reload user list after successful delete
+- âœ… **Loading States:** Show progress during deletion
+- âœ… **Error Handling:** Display detailed error messages
+- âœ… **Auto Refresh:** Reload user list after successful delete
 
 #### **B. Contract Warning System (Tenant Dashboard)**
-- ✅ **Red Banner:** Contract expires in < 7 days
-- ✅ **Orange Warning:** Contract expires in < 14 days
-- ✅ **Message:** "Kontrak Anda akan habis dalam X hari. Hubungi Business Owner untuk perpanjangan."
+- âœ… **Red Banner:** Contract expires in < 7 days
+- âœ… **Orange Warning:** Contract expires in < 14 days
+- âœ… **Message:** "Kontrak Anda akan habis dalam X hari. Hubungi Business Owner untuk perpanjangan."
 
 #### **C. Admin Dashboard Enhancements**
-- ✅ **Manual Cleanup Trigger:** "Run Cleanup Now" button for testing
-- ✅ **Cleanup Summary Display:** Show results (checked, deleted, skipped)
-- ✅ **Loading State:** Progress indicator during cleanup
-- ✅ **Error Handling:** Display errors if cleanup fails
+- âœ… **Manual Cleanup Trigger:** "Run Cleanup Now" button for testing
+- âœ… **Cleanup Summary Display:** Show results (checked, deleted, skipped)
+- âœ… **Loading State:** Progress indicator during cleanup
+- âœ… **Error Handling:** Display errors if cleanup fails
 
 #### **D. Business Owner Dashboard Updates**
-- ✅ **Notification Badge:** Show count of tenants expiring soon
-- ✅ **Filter Option:** View only expiring tenants
-- ✅ **Color Coding:** Red/Orange indicators for expiry status
+- âœ… **Notification Badge:** Show count of tenants expiring soon
+- âœ… **Filter Option:** View only expiring tenants
+- âœ… **Color Coding:** Red/Orange indicators for expiry status
 
 ---
 
@@ -2340,15 +2385,15 @@ final doc = await _databases.createDocument(
 #### **Current Sprint: Delete & Cleanup (Priority 1)**
 
 **Final Functions Configuration (5/5):**
-1. ✅ `create-user` (existing - merged staff + tenant user creation)
-2. ✅ `approve-registration` (existing)
-3. ✅ `activateBusinessOwner` (existing)
-4. 🆕 `delete-user` (NEW - cascading user deletion)
-5. 🆕 `cleanup-expired-contracts` (NEW - scheduled cleanup)
+1. âœ… `create-user` (existing - merged staff + tenant user creation)
+2. âœ… `approve-registration` (existing)
+3. âœ… `activateBusinessOwner` (existing)
+4. ðŸ†• `delete-user` (NEW - cascading user deletion)
+5. ðŸ†• `cleanup-expired-contracts` (NEW - scheduled cleanup)
 
 **Functions to Remove:**
-- ❌ `createStaffUser` (deprecated)
-- ❌ `createTenantUser` (deprecated)
+- âŒ `createStaffUser` (deprecated)
+- âŒ `createTenantUser` (deprecated)
 
 ---
 
@@ -2360,13 +2405,13 @@ final doc = await _databases.createDocument(
 1. **Business Owner Contract Payment:**
    - Business Owner requests contract extension
    - Payment via Midtrans
-   - Callback → verify → auto-extend `contract_end_date`
+   - Callback â†’ verify â†’ auto-extend `contract_end_date`
    - Notification sent
 
 2. **Guest Order Payment:**
    - Guest checkout order
    - Payment via Midtrans
-   - Payment confirmed → create order in database
+   - Payment confirmed â†’ create order in database
    - Notify tenant (new order received)
 
 **Function Needed:** `process-midtrans-payment`
@@ -2388,13 +2433,13 @@ final doc = await _databases.createDocument(
 
 ### **5. Implementation Tasks**
 
-#### **Phase 1: Preparation & Cleanup** ⏳
+#### **Phase 1: Preparation & Cleanup** â³
 - [ ] **[1.1]** Backup database sebelum mulai development
 - [ ] **[1.2]** Hapus `createStaffUser` function di Appwrite Console
 - [ ] **[1.3]** Hapus `createTenantUser` function di Appwrite Console
 - [ ] **[1.4]** Verify functions count: 3/5 (create-user, approve-registration, activateBusinessOwner)
 
-#### **Phase 2: Delete User Function** ⏳
+#### **Phase 2: Delete User Function** â³
 - [ ] **[2.1]** Create `functions/delete-user/` directory struktur
 - [ ] **[2.2]** Implement function logic:
   - [ ] Validate user exists
@@ -2409,14 +2454,14 @@ final doc = await _databases.createDocument(
 - [ ] **[2.5]** Deploy function (ID: `delete-user`)
 - [ ] **[2.6]** Update Flutter `appwrite_config.dart` (add deleteUserFunctionId)
 - [ ] **[2.7]** Update `user_management_page.dart`:
-  - [ ] Rename action "Remove" → "Delete"
+  - [ ] Rename action "Remove" â†’ "Delete"
   - [ ] Enhanced confirmation dialog
   - [ ] Function call implementation
   - [ ] Loading & error states
   - [ ] Refresh list on success
 - [ ] **[2.8]** Test delete flow end-to-end
 
-#### **Phase 3: Auto-Cleanup Function** ⏳
+#### **Phase 3: Auto-Cleanup Function** â³
 - [ ] **[3.1]** Create `functions/cleanup-expired-contracts/` directory
 - [ ] **[3.2]** Implement function logic:
   - [ ] Query expired users (contract_end_date < now)
@@ -2439,7 +2484,7 @@ final doc = await _databases.createDocument(
   - [ ] Loading & error states
 - [ ] **[3.7]** Test manual cleanup trigger
 
-#### **Phase 4: UI Enhancements** ⏳
+#### **Phase 4: UI Enhancements** â³
 - [ ] **[4.1]** Update `tenant_dashboard.dart`:
   - [ ] Add contract warning banner (red < 7 days, orange < 14 days)
   - [ ] Message dengan countdown
@@ -2449,12 +2494,12 @@ final doc = await _databases.createDocument(
   - [ ] Add filter untuk expired tenants
 - [ ] **[4.3]** Test warning banners dengan mock data
 
-#### **Phase 5: Testing & Verification** ⏳
+#### **Phase 5: Testing & Verification** â³
 - [ ] **[5.1]** Test delete-user function:
-  - [ ] Delete tenant with products → verify cascade
-  - [ ] Delete staff → verify success
-  - [ ] Delete business owner with tenants → verify error
-  - [ ] Force delete business owner → verify all deleted
+  - [ ] Delete tenant with products â†’ verify cascade
+  - [ ] Delete staff â†’ verify success
+  - [ ] Delete business owner with tenants â†’ verify error
+  - [ ] Force delete business owner â†’ verify all deleted
 - [ ] **[5.2]** Test cleanup-expired-contracts:
   - [ ] Create test user with expired contract
   - [ ] Run cleanup manually
@@ -2472,10 +2517,10 @@ final doc = await _databases.createDocument(
   - [ ] Check database
 - [ ] **[5.5]** Test warning system:
   - [ ] Set contract to 5 days (manual)
-  - [ ] Login as tenant → verify red banner
-  - [ ] Login as business owner → verify badge
+  - [ ] Login as tenant â†’ verify red banner
+  - [ ] Login as business owner â†’ verify badge
 
-#### **Phase 6: Documentation & Deployment** ⏳
+#### **Phase 6: Documentation & Deployment** â³
 - [ ] **[6.1]** Update README dengan fitur baru
 - [ ] **[6.2]** Document cleanup schedule & grace period
 - [ ] **[6.3]** Build APK release
@@ -2488,20 +2533,20 @@ final doc = await _databases.createDocument(
 ### **6. Technical Notes**
 
 #### **Data Safety Considerations:**
-- ⚠️ **Permanent Delete:** Data terhapus permanen, tidak bisa di-restore
-- 💡 **Alternative:** Implement soft-delete (add `deleted_at` field) jika butuh recovery
-- 📦 **Backup:** Pastikan backup database sebelum deploy auto-cleanup
-- ⏰ **Grace Period:** Consider 7 hari grace period setelah expired baru di-delete
+- âš ï¸ **Permanent Delete:** Data terhapus permanen, tidak bisa di-restore
+- ðŸ’¡ **Alternative:** Implement soft-delete (add `deleted_at` field) jika butuh recovery
+- ðŸ“¦ **Backup:** Pastikan backup database sebelum deploy auto-cleanup
+- â° **Grace Period:** Consider 7 hari grace period setelah expired baru di-delete
 
 #### **Monitoring & Logging:**
-- 📊 Setup Appwrite function logs untuk monitor cleanup results
-- 📧 Send email notification ke admin untuk summary cleanup harian
-- 🔔 Alert jika cleanup gagal atau ada errors
+- ðŸ“Š Setup Appwrite function logs untuk monitor cleanup results
+- ðŸ“§ Send email notification ke admin untuk summary cleanup harian
+- ðŸ”” Alert jika cleanup gagal atau ada errors
 
 #### **Security:**
-- 🔒 Function requires authentication (cannot call anonymously)
-- 🔑 API key dengan minimal required scopes (users.write, documents.write)
-- ✅ Validate user permissions sebelum delete (prevent unauthorized deletion)
+- ðŸ”’ Function requires authentication (cannot call anonymously)
+- ðŸ”‘ API key dengan minimal required scopes (users.write, documents.write)
+- âœ… Validate user permissions sebelum delete (prevent unauthorized deletion)
 
 ---
 
@@ -2520,39 +2565,39 @@ final doc = await _databases.createDocument(
 
 ---
 
-## **📊 Updated Progress Summary**
+## **ðŸ“Š Updated Progress Summary**
 
-### **Sprint 1: ✅ 100% COMPLETE**
+### **Sprint 1: âœ… 100% COMPLETE**
 - Original Tasks: 8/8
 - Bonus Features: 7 major additions
 - Status: EXCEEDED expectations
 
-### **Sprint 2: ✅ 100% COMPLETE**
+### **Sprint 2: âœ… 100% COMPLETE**
 - Original Tasks: 9/9
 - Bonus: Appwrite Function + Image Upload System
 - Status: COMPLETE dengan quality improvements
 
-### **Sprint 3: ✅ 100% COMPLETE**
+### **Sprint 3: âœ… 100% COMPLETE**
 - Guest ordering flow
 - QR Code system
 - Tenant code lookup
 - Status: COMPLETE
 
-### **Sprint 4: 🔄 30% COMPLETE**
-- Phase 1: Real-time Order Dashboard ✅
-- Phase 2: Delete User & Auto-Cleanup ⏳ (Planning complete)
-- Phase 3: Payment Integration ⏳ (Planned)
-- Phase 4: Final Polish ⏳
+### **Sprint 4: ðŸ”„ 30% COMPLETE**
+- Phase 1: Real-time Order Dashboard âœ…
+- Phase 2: Delete User & Auto-Cleanup â³ (Planning complete)
+- Phase 3: Payment Integration â³ (Planned)
+- Phase 4: Final Polish â³
 
 ---
 
 ### **Next Session Priorities:**
-1. 🔄 **Hapus function lama** di Appwrite (createStaffUser, createTenantUser)
-2. 🔄 **Implement delete-user function** (backend)
-3. 🔄 **Implement cleanup-expired-contracts function** (backend)
-4. ⏳ Deploy & test functions
-5. ⏳ Update Flutter UI
-6. ⏳ End-to-end testing
+1. ðŸ”„ **Hapus function lama** di Appwrite (createStaffUser, createTenantUser)
+2. ðŸ”„ **Implement delete-user function** (backend)
+3. ðŸ”„ **Implement cleanup-expired-contracts function** (backend)
+4. â³ Deploy & test functions
+5. â³ Update Flutter UI
+6. â³ End-to-end testing
 
 ---
 
@@ -2563,57 +2608,57 @@ final doc = await _databases.createDocument(
 
 ---
 
-## **🎯 Key Achievements (Session 4 Dec 2025 PM: Force Delete Implementation)**
+## **ðŸŽ¯ Key Achievements (Session 4 Dec 2025 PM: Force Delete Implementation)**
 
-### **1. Force Delete System Implementation** 💥
-- ✅ **Appwrite Function `delete-user` Integration**:
+### **1. Force Delete System Implementation** ðŸ’¥
+- âœ… **Appwrite Function `delete-user` Integration**:
   - Updated `AuthRepository` to call `delete-user` function
   - Updated `UserManagementRepository` (Admin) to use function instead of DB delete
   - Handled `HAS_ACTIVE_TENANTS` error code gracefully
 
-- ✅ **Business Owner Dashboard**:
+- âœ… **Business Owner Dashboard**:
   - Added "Delete Account" option in AppBar (replaced Logout button with PopupMenu)
   - Implemented **Force Delete Dialog**:
     - Warns user about active tenants
     - Requires explicit "DELETE EVERYTHING" confirmation
-    - Cascading delete: Owner → Tenants → Staff → Products → Orders
+    - Cascading delete: Owner â†’ Tenants â†’ Staff â†’ Products â†’ Orders
 
-- ✅ **Admin Dashboard**:
+- âœ… **Admin Dashboard**:
   - Updated "Delete User" flow to use Appwrite Function
   - Added **Force Delete** capability for Admin
   - Admin can now clean up Business Owners with active tenants in one click
 
-### **2. Critical Bug Fixes** 🐛
-- ✅ **Create User Fix**: Resolved parameter mapping issue (snake_case vs camelCase) that caused 403 errors.
-- ✅ **Delete User Race Condition**: Fixed logic where deleting a tenant accidentally deleted the manager (self) first.
-- ✅ **UI Filtering**: Fixed Business Owner dashboard showing staff members in tenant list.
-- ✅ **Compilation Fixes**: Resolved missing imports in `UserManagementProvider` and `AuthRepository`.
+### **2. Critical Bug Fixes** ðŸ›
+- âœ… **Create User Fix**: Resolved parameter mapping issue (snake_case vs camelCase) that caused 403 errors.
+- âœ… **Delete User Race Condition**: Fixed logic where deleting a tenant accidentally deleted the manager (self) first.
+- âœ… **UI Filtering**: Fixed Business Owner dashboard showing staff members in tenant list.
+- âœ… **Compilation Fixes**: Resolved missing imports in `UserManagementProvider` and `AuthRepository`.
 
 ### **3. Updated Sprint 4 Progress**
-- **Phase 1: Real-time Order Dashboard** ✅ COMPLETE
+- **Phase 1: Real-time Order Dashboard** âœ… COMPLETE
 - **Phase 2: Delete User & Auto-Cleanup**
   - [x] Delete User Function (Backend)
   - [x] Delete User UI (Business Owner)
   - [x] Force Delete UI (Admin)
   - [ ] Auto-Cleanup Scheduled Function (Next)
-- **Phase 3: Payment Integration** ⏳ (Planned)
+- **Phase 3: Payment Integration** â³ (Planned)
 
 ---
 
 ### **Next Session Priorities:**
-1. 🔄 **Implement `cleanup-expired-contracts` function** (Auto-cleanup)
-2. ⏳ **Midtrans Payment Integration** (Sprint 4 Phase 3)
-3. ⏳ **Final Polish & Release**
+1. ðŸ”„ **Implement `cleanup-expired-contracts` function** (Auto-cleanup)
+2. â³ **Midtrans Payment Integration** (Sprint 4 Phase 3)
+3. â³ **Final Polish & Release**
 
 **Last Updated:** 4 December 2025, 22:45 WIB
-**Status:** Sprint 4 Phase 2 (Delete User) COMPLETE ✅
+**Status:** Sprint 4 Phase 2 (Delete User) COMPLETE âœ…
 ```
 
 ---
 
-## **🧠 Architectural Decisions (Session 4 Dec 2025: Future Planning)**
+## **ðŸ§  Architectural Decisions (Session 4 Dec 2025: Future Planning)**
 
-### **1. Appwrite Functions Strategy (Limit Management)** 📉
+### **1. Appwrite Functions Strategy (Limit Management)** ðŸ“‰
 **Constraint:** Appwrite Free Tier limits to **5 Functions**.
 **Current Usage (3/5):** `create-user`, `approve-registration`, `activateBusinessOwner`.
 **Planned (2/5):** `delete-user`, `cleanup-expired-contracts`.
@@ -2629,7 +2674,7 @@ final doc = await _databases.createDocument(
 - **Benefit:** Saves function slots, centralizes Midtrans configuration.
 - **Scope:** Handles Payment Verification AND Database Updates (Order Status / Contract Date).
 
-### **2. Push Notification Strategy** 🔔
+### **2. Push Notification Strategy** ðŸ””
 **Decision:** Use **Appwrite Messaging** + **Firebase FCM**.
 - **No New Function Needed:** We do NOT need a dedicated function for notifications.
 - **Implementation:**
@@ -2644,3 +2689,1261 @@ final doc = await _databases.createDocument(
 
 ---
 ```
+
+---
+
+#  OAUTH \u0026 FREEMIUM IMPLEMENTATION (Dec 2025)
+
+# ðŸ” Google OAuth & Freemium Implementation Plan
+
+**Project:** Kantin QR-Order App  
+**Version:** 1.0  
+**Date Created:** 7 Desember 2025  
+**Status:** APPROVED - Ready for Implementation  
+**Estimated Duration:** 10 Working Days
+
+**âš ï¸ Cleanup Function Status (8 Dec 2025):**  
+Cleanup function code updated with new business rules (30d trial, 5h invite, auto-select, swap) but deployment deferred. See testing note in `Ceklist iterasi.md`. Function will be tested when have new trial users.
+
+---
+
+## ðŸ“‹ Table of Contents
+
+1. [Executive Summary](#executive-summary)
+2. [Business Decisions](#business-decisions)
+3. [Technical Architecture](#technical-architecture)
+4. [Database Schema](#database-schema)
+5. [Implementation Roadmap](#implementation-roadmap)
+6. [Detailed Implementation Guide](#detailed-implementation-guide)
+7. [Testing Strategy](#testing-strategy)
+8. [Deployment Checklist](#deployment-checklist)
+
+---
+
+## 1. Executive Summary
+
+### **Objective**
+Mengimplementasikan sistem autentikasi Google OAuth dan model bisnis Freemium untuk meningkatkan keamanan, mencegah spam akun, dan monetisasi aplikasi.
+
+### **Key Changes**
+
+| Aspek | Before | After |
+|-------|--------|-------|
+| **Authentication** | Email/Password (dapat spam) | Google OAuth (verified users) |
+| **Business Model** | Free unlimited | Freemium (FREE/PREMIUM tiers) |
+| **Registration** | Admin approval required | Auto-active with invitation code |
+| **Payment** | Cash only | Hybrid (In-App + Web) |
+| **Account Management** | Manual cleanup | Auto-cleanup with hard delete |
+
+### **Benefits**
+- âœ… **Security:** OAuth mencegah spam dan fake accounts
+- âœ… **UX:** No password management, faster onboarding
+- âœ… **Revenue:** Subscription model untuk premium features
+- âœ… **Scalability:** Invitation system mengontrol user quality
+
+---
+
+## 2. Business Decisions
+
+### **2.1 Freemium Model**
+
+#### **FREE Tier**
+```yaml
+Limits:
+  max_tenants: 2
+  max_products_per_tenant: 30
+  max_staff_per_tenant: 1
+
+Features:
+  - Basic dashboard
+  - QR code generation
+  - Guest ordering (unlimited)
+  - Basic reports (30 days)
+  
+Trial Period: 7 days PREMIUM auto-granted
+```
+
+#### **PREMIUM Tier**
+```yaml
+Limits:
+  max_tenants: 50
+  max_products_per_tenant: 1000
+  max_staff_per_tenant: 50
+
+Features:
+  - All FREE features
+  - Advanced analytics
+  - Export reports (CSV/PDF)
+  - Custom branding
+  - Priority support
+  - API access
+
+Price: Rp 99,000/month
+```
+
+### **2.2 Payment Strategy**
+
+#### **Hybrid Payment Model**
+
+**In-App Purchase (Owner Upgrade)**
+```
+Use Case: Owner Business â†’ PREMIUM subscription
+Platform: Google Play Billing
+Fee: 30% to Google
+Benefit: Seamless UX, auto-renewal
+```
+
+**Web Payment (Guest Orders)**
+```
+Use Case: Guest checkout for orders
+Platform: Midtrans Snap
+Fee: 2-3% transaction fee
+Benefit: No app store fees, flexible payment methods
+```
+
+### **2.3 Security Strategy**
+
+#### **Authentication**
+- **New Users:** Google OAuth only (after implementation)
+- **Existing Users:** Optional migration (email/password still works)
+- **Apple Sign-In:** Later phase (iOS requirement)
+
+#### **Delete User Strategy**
+- **Method:** Hard Delete (permanent removal)
+- **Scope:** Auth + Database
+- **Safety:** Validation checks before delete
+- **Use Cases:**
+  - Admin deletes Owner Business (if no tenants)
+  - Owner deletes Tenant (if no active orders)
+  - Tenant deletes Staff (if not needed)
+
+---
+
+## 3. Technical Architecture
+
+### **3.1 Authentication Flow**
+
+```mermaid
+graph TD
+    A[User Opens App] --> B{Has Session?}
+    B -->|No| C[Landing Page]
+    B -->|Yes| D{Check Auth Provider}
+    
+    C --> E[Login Options]
+    E --> F[Google Sign-In]
+    E --> G[Email/Password - Legacy]
+    
+    F --> H[OAuth Flow]
+    H --> I[Appwrite Session]
+    
+    G --> I
+    
+    D -->|Google| J[Validate Google Token]
+    D -->|Email| K[Validate Email Session]
+    
+    I --> L{Check Role}
+    L -->|owner_business| M[Check Subscription]
+    L -->|tenant| N[Tenant Dashboard]
+    L -->|adminsystem| O[Admin Dashboard]
+    
+    M -->|Trial/Premium| P[Full Features]
+    M -->|Free| Q[Limited Features]
+```
+
+### **3.2 Registration Flow**
+
+```mermaid
+sequenceDiagram
+    participant Owner as Business Owner
+    participant System as System
+    participant Tenant as Tenant User
+    
+    Owner->>System: Register via Google OAuth
+    System->>System: Create user (role: owner_business)
+    System->>System: Grant 7-day PREMIUM trial
+    System->>Owner: Account Active
+    
+    Owner->>System: Generate Tenant Invitation (TN-XXXXXX)
+    System->>System: Store invitation code (expires 7 days)
+    Owner->>Tenant: Share code via WhatsApp/Email
+    
+    Tenant->>System: Enter invitation code
+    System->>System: Validate code (active, not expired)
+    Tenant->>System: Sign in with Google
+    System->>System: Create tenant user account
+    System->>System: Link to tenant_id from invitation
+    System->>System: Mark invitation as "used"
+    System->>Tenant: Account Created
+```
+
+### **3.3 Freemium Enforcement**
+
+```mermaid
+graph LR
+    A[User Action] --> B{Check Subscription}
+    B -->|PREMIUM| C[Allow All Actions]
+    B -->|FREE| D{Check Counter}
+    
+    D -->|Within Limit| E[Allow Action]
+    D -->|Exceeded| F[Show Upgrade Dialog]
+    
+    E --> G[Increment Counter]
+    F --> H{User Choice}
+    H -->|Upgrade| I[In-App Purchase]
+    H -->|Cancel| J[Action Blocked]
+    
+    I --> K[Update Subscription]
+    K --> C
+```
+
+---
+
+## 4. Database Schema
+
+### **4.1 Updated Collections**
+
+#### **Collection: `users`** (Modified)
+
+```javascript
+{
+  "$id": "UUID",
+  "user_id": "UUID",                    // Link to Appwrite Auth
+  "role": "owner_business | tenant | adminsystem | guest",
+  "sub_role": "staff | null",
+  "username": "string",
+  "full_name": "string",
+  "email": "string",
+  "phone": "string",
+  
+  // NEW - Subscription Fields
+  "subscription_tier": "free | premium",     // Default: "free"
+  "subscription_started_at": "DateTime | null",
+  "subscription_expires_at": "DateTime | null",
+  "payment_status": "active | expired | trial",
+  
+  // NEW - OAuth Fields
+  "auth_provider": "email | google",         // Default: "email"
+  "google_id": "string | null",
+  "invited_by": "user_id | null",
+  
+  // NEW - Usage Tracking
+  "current_tenants_count": 0,               // Denormalized counter
+  
+  // Existing fields
+  "tenant_id": "UUID | null",
+  "contract_end_date": "DateTime | null",
+  "is_active": true,
+  "$createdAt": "DateTime",
+  "$updatedAt": "DateTime"
+}
+```
+
+**Indexes:**
+- `idx_user_id` (unique)
+- `idx_role` (key)
+- `idx_google_id` (unique, sparse)
+- `idx_subscription_tier` (key)
+
+#### **Collection: `tenants`** (Modified)
+
+```javascript
+{
+  "$id": "UUID",
+  "owner_user_id": "UUID",
+  "name": "string",
+  "type": "string",
+  "description": "string",
+  "tenant_code": "string",              // Existing (Q8L2PH)
+  
+  // NEW - Usage Tracking
+  "current_products_count": 0,
+  "current_staff_count": 0,
+  
+  // Existing fields
+  "is_active": true,
+  "logo_url": "string | null",
+  "phone": "string | null",
+  "$createdAt": "DateTime",
+  "$updatedAt": "DateTime"
+}
+```
+
+#### **Collection: `invitation_codes`** (NEW)
+
+```javascript
+{
+  "$id": "UUID",
+  "code": "string",                     // TN-XXXXXX or ST-XXXXXX
+  "type": "tenant | staff",             // Code untuk role apa
+  "created_by": "user_id",              // Siapa yang generate
+  "tenant_id": "UUID | null",           // Null jika type=tenant
+  "status": "active | used | expired",
+  "expires_at": "DateTime",             // Default: +7 days
+  "used_by": "user_id | null",
+  "used_at": "DateTime | null",
+  "$createdAt": "DateTime",
+  "$updatedAt": "DateTime"
+}
+```
+
+**Indexes:**
+- `idx_code` (unique)
+- `idx_status` (key)
+- `idx_type` (key)
+
+---
+
+## 5. Implementation Roadmap
+
+### **Overview Timeline**
+
+```
+Week 1: Foundation (2 days)
+Week 2: Freemium System (3 days)
+Week 3: Google OAuth (3 days)
+Week 4: Invitation System (2 days)
+```
+
+### **Detailed Schedule**
+
+#### **Week 1: Database & Functions (Day 1-2)**
+
+**Day 1: Database Schema Updates**
+- [ ] Backup existing database
+- [ ] Add fields to `users` collection:
+  - `subscription_tier` (string, default: "free")
+  - `subscription_started_at` (datetime, nullable)
+  - `subscription_expires_at` (datetime, nullable)
+  - `auth_provider` (string, default: "email")
+  - `google_id` (string, nullable, unique)
+  - `current_tenants_count` (integer, default: 0)
+- [ ] Add fields to `tenants` collection:
+  - `current_products_count` (integer, default: 0)
+  - `current_staff_count` (integer, default: 0)
+- [ ] Create `invitation_codes` collection
+- [ ] Create indexes for new fields
+- [ ] Migrate existing data (set defaults)
+
+**Day 2: Function Optimization**
+- [ ] Delete `approve-registration` function
+- [ ] Update `delete-user` function:
+  - Implement hard delete logic
+  - Add safety validations
+  - Test with mock data
+- [ ] Update `cleanup-expired-contracts` function:
+  - Add invitation code cleanup
+  - Add trial expiry downgrade
+- [ ] Test all functions
+
+#### **Week 2: Freemium Implementation (Day 3-5)**
+
+**Day 3: Subscription Service Core**
+- [ ] Create `lib/core/services/subscription_service.dart`
+- [ ] Define tier limits constants
+- [ ] Implement validation methods:
+  - `canCreateTenant(UserModel user)`
+  - `canAddProduct(String tenantId)`
+  - `canAddStaff(String tenantId)`
+- [ ] Implement counter management:
+  - `incrementTenantCount()`
+  - `incrementProductCount()`
+  - `incrementStaffCount()`
+- [ ] Unit tests for service
+
+**Day 4: Trial System**
+- [ ] Create trial auto-grant logic (on registration)
+- [ ] Implement trial countdown UI
+- [ ] Create cron job for trial expiry
+- [ ] Test trial flow (grant â†’ use â†’ expire â†’ downgrade)
+
+**Day 5: UI Integration**
+- [ ] Update Tenant Management page (check before create)
+- [ ] Update Product Management page (check before add)
+- [ ] Update Staff Management page (check before add)
+- [ ] Create `UpgradeDialog` widget
+- [ ] Create `PremiumFeaturesPage`
+- [ ] Add upgrade badges to limited features
+- [ ] Test all limit scenarios
+
+#### **Week 3: Google OAuth (Day 6-8)**
+
+**Day 6: Google Cloud Setup**
+- [ ] Create Google Cloud project
+- [ ] Configure OAuth consent screen
+- [ ] Create Android OAuth credentials
+- [ ] Get SHA-1 fingerprint from Android Studio
+- [ ] Configure authorized redirect URIs
+- [ ] Save Client IDs securely
+
+**Day 7: Appwrite Configuration**
+- [ ] Enable Google OAuth in Appwrite Console
+- [ ] Configure App ID & Secret
+- [ ] Test OAuth in Appwrite playground
+- [ ] Get callback URLs
+- [ ] Update Google Cloud redirect URIs
+
+**Day 8: Flutter Integration**
+- [ ] Add `google_sign_in: ^6.1.5` dependency
+- [ ] Create `lib/core/services/google_auth_service.dart`
+- [ ] Implement sign-in method
+- [ ] Implement sign-out method
+- [ ] Update login page UI
+- [ ] Test OAuth flow on Android device
+
+#### **Week 4: Invitation System (Day 9-10)**
+
+**Day 9: Backend Implementation**
+- [ ] Create `lib/core/utils/invitation_code_generator.dart`
+- [ ] Implement code generator (TN-XXXXXX, ST-XXXXXX)
+- [ ] Create/Update `create-user-oauth` Appwrite function
+- [ ] Implement invitation validation
+- [ ] Test function with mock codes
+
+**Day 10: Frontend Implementation**
+- [ ] Owner: Create "Generate Invitation" UI
+- [ ] Tenant: Create "Invite Staff" UI
+- [ ] Create public registration page
+- [ ] Implement code entry flow
+- [ ] Integrate with Google OAuth
+- [ ] Test end-to-end registration
+
+---
+
+## 6. Detailed Implementation Guide
+
+### **6.1 Subscription Service**
+
+**File:** `lib/core/services/subscription_service.dart`
+
+```dart
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final subscriptionServiceProvider = Provider((ref) => SubscriptionService(ref));
+
+class SubscriptionService {
+  final Ref ref;
+  
+  SubscriptionService(this.ref);
+  
+  // Tier limits
+  static const tierLimits = {
+    'free': TierLimits(
+      maxTenants: 2,
+      maxProductsPerTenant: 30,
+      maxStaffPerTenant: 1,
+    ),
+    'premium': TierLimits(
+      maxTenants: 50,
+      maxProductsPerTenant: 1000,
+      maxStaffPerTenant: 50,
+    ),
+  };
+  
+  // Validation: Can create tenant?
+  Future<ValidationResult> canCreateTenant(UserModel user) async {
+    if (user.subscriptionTier == 'premium') {
+      return ValidationResult.allowed();
+    }
+    
+    final currentCount = user.currentTenantsCount ?? 0;
+    final limit = tierLimits['free']!.maxTenants;
+    
+    if (currentCount >= limit) {
+      return ValidationResult.denied(
+        message: 'Batas tenant gratis tercapai ($currentCount/$limit)',
+        upgradeReason: 'Buat lebih banyak tenant',
+      );
+    }
+    
+    return ValidationResult.allowed();
+  }
+  
+  // Similar methods for products and staff...
+}
+
+class TierLimits {
+  final int maxTenants;
+  final int maxProductsPerTenant;
+  final int maxStaffPerTenant;
+  
+  const TierLimits({
+    required this.maxTenants,
+    required this.maxProductsPerTenant,
+    required this.maxStaffPerTenant,
+  });
+}
+
+class ValidationResult {
+  final bool allowed;
+  final String? message;
+  final String? upgradeReason;
+  
+  ValidationResult.allowed() : allowed = true, message = null, upgradeReason = null;
+  
+  ValidationResult.denied({required this.message, required this.upgradeReason}) 
+    : allowed = false;
+}
+```
+
+### **6.2 Trial Auto-Grant Logic**
+
+**When:** New owner business registers via Google OAuth
+
+```dart
+// In registration completion handler
+Future<void> _completeRegistration(String userId) async {
+  final now = DateTime.now();
+  final trialExpiry = now.add(Duration(days: 7));
+  
+  await databases.updateDocument(
+    databaseId: AppwriteConfig.databaseId,
+    collectionId: AppwriteConfig.usersCollectionId,
+    documentId: userId,
+    data: {
+      'subscription_tier': 'premium',
+      'subscription_started_at': now.toIso8601String(),
+      'subscription_expires_at': trialExpiry.toIso8601String(),
+      'payment_status': 'trial',
+    },
+  );
+}
+```
+
+### **6.3 Invitation Code Generator**
+
+**File:** `lib/core/utils/invitation_code_generator.dart`
+
+```dart
+import 'dart:math';
+
+class InvitationCodeGenerator {
+  static String generate(InvitationType type) {
+    final prefix = type == InvitationType.tenant ? 'TN' : 'ST';
+    final random = Random().nextInt(900000) + 100000; // 6 digits
+    return '$prefix-$random';
+  }
+  
+  static bool validate(String code) {
+    final regex = RegExp(r'^(TN|ST)-\d{6}$');
+    return regex.hasMatch(code);
+  }
+  
+  static InvitationType? getType(String code) {
+    if (code.startsWith('TN-')) return InvitationType.tenant;
+    if (code.startsWith('ST-')) return InvitationType.staff;
+    return null;
+  }
+}
+
+enum InvitationType { tenant, staff }
+```
+
+### **6.4 Google Sign-In Service**
+
+**File:** `lib/core/services/google_auth_service.dart`
+
+```dart
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:appwrite/appwrite.dart';
+
+class GoogleAuthService {
+  final Account _account;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
+  
+  GoogleAuthService(this._account);
+  
+  Future<Session?> signInWithGoogle() async {
+    try {
+      // 1. Google Sign In
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser == null) return null; // User cancelled
+      
+      // 2. Get auth details
+      final GoogleSignInAuthentication googleAuth = 
+        await googleUser.authentication;
+      
+      // 3. Create Appwrite session
+      final session = await _account.createOAuth2Session(
+        provider: 'google',
+      );
+      
+      return session;
+    } catch (e) {
+      print('Google Sign-In Error: $e');
+      rethrow;
+    }
+  }
+  
+  Future<void> signOut() async {
+    await _googleSignIn.signOut();
+    await _account.deleteSession(sessionId: 'current');
+  }
+}
+```
+
+### **6.5 Delete User Function (Hard Delete)**
+
+**File:** `functions/delete-user/src/main.js`
+
+```javascript
+import { Client, Databases, Users, Query } from 'node-appwrite';
+
+export default async ({ req, res, log, error }) => {
+  try {
+    const { userId, deletedBy, userRole } = JSON.parse(req.body);
+    
+    const client = new Client()
+      .setEndpoint(process.env.APPWRITE_ENDPOINT)
+      .setProject(process.env.APPWRITE_PROJECT_ID)
+      .setKey(process.env.APPWRITE_API_KEY);
+    
+    const databases = new Databases(client);
+    const users = new Users(client);
+    
+    // Safety checks
+    if (userRole === 'owner_business') {
+      const tenants = await databases.listDocuments(
+        process.env.DATABASE_ID,
+        'tenants',
+        [Query.equal('owner_user_id', userId)]
+      );
+      
+      if (tenants.total > 0) {
+        return res.json({ 
+          error: 'Cannot delete owner with active tenants' 
+        }, 400);
+      }
+    }
+    
+    // Delete from database
+    await databases.deleteDocument(
+      process.env.DATABASE_ID,
+      'users',
+      userId
+    );
+    
+    // Delete from Auth
+    await users.delete(userId);
+    
+    log(`User deleted: ${userId} by ${deletedBy}`);
+    return res.json({ success: true }, 200);
+    
+  } catch (err) {
+    error('Delete failed:', err);
+    return res.json({ error: err.message }, 500);
+  }
+};
+```
+
+### **6.6 Cleanup Function (Extended)**
+
+**File:** `functions/cleanup-expired-items/src/main.js`
+
+```javascript
+// Extend existing cleanup-expired-contracts function
+
+// Part 1: Cleanup expired contracts (existing)
+const expiredContracts = await databases.listDocuments(
+  DATABASE_ID,
+  'users',
+  [
+    Query.lessThan('contract_end_date', now),
+    Query.equal('is_active', true)
+  ]
+);
+
+for (const user of expiredContracts.documents) {
+  await databases.updateDocument(
+    DATABASE_ID,
+    'users',
+    user.$id,
+    { is_active: false }
+  );
+}
+
+// Part 2: Cleanup expired invitations (NEW)
+const expiredInvitations = await databases.listDocuments(
+  DATABASE_ID,
+  'invitation_codes',
+  [
+    Query.equal('status', 'active'),
+    Query.lessThan('expires_at', now)
+  ]
+);
+
+for (const invitation of expiredInvitations.documents) {
+  await databases.updateDocument(
+    DATABASE_ID,
+    'invitation_codes',
+    invitation.$id,
+    { status: 'expired' }
+  );
+}
+
+// Part 3: Downgrade expired trials (NEW)
+const expiredTrials = await databases.listDocuments(
+  DATABASE_ID,
+  'users',
+  [
+    Query.equal('subscription_tier', 'premium'),
+    Query.equal('payment_status', 'trial'),
+    Query.lessThan('subscription_expires_at', now)
+  ]
+);
+
+for (const user of expiredTrials.documents) {
+  await databases.updateDocument(
+    DATABASE_ID,
+    'users',
+    user.$id,
+    {
+      subscription_tier: 'free',
+      payment_status: 'expired'
+    }
+  );
+}
+```
+
+---
+
+## 7. Testing Strategy
+
+### **7.1 Unit Tests**
+
+**Test Subscription Service**
+
+```dart
+void main() {
+  group('SubscriptionService', () {
+    test('FREE tier blocks 3rd tenant', () async {
+      final user = UserModel(
+        subscriptionTier: 'free',
+        currentTenantsCount: 2,
+      );
+      
+      final result = await service.canCreateTenant(user);
+      
+      expect(result.allowed, false);
+    });
+    
+    test('PREMIUM tier allows unlimited', () async {
+      final user = UserModel(
+        subscriptionTier: 'premium',
+        currentTenantsCount: 30,
+      );
+      
+      final result = await service.canCreateTenant(user);
+      
+      expect(result.allowed, true);
+    });
+  });
+}
+```
+
+### **7.2 Integration Tests**
+
+**Day 11: Complete Flow Testing**
+
+```yaml
+Test Scenarios:
+  Authentication:
+    - [ ] Register owner via Google OAuth
+    - [ ] Login existing user (email)
+    - [ ] Logout and re-login
+    
+  Freemium:
+    - [ ] Create 2 tenants (should work)
+    - [ ] Try 3rd tenant (should block + show upgrade)
+    - [ ] Add 30 products (should work)
+    - [ ] Try 31st product (should block)
+    
+  Trial:
+    - [ ] New owner gets 7-day trial
+    - [ ] Trial countdown shows correctly
+    - [ ] After 7 days, auto-downgrade to FREE
+    
+  Invitation:
+    - [ ] Generate tenant invitation code
+    - [ ] Share code to new user
+    - [ ] Register with code + Google OAuth
+    - [ ] User linked to correct tenant
+    - [ ] Code marked as "used"
+    
+  Delete:
+    - [ ] Staff deletes own account
+    - [ ] Tenant deletes staff
+    - [ ] Owner deletes tenant (with products)
+    - [ ] Admin deletes owner (with safety check)
+```
+
+### **7.3 Load Testing**
+
+**Simulate Concurrent Users**
+
+```yaml
+Scenarios:
+  - 100 users login simultaneously
+  - 50 users create tenants at once
+  - 200 invitation codes generated
+  - Trial expiry for 1000 users (cron job)
+  
+Expected:
+  - No crashes
+  - Response time < 2 seconds
+  - Counter accuracy maintained
+```
+
+---
+
+## 8. Deployment Checklist
+
+### **8.1 Pre-Deployment**
+
+**Environment Setup**
+- [ ] Google Cloud project configured
+- [ ] OAuth credentials secured
+- [ ] Appwrite functions deployed
+- [ ] Database indexes created
+- [ ] Existing data migrated
+
+**Code Review**
+- [ ] All tests passing
+- [ ] No hardcoded credentials
+- [ ] Error handling implemented
+- [ ] Logging configured
+
+### **8.2 Deployment Steps**
+
+**Day 12: Staging**
+```bash
+1. Deploy to staging environment
+2. Run smoke tests
+3. User acceptance testing
+4. Fix critical bugs
+```
+
+**Day 13: Production**
+```bash
+1. Backup production database
+2. Deploy database changes
+3. Deploy Appwrite functions
+4. Deploy Flutter app (Google Play beta)
+5. Monitor logs for 2 hours
+6. Gradual rollout (10% â†’ 50% â†’ 100%)
+```
+
+### **8.3 Monitoring**
+
+**Metrics to Track**
+
+```yaml
+Authentication:
+  - OAuth success rate (target: >95%)
+  - Login failures per day
+  
+Freemium:
+  - Trial activation rate (target: 100%)
+  - Trial to paid conversion (target: >10%)
+  - Upgrade dialog views vs upgrades
+  
+Performance:
+  - Function execution time
+  - Database query performance
+  - App crash rate (target: <0.5%)
+```
+
+### **8.4 Rollback Plan**
+
+**If Critical Issues Occur**
+
+```yaml
+Step 1: Immediate
+  - Pause new user registrations
+  - Revert to email/password auth
+  
+Step 2: Within 1 Hour
+  - Rollback database schema changes
+  - Disable new Appwrite functions
+  - Restore previous app version
+  
+Step 3: Post-Mortem
+  - Analyze root cause
+  - Fix issues in development
+  - Re-test before retry
+```
+
+---
+
+## 9. Success Criteria
+
+### **9.1 Technical**
+- [ ] All new users register via Google OAuth
+- [ ] Existing users can still use email/password
+- [ ] Freemium limits enforced correctly
+- [ ] Trial period auto-expires and downgrades
+- [ ] Invitation codes work end-to-end
+- [ ] Delete user works (hard delete)
+- [ ] Zero data loss during migration
+- [ ] App crash rate < 0.5%
+
+### **9.2 Business**
+- [ ] 100% of new registrations are verified (no spam)
+- [ ] >10% trial to paid conversion in first month
+- [ ] User satisfaction score >4.0/5.0
+- [ ] Support tickets related to auth < 5/week
+
+### **9.3 Performance**
+- [ ] Login time < 2 seconds
+- [ ] OAuth flow completion < 5 seconds
+- [ ] Function execution < 500ms
+- [ ] Database queries < 100ms
+
+---
+
+## 10. Documentation & Handover
+
+### **10.1 Developer Documentation**
+
+**To Create:**
+- [ ] OAuth setup guide (for future developers)
+- [ ] Freemium model documentation
+- [ ] Invitation system guide
+- [ ] Function deployment guide
+- [ ] Testing guide
+
+### **10.2 User Documentation**
+
+**To Create:**
+- [ ] Owner Business guide (how to upgrade)
+- [ ] Tenant guide (how to invite staff)
+- [ ] FAQ (common issues)
+- [ ] Video tutorial (registration flow)
+
+---
+
+## 11. Risk Assessment
+
+| Risk | Impact | Probability | Mitigation |
+|------|--------|-------------|------------|
+| OAuth misconfiguration | High | Medium | Detailed setup guide, testing |
+| Counter desync | Medium | Low | Transaction-based updates |
+| Trial not expiring | Medium | Low | Cron job monitoring |
+| User data loss | High | Very Low | Full backup before migration |
+| Google OAuth downtime | High | Very Low | Email fallback still works |
+
+---
+
+## 12. Next Steps
+
+**Immediate Actions:**
+1. âœ… Review this plan thoroughly
+2. âœ… Ask clarification questions if needed
+3. âœ… Approve to proceed
+4. ðŸš€ Start Week 1 - Day 1 implementation
+
+**Contact:**
+- Questions? Discuss before starting
+- Issues during implementation? Report immediately
+- Need help? Available for support
+
+---
+
+**Document Version:** 1.0  
+**Last Updated:** 8 Desember 2025, 23:00 WIB  
+**Status:** IN PROGRESS - Week 2 Day 4 🚀
+
+---
+
+# 📅 IMPLEMENTATION PROGRESS REPORT
+
+## Day 4: Freemium UI Implementation (8 Desember 2025)
+
+**Session Time:** 19:00 - 23:00 WIB (4 hours)  
+**Status:** 60% Complete ✅
+
+### ✅ COMPLETED TODAY:
+
+#### 1. Trial Warning Banner System ✅
+**Files Created/Modified:**
+- `lib/features/business_owner/presentation/widgets/trial_warning_banner.dart`
+- `lib/features/business_owner/presentation/business_owner_dashboard.dart`
+
+**Features:**
+- ✅ Color-coded warning system:
+  - 🔴 Red: D-1, D-2, D-3 (critical)
+  - 🟡 Yellow: D-4 to D-7 (warning)
+  - Nothing: > 7 days remaining
+- ✅ Countdown timer display
+- ✅ Upgrade dialog with feature comparison:
+  - Free tier: max 2 tenants
+  - Basic tier: max 5 tenants  
+  - Premium tier: unlimited tenants
+- ✅ Responsive UI with gradient backgrounds
+- ✅ Tested on device - working perfectly!
+
+**Text Improvements:**
+- Changed "saat ini: max X" → "basic user: max X" for clarity
+
+---
+
+#### 2. Tenant Selection with Performance Stats ✅
+**Files Created:**
+- `lib/features/business_owner/models/tenant_stats_model.dart`
+- `lib/features/business_owner/services/tenant_stats_service.dart`
+- `lib/features/business_owner/presentation/pages/tenant_selection_page.dart`
+- `lib/features/business_owner/utils/tenant_selection_helper.dart`
+
+**Features:**
+- ✅ Full-page UI (dark theme like "Kelola Tenant")
+- ✅ Performance metrics (30-day):
+  - 💰 Monthly revenue (formatted: Rp X.Xjt)
+  - 🛒 Transaction count
+  - 📈 Trend indicator (up/down/stable vs previous 30 days)
+  - 🏆 Top 5 bestselling products with quantities
+- ✅ Multi-select with max 2 tenants
+- ✅ Pre-selection of 2 newest tenants
+- ✅ "Terbaru" badges for newest tenants
+- ✅ Product ranking badges (🥇🥈🥉 gold/silver/bronze)
+- ✅ Selection counter: "Dipilih: X / 2"
+- ✅ Dark theme with excellent contrast
+- ✅ Save to database (selected_for_free_tier field)
+- ✅ Supports swap mode (change selection within grace period)
+
+**Backend Logic:**
+- Queries orders collection (last 30 + 60 days)
+- Aggregates order_items by product_name
+- Calculates revenue trend
+- Batch loading for multiple tenants (parallel queries)
+
+---
+
+#### 3. Model Updates ✅
+**Files Modified:**
+- `lib/shared/models/user_model.dart`
+- `lib/shared/models/tenant_model.dart`
+
+**New Fields Added:**
+
+**UserModel:**
+- `manualTenantSelection` (bool?) - Has user manually selected tenants?
+- `swapAvailableUntil` (DateTime?) - Grace period end date
+- `swapUsed` (bool?) - Has user used their 1x swap?
+
+**TenantModel:**
+- `selectedForFreeTier` (bool?) - Is tenant selected for free tier?
+
+**Updated Methods:**
+- `fromDocument()` factory
+- `fromJson()` factory  
+- `toMap()` serialization
+- `copyWith()` helper
+
+---
+
+#### 4. Tenant Swap Service ✅
+**File Created:**
+- `lib/features/business_owner/services/tenant_swap_service.dart`
+
+**Methods:**
+- ✅ `getUserTenants(userId)` - Fetch all user's tenants
+- ✅ `saveSelection(userId, tenantIds)` - Save manual selection
+- ✅ `useSwapOpportunity(userId, tenantIds)` - Change selection (1x only)
+- ✅ `canSwap(user)` - Check if swap available
+- ✅ `getSwapDaysRemaining(user)` - Calculate countdown
+
+**Database Operations:**
+- Updates `tenants.selected_for_free_tier` field
+- Updates `users.manual_tenant_selection` field
+- Updates `users.swap_used` field
+
+---
+
+#### 5. Bug Fixes ✅
+
+**Bug #1: Create User Function - Field Name Mismatch**
+- **Issue:** Flutter sending camelCase, function expecting snake_case
+- **Fixed:** `lib/features/business_owner/presentation/widgets/assign_user_dialog.dart`
+- **Changes:**
+  - `fullName` → `full_name`
+  - `tenantId` → `tenant_id`
+  - `userType` → `user_type`
+
+**Bug #2: Tenant Query - Wrong User ID**
+- **Issue:** Using document ID instead of Auth ID
+- **Fixed:** `lib/features/business_owner/utils/tenant_selection_helper.dart`
+- **Change:** `user.id` → `user.userId`
+
+**Bug #3: Color Shade Error**
+- **Issue:** `Colors.grey.shade850` doesn't exist
+- **Fixed:** `tenant_selection_page.dart`
+- **Change:** `shade850` → `shade800`
+
+---
+
+### 🔄 IN PROGRESS:
+
+None - waiting for next session
+
+---
+
+### ❌ NOT STARTED (Day 4 Remaining):
+
+#### 6. Swap Opportunity Banner (~1 hour)
+**Requirement:**
+- Show banner on Business Owner Dashboard
+- Display when user is in grace period (can swap)
+- Show countdown: "X hari tersisa untuk menukar pilihan"
+- Button: "Tukar Tenant"
+- Disappears after grace period ends or swap used
+
+**Files to Create/Modify:**
+- `lib/features/business_owner/presentation/widgets/swap_opportunity_banner.dart`
+- Update `business_owner_dashboard.dart`
+
+**Logic:**
+- Check `user.swapAvailableUntil > now`
+- Check `user.swapUsed != true`
+- Calculate days remaining
+- Open `TenantSelectionPage` with `isSwap: true`
+
+---
+
+#### 7. Database Permissions Update (~30 min)
+**Requirements:**
+- Update Appwrite Console permissions
+- Collections: `tenants`, `users`
+- Allow Business Owners to update:
+  - `tenants.selected_for_free_tier`
+  - `users.manual_tenant_selection`
+  - `users.swap_used`
+  - `users.swap_available_until`
+
+**Steps:**
+1. Open Appwrite Console
+2. Navigate to Database → Collections
+3. Update `tenants` collection permissions
+4. Update `users` collection permissions
+5. Test write access from app
+
+---
+
+#### 8. Inactive Tenant Guard (~1 hour)
+**Requirements:**
+- Block access to inactive tenants
+- Show "Tenant Tidak Aktif" page
+- Offer upgrade or swap options
+
+**Files to Create:**
+- `lib/features/tenant/presentation/pages/inactive_tenant_page.dart`
+- Add guard to tenant router
+
+**Logic:**
+- Check `tenant.selectedForFreeTier == false`
+- Check `user.subscriptionTier == 'free'`
+- Check `user.swapAvailableUntil < now` (grace period ended)
+- If all true → redirect to inactive page
+
+**Inactive Page UI:**
+- Icon: 🔒
+- Title: "Tenant Tidak Aktif"
+- Message: "Tenant ini tidak termasuk dalam 2 tenant aktif Anda"
+- Buttons:
+  - "Lihat Tenant Aktif Saya"
+  - "Upgrade ke Premium"
+
+---
+
+### 📊 Day 4 Statistics:
+
+```yaml
+Tasks Completed: 5 / 8 (62.5%)
+Lines of Code: ~1,200
+Files Created: 7
+Files Modified: 5
+Bugs Fixed: 3
+Time Spent: 4 hours
+Features Working: 100%
+```
+
+---
+
+### 🎯 NEXT SESSION PLAN (Day 5):
+
+**Priority 1: Complete Day 4 Tasks (2.5 hours)**
+1. [ ] Swap Opportunity Banner (1 hour)
+2. [ ] Database Permissions (30 min)
+3. [ ] Inactive Tenant Guard (1 hour)
+
+**Priority 2: Testing (1 hour)**
+1. [ ] Test trial expiry flow
+2. [ ] Test tenant selection flow
+3. [ ] Test swap opportunity flow
+4. [ ] Test inactive tenant guard
+5. [ ] Test with real orders data
+
+**Priority 3: Cleanup Function Testing (1 hour)**
+1. [ ] Test invitation expiry cleanup
+2. [ ] Test trial downgrade logic
+3. [ ] Test auto-selection (2 newest)
+4. [ ] Test swap finalization
+5. [ ] Verify owner exclusion
+
+**Total Estimated Time:** 4.5 hours
+
+---
+
+### 📝 Notes & Decisions:
+
+1. **Tenant Selection UI:** Changed from dialog to full-page for better UX ✅
+2. **Color Theme:** Dark theme with high contrast for readability ✅
+3. **Top Products:** Showing 5 instead of 3 for better insights ✅
+4. **Stats Loading:** Parallel queries for better performance ✅
+5. **Selection Logic:** Auto-select 2 newest by default ✅
+
+---
+
+### 🐛 Known Issues:
+
+**Minor:**
+1. Stats show Rp 0 when no orders exist (expected behavior)
+2. No caching - fetches stats every time (future optimization)
+3. Query limit: 1000 orders, 5000 items (sufficient for MVP)
+
+**To Monitor:**
+1. Performance with large datasets
+2. Appwrite function deployment issue (code not updating)
+
+---
+
+### 💡 Future Enhancements (Post-MVP):
+
+1. **Stats Caching:** Cache for 5 minutes
+2. **Sorting Options:** Sort by revenue/transactions
+3. **Detail Page:** Full analytics per tenant
+4. **Revenue Charts:** 6-month trend visualization
+5. **Export Reports:** PDF/Excel download
+6. **Comparison View:** Compare multiple tenants
+
+---
+
+### 🚀 Ready for Next Session!
+
+**Prerequisites:**
+- ✅ Flutter app running
+- ✅ Appwrite backend accessible
+- ✅ Test user with multiple tenants
+- ✅ Dark mode working
+
+**Recommended Next:**
+1. Start with Swap Banner (quick win)
+2. Update permissions (critical)
+3. Implement guard (important)
+4. Test everything together
+
+**ETA to Complete Week 2:** 1 more session (4-5 hours)
+
+---
+

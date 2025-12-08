@@ -45,6 +45,7 @@ export default async ({ req, res, log, error }) => {
     const usersCollectionId = process.env.USERS_COLLECTION_ID || 'users';
     const ordersCollectionId = process.env.ORDERS_COLLECTION_ID || 'orders';
     const productsCollectionId = process.env.PRODUCTS_COLLECTION_ID || 'products';
+    const invitationCodesCollectionId = process.env.INVITATION_CODES_COLLECTION_ID || 'invitation_codes';
 
     const summary = {
         startTime: new Date().toISOString(),
@@ -61,6 +62,22 @@ export default async ({ req, res, log, error }) => {
             staff: 0,
             products: 0,
             orders: 0
+        },
+        invitationCodes: {
+            checked: 0,
+            expired: 0
+        },
+        trials: {
+            checked: 0,
+            downgraded: 0,
+            autoSelected: 0
+        },
+        swapDeadlines: {
+            checked: 0,
+            finalized: 0
+        },
+        tenants: {
+            deactivated: 0
         }
     };
 
@@ -79,6 +96,8 @@ export default async ({ req, res, log, error }) => {
                 Query.lessThan('contract_end_date', now.toISOString()),
                 Query.notEqual('role', 'adminsystem'),
                 Query.notEqual('role', 'guest'),
+                Query.notEqual('role', 'owner_business'),  // Business owners use subscription_expires_at
+                Query.notEqual('role', 'owner_bussines'),  // Legacy typo variant
                 Query.isNotNull('contract_end_date')
             ]
         );
@@ -370,6 +389,177 @@ export default async ({ req, res, log, error }) => {
             }
         }
 
+
+        // ========== CLEANUP EXPIRED INVITATION CODES ==========
+        log('\n  Cleaning up expired invitation codes...');
+        try {
+            // Check codes older than 5 hours
+            const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+
+            const invitationCodesResponse = await databases.listDocuments(
+                databaseId,
+                invitationCodesCollectionId,
+                [
+                    Query.equal('status', 'active'),
+                    Query.lessThan('created_at', new Date(now.getTime() - 5 * 60 * 60 * 1000).toISOString())
+                ]
+            );
+
+            summary.invitationCodes.checked = invitationCodesResponse.documents.length;
+            log(`   Found ${summary.invitationCodes.checked} expired invitation codes`);
+
+            for (const code of invitationCodesResponse.documents) {
+                try {
+                    await databases.updateDocument(
+                        databaseId,
+                        invitationCodesCollectionId,
+                        code.$id,
+                        { status: 'expired' }
+                    );
+                    summary.invitationCodes.expired++;
+                } catch (e) {
+                    error(`   Failed to expire invitation code ${code.code}: ${e.message}`);
+                }
+            }
+
+            log(`    Expired ${summary.invitationCodes.expired} invitation codes`);
+        } catch (e) {
+            error(`    Failed to cleanup invitation codes: ${e.message}`);
+        }
+
+        // ========== DOWNGRADE EXPIRED TRIAL SUBSCRIPTIONS ==========
+        log('\n Downgrading expired trial subscriptions...');
+        try {
+            const expiredTrialsResponse = await databases.listDocuments(
+                databaseId,
+                usersCollectionId,
+                [
+                    Query.equal('subscription_tier', 'premium'),
+                    Query.equal('payment_status', 'trial'),
+                    Query.lessThan('subscription_expires_at', now.toISOString())
+                ]
+            );
+
+            summary.trials.checked = expiredTrialsResponse.documents.length;
+            log(`   Found ${summary.trials.checked} expired trial users`);
+
+            for (const user of expiredTrialsResponse.documents) {
+                try {
+                    await databases.updateDocument(
+                        databaseId,
+                        usersCollectionId,
+                        user.$id,
+                        {
+                            subscription_tier: 'free',
+                            payment_status: 'expired',
+                            swap_available_until: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                            swap_used: false,
+                            selection_finalized: false
+                        }
+                    );
+
+                    // Auto-select 2 newest tenants if user hasn't manually selected
+                    if (!user.manual_tenant_selection) {
+                        const tenants = await databases.listDocuments(
+                            databaseId,
+                            tenantsCollectionId,
+                            [Query.equal('user_id', user.$id)]
+                        );
+
+                        if (tenants.total > 2) {
+                            const sortedTenants = tenants.documents
+                                .sort((a, b) => new Date(b.$createdAt) - new Date(a.$createdAt));
+
+                            for (let i = 0; i < sortedTenants.length; i++) {
+                                await databases.updateDocument(
+                                    databaseId,
+                                    tenantsCollectionId,
+                                    sortedTenants[i].$id,
+                                    {
+                                        selected_for_free_tier: i < 2,
+                                        is_active: true
+                                    }
+                                );
+                            }
+
+                            summary.trials.autoSelected++;
+                        }
+                    }
+
+                    summary.trials.downgraded++;
+                    log(`    Downgraded user: ${user.username || user.email} (trial expired)`);
+                } catch (e) {
+                    error(`   Failed to downgrade user ${user.username}: ${e.message}`);
+                    summary.errors++;
+                }
+            }
+
+            log(`    Downgraded ${summary.trials.downgraded} trial users to FREE tier`);
+        } catch (e) {
+            error(`    Failed to downgrade trial users: ${e.message}`);
+        }
+
+        // ========== FINALIZE TENANT SELECTION (SWAP DEADLINE) ==========
+        log('\nFinalizing tenant selections (swap deadline passed)...');
+        try {
+            const swapDeadlinePassed = await databases.listDocuments(
+                databaseId,
+                usersCollectionId,
+                [
+                    Query.lessThan('swap_available_until', now.toISOString()),
+                    Query.equal('selection_finalized', false),
+                    Query.equal('subscription_tier', 'free')
+                ]
+            );
+
+            summary.swapDeadlines.checked = swapDeadlinePassed.documents.length;
+            log(`   Found ${summary.swapDeadlines.checked} users with swap deadline passed`);
+
+            for (const user of swapDeadlinePassed.documents) {
+                try {
+                    const tenants = await databases.listDocuments(
+                        databaseId,
+                        tenantsCollectionId,
+                        [Query.equal('user_id', user.$id)]
+                    );
+
+                    for (const tenant of tenants.documents) {
+                        if (!tenant.selected_for_free_tier && tenant.is_active) {
+                            await databases.updateDocument(
+                                databaseId,
+                                tenantsCollectionId,
+                                tenant.$id,
+                                {
+                                    is_active: false,
+                                    deactivated_at: now.toISOString(),
+                                    deactivation_reason: user.swap_used ? 'swap_deadline' : 'trial_auto'
+                                }
+                            );
+
+                            summary.tenants.deactivated++;
+                            log(`       Deactivated tenant: ${tenant.name}`);
+                        }
+                    }
+
+                    await databases.updateDocument(
+                        databaseId,
+                        usersCollectionId,
+                        user.$id,
+                        { selection_finalized: true }
+                    );
+
+                    summary.swapDeadlines.finalized++;
+                } catch (e) {
+                    error(`   Failed to finalize user ${user.username}: ${e.message}`);
+                    summary.errors++;
+                }
+            }
+
+            log(`   Finalized ${summary.swapDeadlines.finalized} user selections`);
+        } catch (e) {
+            error(`   Failed swap finalization: ${e.message}`);
+        }
+
         // Final summary
         summary.endTime = new Date().toISOString();
         const duration = (new Date(summary.endTime) - new Date(summary.startTime)) / 1000;
@@ -386,6 +576,18 @@ export default async ({ req, res, log, error }) => {
         log(`   👥 Staff: ${summary.cascadedData.staff}`);
         log(`   🍔 Products: ${summary.cascadedData.products}`);
         log(`   📝 Orders: ${summary.cascadedData.orders}`);
+        log('\nInvitation Codes:');
+        log(`   Checked: ${summary.invitationCodes.checked}`);
+        log(`   Expired: ${summary.invitationCodes.expired}`);
+        log('\nTrial Subscriptions:');
+        log(`   Checked: ${summary.trials.checked}`);
+        log(`   Downgraded: ${summary.trials.downgraded}`);
+        log(`   Auto-selected: ${summary.trials.autoSelected}`);
+        log('\nSwap Deadlines:');
+        log(`   Checked: ${summary.swapDeadlines.checked}`);
+        log(`   Finalized: ${summary.swapDeadlines.finalized}`);
+        log('\nTenants:');
+        log(`   Deactivated: ${summary.tenants.deactivated}`);
 
         if (summary.errors > 0) {
             log('\n⚠️  Partial success - some deletions failed');

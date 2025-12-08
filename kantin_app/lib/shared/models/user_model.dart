@@ -8,7 +8,10 @@ class UserModel {
   final String userId; // Reference to Appwrite Auth user
   final String role; // owner_business, tenant, adminsystem, guest
   final String? subRole; // NULL (tenant owner) | 'staff' (tenant staff)
-  final String? createdBy; // User ID who created this user
+  
+  @Deprecated('Use invited_by instead for OAuth flow')
+  final String? createdBy; // [DEPRECATED] User ID who created this user
+  
   final String username; // Username for login
   final String fullName;
   final String email;
@@ -18,6 +21,42 @@ class UserModel {
   final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  // ===== NEW: OAuth & Freemium Fields =====
+  
+  /// Subscription tier: "free" | "premium"
+  final String subscriptionTier;
+  
+  /// When subscription started (for premium users)
+  final DateTime? subscriptionStartedAt;
+  
+  /// When subscription expires (for trial or premium)
+  final DateTime? subscriptionExpiresAt;
+  
+  /// Payment status: "active" | "expired" | "trial"
+  final String paymentStatus;
+  
+  /// Authentication provider: "email" | "google"
+  final String authProvider;
+  
+  /// Google user ID (for OAuth users)
+  final String? googleId;
+  
+  /// User ID who sent the invitation code
+  final String? invitedBy;
+  
+  /// Current number of tenants (denormalized counter for freemium)
+  final int currentTenantsCount;
+  
+  /// Whether user manually selected tenants (vs auto-selected)
+  final bool? manualTenantSelection;
+  
+  /// Deadline for tenant swap opportunity (7 days after trial downgrade)
+  final DateTime? swapAvailableUntil;
+  
+  /// Whether user has used their 1x swap opportunity
+  final bool? swapUsed;
+
 
   // Convenience getters for role checking
   bool get isTenantOwner => role == 'tenant' && subRole == null;
@@ -39,6 +78,18 @@ class UserModel {
     this.isActive = true,
     this.createdAt,
     this.updatedAt,
+    // OAuth & Freemium fields
+    this.subscriptionTier = 'free',
+    this.subscriptionStartedAt,
+    this.subscriptionExpiresAt,
+    this.paymentStatus = 'active',
+    this.authProvider = 'email',
+    this.googleId,
+    this.invitedBy,
+    this.currentTenantsCount = 0,
+    this.manualTenantSelection,
+    this.swapAvailableUntil,
+    this.swapUsed,
   });
 
   /// Create from Appwrite Document
@@ -71,6 +122,24 @@ class UserModel {
       isActive: doc.data['is_active'] as bool? ?? true,
       createdAt: DateTime.parse(doc.$createdAt),
       updatedAt: DateTime.parse(doc.$updatedAt),
+      // OAuth & Freemium fields
+      subscriptionTier: doc.data['subscription_tier'] as String? ?? 'free',
+      subscriptionStartedAt: doc.data['subscription_started_at'] != null
+          ? DateTime.parse(doc.data['subscription_started_at'] as String)
+          : null,
+      subscriptionExpiresAt: doc.data['subscription_expires_at'] != null
+          ? DateTime.parse(doc.data['subscription_expires_at'] as String)
+          : null,
+      paymentStatus: doc.data['payment_status'] as String? ?? 'active',
+      authProvider: doc.data['auth_provider'] as String? ?? 'email',
+      googleId: doc.data['google_id'] as String?,
+      invitedBy: doc.data['invited_by'] as String?,
+      currentTenantsCount: doc.data['current_tenants_count'] as int? ?? 0,
+      manualTenantSelection: doc.data['manual_tenant_selection'] as bool?,
+      swapAvailableUntil: doc.data['swap_available_until'] != null
+          ? DateTime.parse(doc.data['swap_available_until'] as String)
+          : null,
+      swapUsed: doc.data['swap_used'] as bool?,
     );
   }
 
@@ -101,6 +170,24 @@ class UserModel {
           : json['updated_at'] != null
               ? DateTime.parse(json['updated_at'] as String)
               : null,
+      // OAuth & Freemium fields
+      subscriptionTier: json['subscription_tier'] as String? ?? 'free',
+      subscriptionStartedAt: json['subscription_started_at'] != null
+          ? DateTime.parse(json['subscription_started_at'] as String)
+          : null,
+      subscriptionExpiresAt: json['subscription_expires_at'] != null
+          ? DateTime.parse(json['subscription_expires_at'] as String)
+          : null,
+      paymentStatus: json['payment_status'] as String? ?? 'active',
+      authProvider: json['auth_provider'] as String? ?? 'email',
+      googleId: json['google_id'] as String?,
+      invitedBy: json['invited_by'] as String?,
+      currentTenantsCount: json['current_tenants_count'] as int? ?? 0,
+      manualTenantSelection: json['manual_tenant_selection'] as bool?,
+      swapAvailableUntil: json['swap_available_until'] != null
+          ? DateTime.parse(json['swap_available_until'] as String)
+          : null,
+      swapUsed: json['swap_used'] as bool?,
     );
   }
 
@@ -110,7 +197,7 @@ class UserModel {
       'user_id': userId,
       'role': role,
       'sub_role': subRole,
-      'created_by': createdBy,
+      'created_by': createdBy, // Deprecated but keep for backward compatibility
       'username': username,
       'full_name': fullName,
       'email': email,
@@ -118,6 +205,15 @@ class UserModel {
       'tenant_id': tenantId,
       'contract_end_date': contractEndDate?.toIso8601String(),
       'is_active': isActive,
+      // OAuth & Freemium fields
+      'subscription_tier': subscriptionTier,
+      'subscription_started_at': subscriptionStartedAt?.toIso8601String(),
+      'subscription_expires_at': subscriptionExpiresAt?.toIso8601String(),
+      'payment_status': paymentStatus,
+      'auth_provider': authProvider,
+      'google_id': googleId,
+      'invited_by': invitedBy,
+      'current_tenants_count': currentTenantsCount,
     };
   }
 
@@ -137,6 +233,15 @@ class UserModel {
     bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
+    // OAuth & Freemium fields
+    String? subscriptionTier,
+    DateTime? subscriptionStartedAt,
+    DateTime? subscriptionExpiresAt,
+    String? paymentStatus,
+    String? authProvider,
+    String? googleId,
+    String? invitedBy,
+    int? currentTenantsCount,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -153,6 +258,24 @@ class UserModel {
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      // OAuth & Freemium fields
+      subscriptionTier: subscriptionTier ?? this.subscriptionTier,
+      subscriptionStartedAt: subscriptionStartedAt ?? this.subscriptionStartedAt,
+      subscriptionExpiresAt: subscriptionExpiresAt ?? this.subscriptionExpiresAt,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      authProvider: authProvider ?? this.authProvider,
+      googleId: googleId ?? this.googleId,
+      invitedBy: invitedBy ?? this.invitedBy,
+      currentTenantsCount: currentTenantsCount ?? this.currentTenantsCount,
     );
   }
+
+  // Convenience getters for subscription
+  bool get isPremium => subscriptionTier == 'premium';
+  bool get isFree => subscriptionTier == 'free';
+  bool get isTrialActive => paymentStatus == 'trial' && 
+      subscriptionExpiresAt != null && 
+      subscriptionExpiresAt!.isAfter(DateTime.now());
+  bool get isSubscriptionExpired => subscriptionExpiresAt != null && 
+      subscriptionExpiresAt!.isBefore(DateTime.now());
 }

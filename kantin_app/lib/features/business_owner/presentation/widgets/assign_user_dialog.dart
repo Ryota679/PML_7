@@ -448,17 +448,17 @@ class _AssignUserDialogState extends ConsumerState<AssignUserDialog> {
       // Get Appwrite Functions service
       final functions = ref.read(appwriteFunctionsProvider);
 
-      // Prepare payload
+      // Prepare payload with snake_case field names (function expects these)
       final payload = {
+        'user_type': 'tenant',
         'email': _emailController.text.trim(),
         'password': _passwordController.text.trim(),
-        'fullName': _nameController.text.trim(),
+        'full_name': _nameController.text.trim(),
         'username': _usernameController.text.trim(),
-        'tenantId': _selectedTenant!.id,
+        'tenant_id': _selectedTenant!.id,
         'phone': _phoneController.text.trim().isEmpty 
             ? null 
             : _phoneController.text.trim(),
-        'user_type': 'tenant', // Specify user type for the combined function
       };
 
       AppLogger.info('Calling create-user function with payload: $payload');

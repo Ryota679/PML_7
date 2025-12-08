@@ -22,6 +22,8 @@ class AppwriteConfig {
   static const String ordersCollectionId = 'orders';
   static const String orderItemsCollectionId = 'order_items';
   static const String registrationRequestsCollectionId = 'registration_requests';
+  static const String invitationCodesCollectionId = 'invitation_codes'; // NEW: OAuth/Freemium
+
   
   // Appwrite Function IDs
   static const String approveRegistrationFunctionId = '691d57860017535b860c';
