@@ -16,12 +16,12 @@ class FreeTierBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.blue.shade700,
-            Colors.blue.shade500,
+            Colors.teal.shade600,
+            Colors.cyan.shade500,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -29,9 +29,14 @@ class FreeTierBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.3),
-            blurRadius: 8,
+            color: Colors.teal.withOpacity(0.4),
+            blurRadius: 12,
             offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.cyan.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -39,15 +44,22 @@ class FreeTierBanner extends StatelessWidget {
         children: [
           // Icon
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.rocket_launch,
               color: Colors.white,
-              size: 28,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.rocket_launch_rounded,
+              color: Colors.teal.shade700,
+              size: 32,
             ),
           ),
           
@@ -58,20 +70,37 @@ class FreeTierBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'FREE TIER',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
                 const Text(
-                  '🆓 Free Tier',
+                  'Unlock Unlimited Features',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Unlock unlimited features',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 13,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    height: 1.2,
                   ),
                 ),
               ],
@@ -83,18 +112,23 @@ class FreeTierBanner extends StatelessWidget {
             onPressed: onUpgrade,
             style: FilledButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: Colors.blue.shade700,
+              foregroundColor: Colors.teal.shade700,
               padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 12,
+                horizontal: 24,
+                vertical: 14,
               ),
+              elevation: 4,
+              shadowColor: Colors.black.withOpacity(0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             child: const Text(
               'Upgrade',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
             ),
           ),
         ],

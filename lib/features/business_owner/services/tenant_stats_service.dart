@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:appwrite/appwrite.dart';
 import 'package:kantin_app/core/config/appwrite_config.dart';
 import '../models/tenant_stats_model.dart';
@@ -27,7 +28,7 @@ class TenantStatsService {
         queries: [
           Query.equal('tenant_id', tenantId),
           Query.equal('status', 'completed'), // Only completed orders
-          Query.greaterThan('created_at', thirtyDaysAgo.toIso8601String()),
+          Query.greaterThan('\$createdAt', thirtyDaysAgo.toIso8601String()),
           Query.limit(1000), // Max orders to fetch
         ],
       );
@@ -39,8 +40,8 @@ class TenantStatsService {
         queries: [
           Query.equal('tenant_id', tenantId),
           Query.equal('status', 'completed'),
-          Query.greaterThan('created_at', sixtyDaysAgo.toIso8601String()),
-          Query.lessThan('created_at', thirtyDaysAgo.toIso8601String()),
+          Query.greaterThan('\$createdAt', sixtyDaysAgo.toIso8601String()),
+          Query.lessThan('\$createdAt', thirtyDaysAgo.toIso8601String()),
           Query.limit(1000),
         ],
       );
@@ -95,26 +96,41 @@ class TenantStatsService {
   /// Get top 5 products for a tenant
   Future<List<TopProduct>> _getTopProducts(String tenantId, DateTime since) async {
     try {
-      // Query order items for this tenant
-      final orderItems = await _databases.listDocuments(
+      // Query completed orders for this tenant (items stored as JSON in orders.items)
+      final orders = await _databases.listDocuments(
         databaseId: AppwriteConfig.databaseId,
-        collectionId: AppwriteConfig.orderItemsCollectionId,
+        collectionId: AppwriteConfig.ordersCollectionId,
         queries: [
           Query.equal('tenant_id', tenantId),
+          Query.equal('status', 'completed'), // Only completed orders
           Query.greaterThan('created_at', since.toIso8601String()),
-          Query.limit(5000), // Get more items to aggregate
+          Query.limit(1000), // Get up to 1000 orders
         ],
       );
       
-      // Aggregate by product name
+      // Aggregate products from all orders
       final Map<String, int> productCounts = {};
       
-      for (final item in orderItems.documents) {
-        final productName = item.data['product_name'] as String?;
-        final quantity = item.data['quantity'] as int? ?? 1;
-        
-        if (productName != null) {
-          productCounts[productName] = (productCounts[productName] ?? 0) + quantity;
+      for (final order in orders.documents) {
+        // Parse items from JSON string
+        final itemsJson = order.data['items'] as String?;
+        if (itemsJson != null && itemsJson.isNotEmpty) {
+          try {
+            final List<dynamic> items = jsonDecode(itemsJson);
+            
+            for (final item in items) {
+              final productName = item['product_name'] as String?;
+              final quantity = item['quantity'] as int? ?? 1;
+              
+              if (productName != null) {
+                productCounts[productName] = (productCounts[productName] ?? 0) + quantity;
+              }
+            }
+          } catch (e) {
+            // Skip orders with invalid JSON
+            print('Error parsing order items JSON: $e');
+            continue;
+          }
         }
       }
       
@@ -130,6 +146,7 @@ class TenantStatsService {
               ))
           .toList();
     } catch (e) {
+      print('Error getting top products: $e');
       return [];
     }
   }

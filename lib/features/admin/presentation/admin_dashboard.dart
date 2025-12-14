@@ -6,6 +6,7 @@ import 'package:kantin_app/features/auth/providers/auth_provider.dart';
 import 'package:kantin_app/shared/models/registration_request_model.dart';
 import 'package:kantin_app/shared/models/user_model.dart';
 import 'package:kantin_app/shared/widgets/loading_widget.dart';
+import 'package:kantin_app/features/admin/presentation/populate_tenant_codes_page.dart';
 
 /// Admin Dashboard
 /// 
@@ -105,7 +106,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                         ? _buildEmptyState()
                         : _buildRequestsList(registrationState.requests),
             ),
-          ] else ...[
+          ] else if (_selectedTab == 'users') ...[
             // Users Management Content
             Expanded(
               child: userManagementState.isLoading
@@ -134,6 +135,35 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                       : userManagementState.users.isEmpty
                           ? _buildEmptyUsersState()
                           : _buildUsersList(userManagementState.users),
+            ),
+          ] else ...[
+            // Utilities Content
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Card(
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          child: Icon(Icons.qr_code),
+                        ),
+                        title: const Text('Populate Tenant Codes'),
+                        subtitle: const Text('Generate QR codes untuk semua tenant'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PopulateTenantCodesPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ],
@@ -164,6 +194,13 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               label: 'Kelola Users',
               icon: Icons.people,
               value: 'users',
+            ),
+          ),
+          Expanded(
+            child: _buildMainTabButton(
+              label: 'Utilities',
+              icon: Icons.settings,
+              value: 'utilities',
             ),
           ),
         ],

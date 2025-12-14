@@ -14,6 +14,7 @@ import '../../../business_owner/data/tenant_repository.dart';
 import '../../../../core/providers/appwrite_provider.dart';
 import '../../../../core/config/appwrite_config.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../../providers/tenant_subscription_provider.dart';
 
 
 /// Product Management Page for Tenant
@@ -159,11 +160,8 @@ class _ProductManagementPageState
                 label: const Text('Semua'),
                 selected: _selectedCategoryId == null,
                 onSelected: (selected) {
-                  AppLogger.info('🎯 === "SEMUA" TAB CLICKED ===');
-                  AppLogger.info('✅ Show all products');
                   setState(() {
                     _selectedCategoryId = null;
-                    AppLogger.info('🔄 _selectedCategoryId set to: null');
                   });
                 },
               ),
@@ -186,13 +184,8 @@ class _ProductManagementPageState
               ),
               selected: _selectedCategoryId == category.id,
               onSelected: (selected) {
-                AppLogger.info('🎯 === CATEGORY TAB CLICKED ===');
-                AppLogger.info('📂 Category Name: ${category.name}');
-                AppLogger.info('🆔 Category ID: ${category.id}');
-                AppLogger.info('✅ Selected: $selected');
                 setState(() {
                   _selectedCategoryId = selected ? category.id : null;
-                  AppLogger.info('🔄 _selectedCategoryId set to: $_selectedCategoryId');
                 });
               },
             ),
@@ -206,33 +199,10 @@ class _ProductManagementPageState
     List<ProductModel> allProducts,
     String? categoryFilter,
   ) {
-    AppLogger.info('🔍 === BUILD PRODUCTS LIST ===');
-    AppLogger.info('📦 Total Products: ${allProducts.length}');
-    AppLogger.info('🆔 Category Filter: ${categoryFilter ?? "null (Show All)"}');
-    
     // Filter products by category if selected
     final products = categoryFilter == null
         ? allProducts
-        : allProducts.where((p) {
-            final match = p.categoryId == categoryFilter;
-            if (!match) {
-              AppLogger.info('   ✗ ${p.name}: categoryId=${p.categoryId} != $categoryFilter');
-            } else {
-              AppLogger.info('   ✓ ${p.name}: categoryId=${p.categoryId} == $categoryFilter');
-            }
-            return match;
-          }).toList();
-
-    AppLogger.info('✅ === FILTERED RESULT: ${products.length} products ===');
-    if (products.isEmpty) {
-      AppLogger.warning('⚠️ NO PRODUCTS MATCHED!');
-    } else {
-      AppLogger.info('📋 Products to display:');
-      for (var p in products) {
-        AppLogger.info('   • ${p.name} (categoryId: ${p.categoryId})');
-      }
-    }
-    AppLogger.info('');
+        : allProducts.where((p) => p.categoryId == categoryFilter).toList();
 
     if (products.isEmpty) {
       return Center(
@@ -277,7 +247,10 @@ class _ProductManagementPageState
     
     final isFreeTier = await _isBusinessOwnerFreeTier(user!.tenantId!);
     if (isFreeTier) {
-      _showPhase3UpgradeDialog(context);
+      showDialog(
+        context: context,
+        builder: (context) => const UpgradeDialog(isBusinessOwner: false),
+      );
     } else {
       _showProductDialog(context, product: product);
     }
@@ -332,34 +305,68 @@ class _ProductManagementPageState
     
     final isFreeTier = await _isBusinessOwnerFreeTier(user!.tenantId!);
     if (isFreeTier) {
-      _showPhase3UpgradeDialog(context);
+      showDialog(
+        context: context,
+        builder: (context) => const UpgradeDialog(isBusinessOwner: false),
+      );
     } else {
       _showCategoryDialog(context);
     }
   }
 
-  // Phase 3: Build FAB with enforcement
+  // Phase 4: Build FAB with 10 vs 15 product limit enforcement
   Widget _buildFAB(BuildContext context, String tenantId) {
-    return FutureBuilder<bool>(
-      future: _isBusinessOwnerFreeTier(tenantId),
-      builder: (context, snapshot) {
-        final isFreeTier = snapshot.data ?? false;
-        
-        if (isFreeTier) {
+    final subscriptionStatus = ref.watch(tenantSubscriptionStatusProvider);
+    final productsState = ref.watch(tenantProductsProvider(tenantId));
+    final currentProductCount = productsState.products.length;
+
+    return subscriptionStatus.when(
+      data: (status) {
+        // Premium BO: No limit
+        if (!status.isBusinessOwnerFreeTier) {
           return FloatingActionButton.extended(
-            onPressed: () => _showPhase3UpgradeDialog(context),
+            onPressed: () => _showProductDialog(context),
+            icon: const Icon(Icons.add),
+            label: const Text('Tambah Produk'),
+          );
+        }
+
+        // Free Tier BO: Check limit (10 or 15 based on selection)
+        final hasReachedLimit = status.isLimitReached(currentProductCount);
+        final limitText = status.isTenantSelected ? '15' : '10';
+
+        if (hasReachedLimit) {
+          return FloatingActionButton.extended(
+            onPressed: () => _showProductLimitDialog(context, status),
             icon: const Icon(Icons.lock),
-            label: const Text('Tambah Produk (Premium)'),
+            label: Text('Limit $limitText Produk'),
             backgroundColor: Colors.grey,
           );
         }
-        
+
+        // Under limit but still FREE TIER - cannot CREATE (Phase 3 enforcement)
+        // Phase 3 Policy: View + Delete Only (no CREATE/UPDATE for free tier)
         return FloatingActionButton.extended(
-          onPressed: () => _showProductDialog(context),
-          icon: const Icon(Icons.add),
-          label: const Text('Tambah Produk'),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => const UpgradeDialog(isBusinessOwner: false),
+            );
+          },
+          icon: const Icon(Icons.lock_outline),
+          label: Text('Upgrade untuk Tambah'),
+          backgroundColor: Colors.orange.shade700,
         );
       },
+      loading: () => const FloatingActionButton(
+        onPressed: null,
+        child: CircularProgressIndicator(),
+      ),
+      error: (_, __) => FloatingActionButton.extended(
+        onPressed: () => _showProductDialog(context),
+        icon: const Icon(Icons.add),
+        label: const Text('Tambah Produk'),
+      ),
     );
   }
 
@@ -446,12 +453,184 @@ class _ProductManagementPageState
         .toggleProductAvailability(productId, isAvailable);
   }
   
-  // Phase 3: Show upgrade dialog
-  void _showPhase3UpgradeDialog(BuildContext context) {
+  // Phase 4: Show product limit dialog with selection-aware messaging
+  void _showProductLimitDialog(
+    BuildContext context,
+    TenantSubscriptionStatus status,
+  ) {
+    final limitText = status.productLimit.toString();
+    final selectionStatus = status.isTenantSelected ? 'Terpilih' : 'Non-Prioritas';
+
     showDialog(
       context: context,
-      builder: (context) => const UpgradeDialog(
-        isBusinessOwner: false, // Tenant context, will show tenant benefits
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF101010),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: Colors.grey.shade900, width: 1),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.orange.shade900, Colors.deepOrange.shade900],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(Icons.lock_outline, color: Colors.white, size: 28),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Text(
+                'Limit Tercapai',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Status: $selectionStatus (Free Tier)',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Anda telah mencapai batas maksimal $limitText produk aktif.',
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade300,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            if (!status.isTenantSelected) ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade900.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.shade800, width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Tenant Non-Prioritas',
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tenant terpilih mendapat limit 15 produk. Hubungi pemilik bisnis untuk upgrade.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade300,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+            Text(
+              'Untuk menambah produk baru:',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                color: Colors.grey.shade300,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildLimitOption('1', 'Non-aktifkan produk yang tidak terpakai'),
+            _buildLimitOption('2', 'Upgrade ke Premium (Unlimited)'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(foregroundColor: Colors.grey),
+            child: const Text('Tutup'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              showDialog(
+                context: context,
+                builder: (context) => const UpgradeDialog(isBusinessOwner: false),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange.shade700,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+            ),
+            child: const Text('Upgrade Premium'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLimitOption(String number, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: Colors.cyan.shade900,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                number,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade300,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

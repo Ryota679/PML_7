@@ -8,6 +8,7 @@ import 'package:kantin_app/shared/models/tenant_model.dart';
 import 'package:kantin_app/shared/models/user_model.dart';
 import 'package:kantin_app/core/config/appwrite_config.dart';
 import 'package:kantin_app/core/providers/appwrite_provider.dart';
+import 'package:kantin_app/shared/widgets/upgrade_dialog.dart';
 import 'package:appwrite/appwrite.dart';
 import 'widgets/tenant_grace_warning_banner.dart';
 import 'widgets/tenant_d7_warning_banner.dart';
@@ -15,11 +16,15 @@ import 'widgets/tenant_consolidated_trial_banner.dart';
 import 'widgets/tenant_not_selected_banner.dart';
 import 'widgets/tenant_selected_banner.dart';
 import '../../business_owner/providers/grace_period_provider.dart';
+import '../../business_owner/presentation/widgets/free_tier_banner.dart';
 import 'pages/product_management_page.dart';
 import 'pages/staff_management_page.dart';
 import 'pages/qr_code_display_page.dart';
 import 'pages/tenant_order_dashboard_page.dart';
+import 'pages/tenant_single_report_page.dart';
 import 'providers/current_tenant_provider.dart';
+import '../providers/tenant_subscription_provider.dart';
+import 'widgets/contact_owner_banner.dart';
 
 /// Tenant Dashboard
 /// 
@@ -50,6 +55,30 @@ class TenantDashboard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Phase 3: Free Tier Banner (Blue) - Shows at top for free tier
+            // Position: Below AppBar, Above Welcome Card
+            if (user != null && user.isFreeTier)
+              FreeTierBanner(
+                onUpgrade: () => showDialog(
+                  context: context,
+                  builder: (context) => const UpgradeDialog(
+                    isBusinessOwner: false,
+                  ),
+                ),
+              ),
+            
+            // Phase 4: Contact Owner Banner for Non-Selected Tenants
+            Consumer(
+              builder: (context, ref, _) {
+                final subscriptionStatus = ref.watch(tenantSubscriptionStatusProvider);
+                return subscriptionStatus.when(
+                  data: (status) => ContactOwnerBanner(subscriptionStatus: status),
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                );
+              },
+            ),
+            
             // Welcome Card
             Card(
               child: Padding(
@@ -195,10 +224,10 @@ class TenantDashboard extends ConsumerWidget {
                   subtitle: 'Lihat statistik',
                   color: Colors.orange,
                   onTap: () {
-                    // TODO: Navigate to reports
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Fitur akan tersedia nanti'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TenantSingleReportPage(),
                       ),
                     );
                   },
@@ -612,4 +641,7 @@ class TenantDashboard extends ConsumerWidget {
       },
     );
   }
+  
+
 }
+

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:kantin_app/core/config/appwrite_config.dart';
 import 'package:kantin_app/core/providers/appwrite_provider.dart';
 import 'package:kantin_app/shared/models/order_model.dart';
+import 'package:kantin_app/shared/repositories/order_repository.dart';
 import 'package:kantin_app/features/tenant/providers/tenant_orders_provider.dart';
 
 /// Tenant Order Dashboard Page
@@ -777,12 +778,167 @@ class _TenantOrderDashboardPageState
     );
   }
 
-  void _showStatusUpdateDialog(OrderModel order) {
-    // TODO: Implement in Phase 2
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Fitur update status akan tersedia di Phase 2'),
+  Future<void> _showStatusUpdateDialog(OrderModel order) async {
+    final nextStatus = _getNextStatus(order.status);
+    final nextStatusLabel = _getNextStatusLabel(order.status);
+    
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Konfirmasi $nextStatusLabel'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Ubah status pesanan ${order.getQueueNumber()}?'),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(Icons.person, size: 16, color: Colors.grey[600]),
+                const SizedBox(width: 8),
+                Expanded(child: Text(order.customerName)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _getStatusChangeMessage(order.status),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.blue.shade900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: _getNextStatusColor(order.status),
+            ),
+            child: Text(nextStatusLabel),
+          ),
+        ],
       ),
     );
+
+    if (confirmed != true || !mounted) return;
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Memperbarui status...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      // Update order status via repository
+      final databases = ref.read(appwriteDatabasesProvider);
+      final orderRepo = OrderRepository(databases);
+      
+      await orderRepo.updateOrderStatus(
+        orderId: order.id!,
+        newStatus: nextStatus,
+      );
+
+      if (!mounted) return;
+      
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Refresh orders list
+      ref.invalidate(tenantOrdersProvider);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✅ Status diubah menjadi: ${nextStatus.label}'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Gagal mengubah status: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  OrderStatus _getNextStatus(OrderStatus currentStatus) {
+    switch (currentStatus) {
+      case OrderStatus.pending:
+        return OrderStatus.confirmed;
+      case OrderStatus.confirmed:
+        return OrderStatus.preparing;
+      case OrderStatus.preparing:
+        return OrderStatus.ready;
+      case OrderStatus.ready:
+        return OrderStatus.completed;
+      default:
+        return currentStatus;
+    }
+  }
+
+  String _getStatusChangeMessage(OrderStatus currentStatus) {
+    switch (currentStatus) {
+      case OrderStatus.pending:
+        return 'Pesanan akan dikonfirmasi dan mulai diproses';
+      case OrderStatus.confirmed:
+        return 'Pesanan akan dimasak/disiapkan';
+      case OrderStatus.preparing:
+        return 'Pesanan siap diambil customer';
+      case OrderStatus.ready:
+        return 'Pesanan selesai (customer sudah mengambil)';
+      default:
+        return 'Status akan diperbarui';
+    }
   }
 }
