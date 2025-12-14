@@ -1,0 +1,305 @@
+{
+    "database_id": "kantin-db",
+    "collections": {
+        "tenants": {
+            "collection_id": "tenants",
+            "name": "tenants",
+            "document_security": true,
+            "enabled": true,
+            "attributes": {
+                "owner_id": {
+                    "type": "string",
+                    "size": 255,
+                    "required": true,
+                    "description": "User ID dari business owner"
+                },
+                "name": {
+                    "type": "string",
+                    "size": 100,
+                    "required": true,
+                    "description": "Nama tenant/stand"
+                },
+                "type": {
+                    "type": "enum",
+                    "elements": [
+                        "food",
+                        "beverage",
+                        "snack",
+                        "dessert",
+                        "other"
+                    ],
+                    "required": true,
+                    "default": "food",
+                    "description": "Kategori jenis tenant"
+                },
+                "description": {
+                    "type": "string",
+                    "size": 500,
+                    "required": false,
+                    "description": "Deskripsi singkat tenant"
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "required": true,
+                    "default": true,
+                    "description": "Status aktif tenant"
+                },
+                "logo_url": {
+                    "type": "url",
+                    "required": false,
+                    "description": "URL logo tenant"
+                },
+                "phone": {
+                    "type": "string",
+                    "size": 20,
+                    "required": false,
+                    "description": "Nomor telepon tenant"
+                },
+                "display_order": {
+                    "type": "integer",
+                    "min": 0,
+                    "max": 9999,
+                    "required": false,
+                    "default": 0,
+                    "description": "Urutan tampilan di list"
+                }
+            },
+            "indexes": {
+                "owner_id_index": {
+                    "type": "key",
+                    "attributes": [
+                        "owner_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                "active_tenants_index": {
+                    "type": "key",
+                    "attributes": [
+                        "is_active"
+                    ],
+                    "orders": [
+                        "DESC"
+                    ]
+                }
+            },
+            "permissions": {
+                "any": [
+                    "read"
+                ],
+                "users": [
+                    "create"
+                ],
+                "label:owner_bussines": [
+                    "read",
+                    "update",
+                    "delete"
+                ],
+                "applications": [
+                    "create",
+                    "read",
+                    "update"
+                ]
+            }
+        },
+        "categories": {
+            "collection_id": "categories",
+            "name": "categories",
+            "document_security": true,
+            "enabled": true,
+            "attributes": {
+                "tenant_id": {
+                    "type": "string",
+                    "size": 255,
+                    "required": true,
+                    "description": "Foreign key ke tenants"
+                },
+                "name": {
+                    "type": "string",
+                    "size": 100,
+                    "required": true,
+                    "description": "Nama kategori produk"
+                },
+                "description": {
+                    "type": "string",
+                    "size": 255,
+                    "required": false,
+                    "description": "Deskripsi kategori"
+                },
+                "display_order": {
+                    "type": "integer",
+                    "min": 0,
+                    "max": 999,
+                    "required": false,
+                    "default": 0,
+                    "description": "Urutan tampilan"
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "required": true,
+                    "default": true,
+                    "description": "Status aktif kategori"
+                }
+            },
+            "indexes": {
+                "tenant_categories_index": {
+                    "type": "key",
+                    "attributes": [
+                        "tenant_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                "display_order_index": {
+                    "type": "key",
+                    "attributes": [
+                        "display_order"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            },
+            "permissions": {
+                "any": [
+                    "read"
+                ],
+                "label:tenant": [
+                    "create",
+                    "read",
+                    "update",
+                    "delete"
+                ],
+                "applications": [
+                    "create",
+                    "read",
+                    "update",
+                    "delete"
+                ]
+            }
+        },
+        "products": {
+            "collection_id": "products",
+            "name": "products",
+            "document_security": true,
+            "enabled": true,
+            "attributes": {
+                "tenant_id": {
+                    "type": "string",
+                    "size": 255,
+                    "required": true,
+                    "description": "Foreign key ke tenants"
+                },
+                "category_id": {
+                    "type": "string",
+                    "size": 255,
+                    "required": false,
+                    "description": "Foreign key ke categories (opsional)"
+                },
+                "name": {
+                    "type": "string",
+                    "size": 100,
+                    "required": true,
+                    "description": "Nama produk"
+                },
+                "description": {
+                    "type": "string",
+                    "size": 500,
+                    "required": false,
+                    "description": "Deskripsi produk"
+                },
+                "price": {
+                    "type": "integer",
+                    "min": 0,
+                    "max": 100000000,
+                    "required": true,
+                    "default": 0,
+                    "description": "Harga dalam rupiah"
+                },
+                "image_url": {
+                    "type": "url",
+                    "required": false,
+                    "description": "URL gambar produk"
+                },
+                "is_available": {
+                    "type": "boolean",
+                    "required": true,
+                    "default": true,
+                    "description": "Ketersediaan produk"
+                },
+                "stock": {
+                    "type": "integer",
+                    "min": 0,
+                    "max": 9999,
+                    "required": false,
+                    "description": "Stok produk (opsional)"
+                },
+                "display_order": {
+                    "type": "integer",
+                    "min": 0,
+                    "max": 9999,
+                    "required": false,
+                    "default": 0,
+                    "description": "Urutan tampilan"
+                }
+            },
+            "indexes": {
+                "tenant_products_index": {
+                    "type": "key",
+                    "attributes": [
+                        "tenant_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                "category_products_index": {
+                    "type": "key",
+                    "attributes": [
+                        "category_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                "available_products_index": {
+                    "type": "key",
+                    "attributes": [
+                        "is_available"
+                    ],
+                    "orders": [
+                        "DESC"
+                    ]
+                },
+                "price_index": {
+                    "type": "key",
+                    "attributes": [
+                        "price"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            },
+            "permissions": {
+                "any": [
+                    "read"
+                ],
+                "label:tenant": [
+                    "create",
+                    "read",
+                    "update",
+                    "delete"
+                ],
+                "applications": [
+                    "create",
+                    "read",
+                    "update",
+                    "delete"
+                ]
+            }
+        }
+    }
+}
