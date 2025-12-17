@@ -18,8 +18,10 @@ class TenantConsolidatedTrialBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Only show for trial users
-    if (ownerUser.paymentStatus != 'trial') {
+    // Show for trial, premium, or active users approaching expiry
+    if (ownerUser.paymentStatus != 'trial' && 
+        ownerUser.paymentStatus != 'premium' && 
+        ownerUser.paymentStatus != 'active') {
       return const SizedBox.shrink();
     }
 
@@ -83,7 +85,7 @@ class TenantConsolidatedTrialBanner extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '⏰ Trial Business Owner berakhir $daysRemaining hari lagi',
+                        '⏰ ${ownerUser.paymentStatus == 'trial' ? 'Trial' : 'Premium'} Business Owner berakhir $daysRemaining hari lagi',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

@@ -4,6 +4,7 @@ import 'package:kantin_app/core/constants/app_constants.dart';
 import 'package:kantin_app/core/router/app_router.dart';
 import 'package:kantin_app/core/theme/app_theme.dart';
 import 'package:kantin_app/core/utils/logger.dart';
+import 'package:kantin_app/shared/widgets/app_lifecycle_observer.dart';
 
 void main() {
   // Initialize logger
@@ -23,13 +24,15 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
 
-    return MaterialApp.router(
-      title: AppConstants.appName,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      routerConfig: router,
+    return AppLifecycleObserver(
+      child: MaterialApp.router(
+        title: AppConstants.appName,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        routerConfig: router,
+      ),
     );
   }
 }

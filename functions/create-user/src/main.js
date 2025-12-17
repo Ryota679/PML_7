@@ -242,9 +242,10 @@ export default async ({ req, res, log, error }) => {
             );
             log(`User created in Auth with ID: ${userId}`);
 
-            // Add label 'tenant' to the user
-            await users.updateLabels(userId, ['tenant']);
-            log('Added "tenant" label to user');
+            // Set label based on userType
+            const label = userType === 'staff' ? 'staff' : 'tenant';
+            await users.updateLabels(userId, [label]);
+            log(`Added "${label}" label to user (userType: ${userType})`);
 
         } catch (authError) {
             error(`Failed to create user in Auth: ${authError.message}`);

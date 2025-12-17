@@ -16,8 +16,9 @@ class ConsolidatedTrialWarningBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Only show for trial users
-    if (user.paymentStatus != 'trial') {
+    // Show for trial OR premium users approaching expiry
+    // Skip for free tier users
+    if (user.paymentStatus != 'trial' && user.paymentStatus != 'premium' && user.paymentStatus != 'active') {
       return const SizedBox.shrink();
     }
 
@@ -30,7 +31,7 @@ class ConsolidatedTrialWarningBanner extends StatelessWidget {
     final expiresAt = user.subscriptionExpiresAt!;
     final daysRemaining = expiresAt.difference(now).inDays;
 
-    // Only show from D-7 to D-0
+    // Only show from D-7 to D-0 (H-7 warning period)
     if (daysRemaining > 7 || daysRemaining < 0) {
       return const SizedBox.shrink();
     }
@@ -81,7 +82,7 @@ class ConsolidatedTrialWarningBanner extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '⏰ Trial berakhir dalam $daysRemaining hari',
+                        '⏰ ${user.paymentStatus == 'trial' ? 'Trial' : 'Premium'} berakhir dalam $daysRemaining hari',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

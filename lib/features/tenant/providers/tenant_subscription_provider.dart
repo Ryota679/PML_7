@@ -13,6 +13,7 @@ class TenantSubscriptionStatus {
   final int productLimit;
   final String? businessOwnerEmail;
   final String? businessOwnerPhone;
+  final DateTime? businessOwnerExpiresAt; // NEW: For H-7 warning
 
   TenantSubscriptionStatus({
     required this.isBusinessOwnerFreeTier,
@@ -20,6 +21,7 @@ class TenantSubscriptionStatus {
     required this.productLimit,
     this.businessOwnerEmail,
     this.businessOwnerPhone,
+    this.businessOwnerExpiresAt,
   });
 
   /// Check if current product count has reached the limit
@@ -80,20 +82,45 @@ final tenantSubscriptionStatusProvider =
     AppLogger.info('  BO Payment Status: $paymentStatus');
     AppLogger.info('  BO Free Tier: $isFreeTier');
     
-    // 4. If BO is premium, all tenants get unlimited
+    // 4. If BO is premium, tenants get premium limits based on selection
     if (!isFreeTier) {
-      AppLogger.info('  ✅ BO Premium - Unlimited access');
+      AppLogger.info('  ✅ BO Premium - Selected/Non-Selected limits apply');
+      
+      // Parse BO expiry date
+      DateTime? boExpiry;
+      final expiryStr = ownerDoc.data['subscription_expires_at'] as String?;
+      if (expiryStr != null) {
+        try {
+          boExpiry = DateTime.parse(expiryStr);
+        } catch (e) {
+          AppLogger.error('Failed to parse BO expiry date: $expiryStr');
+        }
+      }
+      
+      // Check if tenant is selected (even during BO premium)
+      final selectedTenants = ownerDoc.data['selected_tenant_ids'] as List?;
+      final isTenantSelected = selectedTenants?.contains(user.tenantId) ?? false;
+      
+      // Premium limits: Selected=15, Non-Selected=10
+      final productLimit = isTenantSelected ? 15 : 10;
+      
+      AppLogger.info('  Selected Tenants: $selectedTenants');
+      AppLogger.info('  Current Tenant ID: ${user.tenantId}');
+      AppLogger.info('  Is Selected: $isTenantSelected');
+      AppLogger.info('  📦 Product Limit: $productLimit');
+      
       return TenantSubscriptionStatus(
         isBusinessOwnerFreeTier: false,
-        isTenantSelected: true, // Premium = all selected
-        productLimit: 999, // Effectively unlimited
+        isTenantSelected: isTenantSelected,
+        productLimit: productLimit,
         businessOwnerEmail: ownerDoc.data['email'] as String?,
         businessOwnerPhone: ownerDoc.data['phone_number'] as String?,
+        businessOwnerExpiresAt: boExpiry,
       );
     }
     
     // 5. BO is free tier - check if tenant is selected
-    final selectedTenants = ownerDoc.data['selected_tenants'] as List?;
+    final selectedTenants = ownerDoc.data['selected_tenant_ids'] as List?;
     final isTenantSelected = selectedTenants?.contains(user.tenantId) ?? false;
     
     AppLogger.info('  Selected Tenants: $selectedTenants');
@@ -105,12 +132,24 @@ final tenantSubscriptionStatusProvider =
     
     AppLogger.info('  📦 Product Limit: $productLimit');
     
+    // Parse BO expiry date (for H-7 warning)
+    DateTime? boExpiry;
+    final expiryStr = ownerDoc.data['subscription_expires_at'] as String?;
+    if (expiryStr != null) {
+      try {
+        boExpiry = DateTime.parse(expiryStr);
+      } catch (e) {
+        AppLogger.error('Failed to parse BO expiry date: $expiryStr');
+      }
+    }
+    
     return TenantSubscriptionStatus(
       isBusinessOwnerFreeTier: true,
       isTenantSelected: isTenantSelected,
       productLimit: productLimit,
       businessOwnerEmail: ownerDoc.data['email'] as String?,
       businessOwnerPhone: ownerDoc.data['phone_number'] as String?,
+      businessOwnerExpiresAt: boExpiry,
     );
   } catch (e, stackTrace) {
     AppLogger.error('Error fetching tenant subscription status', e, stackTrace);

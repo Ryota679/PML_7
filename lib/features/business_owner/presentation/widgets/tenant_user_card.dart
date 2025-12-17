@@ -9,7 +9,6 @@ class TenantUserCard extends StatelessWidget {
   final VoidCallback onRemove;
   final VoidCallback onDelete; // NEW: permanent delete
   final Function(bool) onToggleStatus;
-  final VoidCallback? onActivate; // NEW: callback for activation (upgrade trigger)
 
   const TenantUserCard({
     super.key,
@@ -18,7 +17,6 @@ class TenantUserCard extends StatelessWidget {
     required this.onRemove,
     required this.onDelete, // NEW
     required this.onToggleStatus,
-    this.onActivate, // NEW
   });
 
   @override
@@ -72,12 +70,8 @@ class TenantUserCard extends StatelessWidget {
                   onSelected: (value) {
                     switch (value) {
                       case 'toggle':
-                        // If trying to activate and callback provided, use callback
-                        if (!user.isActive && onActivate != null) {
-                          onActivate!();
-                        } else {
-                          onToggleStatus(!user.isActive);
-                        }
+                        // Always use toggle status - validation happens in _toggleUserStatus
+                        onToggleStatus(!user.isActive);
                         break;
                       case 'remove':
                         onRemove();

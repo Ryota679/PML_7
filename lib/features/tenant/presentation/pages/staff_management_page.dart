@@ -4,6 +4,7 @@ import 'package:kantin_app/features/auth/providers/auth_provider.dart';
 import 'package:kantin_app/shared/models/user_model.dart';
 import 'package:kantin_app/shared/models/permission_service.dart';
 import '../providers/staff_provider.dart';
+import '../../providers/tenant_subscription_provider.dart';
 import '../widgets/add_staff_dialog.dart';
 
 /// Staff Management Page
@@ -46,6 +47,66 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Kelola Staff'),
+        // NEW: Show active staff count badge
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Consumer(
+            builder: (context, ref, _) {
+              final staffAsync = ref.watch(staffProvider);
+              final subscriptionStatusAsync = ref.watch(tenantSubscriptionStatusProvider);
+              
+              return subscriptionStatusAsync.when(
+                data: (status) {
+                  return staffAsync.when(
+                    data: (staffList) {
+                      final activeCount = staffList.where((s) => s.isActive).length;
+                      final totalCount = staffList.length;
+                      final limit = status.isBusinessOwnerFreeTier ? 1 : 999;
+                      final isAtLimit = status.isBusinessOwnerFreeTier && activeCount >= limit;
+                      
+                      return Container(
+                        padding: const EdgeInsets.all(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isAtLimit ? Colors.orange.shade50 : Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isAtLimit ? Colors.orange.shade200 : Colors.blue.shade200,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.people,
+                                size: 16,
+                                color: isAtLimit ? Colors.orange.shade700 : Colors.blue.shade700,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '$totalCount Staff ($activeCount/${status.isBusinessOwnerFreeTier ? limit : '∞'} Active)',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: isAtLimit ? Colors.orange.shade900 : Colors.blue.shade900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              );
+            },
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -54,10 +115,69 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddStaffDialog(context),
-        icon: const Icon(Icons.person_add),
-        label: const Text('Tambah Staff'),
+      floatingActionButton: Consumer(
+        builder: (context, ref, _) {
+          final subscriptionStatusAsync = ref.watch(tenantSubscriptionStatusProvider);
+          final staffAsync = ref.watch(staffProvider);
+          
+          return subscriptionStatusAsync.when(
+            data: (subscriptionStatus) {
+              return staffAsync.when(
+                data: (staffList) {
+                  // Free tier: 1 staff limit
+                  if (subscriptionStatus.isBusinessOwnerFreeTier) {
+                    if (staffList.length >= 1) {
+                      // At limit - show locked FAB with upgrade prompt
+                      return FloatingActionButton.extended(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                '👥 Limit staff tercapai (1/1).\n\nUpgrade ke Premium untuk unlimited staff!',
+                              ),
+                              backgroundColor: Colors.orange,
+                              duration: Duration(seconds: 4),
+                            ),
+                          );
+                        },
+                        backgroundColor: Colors.grey,
+                        icon: const Icon(Icons.lock),
+                        label: const Text('Limit Tercapai'),
+                      );
+                    }
+                  }
+                  
+                  // Premium or within free tier limit - show normal FAB
+                  return FloatingActionButton.extended(
+                    onPressed: () => _showAddStaffDialog(context),
+                    icon: const Icon(Icons.person_add),
+                    label: const Text('Tambah Staff'),
+                  );
+                },
+                loading: () => FloatingActionButton.extended(
+                  onPressed: null,
+                  icon: const Icon(Icons.person_add),
+                  label: const Text('Loading...'),
+                ),
+                error: (_, __) => FloatingActionButton.extended(
+                  onPressed: () => _showAddStaffDialog(context),
+                  icon: const Icon(Icons.person_add),
+                  label: const Text('Tambah Staff'),
+                ),
+              );
+            },
+            loading: () => FloatingActionButton.extended(
+              onPressed: null,
+              icon: const Icon(Icons.person_add),
+              label: const Text('Loading...'),
+            ),
+            error: (_, __) => FloatingActionButton.extended(
+              onPressed: () => _showAddStaffDialog(context),
+              icon: const Icon(Icons.person_add),
+              label: const Text('Tambah Staff'),
+            ),
+          );
+        },
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(staffProvider.notifier).refresh(),
@@ -209,11 +329,28 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
             ),
             trailing: PopupMenuButton<String>(
               onSelected: (value) {
-                if (value == 'delete') {
+                if (value == 'toggle') {
+                  _toggleStaffStatus(staff, !staff.isActive);
+                } else if (value == 'delete') {
                   _confirmDeleteStaff(context, staff);
                 }
               },
               itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'toggle',
+                  child: Row(
+                    children: [
+                      Icon(
+                        staff.isActive ? Icons.visibility_off : Icons.check_circle,
+                        size: 20,
+                        color: staff.isActive ? null : Colors.green,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(staff.isActive ? 'Nonaktifkan' : 'Aktifkan'),
+                    ],
+                  ),
+                ),
+                const PopupMenuDivider(),
                 const PopupMenuItem(
                   value: 'delete',
                   child: Row(
@@ -238,7 +375,57 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage> {
     );
   }
 
-  Future<void> _showAddStaffDialog(BuildContext context) async {
+  /// Toggle staff active status with free tier validation
+  Future<void> _toggleStaffStatus(UserModel staff, bool isActive) async {
+    // NEW: Validate free tier limits before activation
+    if (isActive) {
+      final subscriptionStatus = await ref.read(tenantSubscriptionStatusProvider.future);
+      if (subscriptionStatus.isBusinessOwnerFreeTier) {
+        // Count currently active staff
+        final staffState = ref.read(staffProvider);
+        final allStaff = staffState.value ?? [];
+        final activeStaffCount = allStaff.where((s) => s.isActive).length;
+        
+        final limit = 1; // Free tier: 1 active staff
+        
+        if (activeStaffCount >= limit) {
+          // Show upgrade snackbar
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  '👥 Limit staff aktif tercapai (1/1).\n\nUpgrade ke Premium untuk unlimited staff!',
+                ),
+                backgroundColor: Colors.orange,
+                duration: Duration(seconds: 4),
+              ),
+            );
+          }
+          return; // Don't activate
+        }
+      }
+    }
+    
+    final success = await ref
+        .read(staffProvider.notifier)
+        .toggleStaffStatus(staff.id!, isActive);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Status staff diubah menjadi ${isActive ? "Aktif" : "Nonaktif"}'
+                : 'Gagal mengubah status staff',
+          ),
+          backgroundColor: success ? Colors.green : Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _showAddStaffDialog(BuildContext context) async {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => const AddStaffDialog(),

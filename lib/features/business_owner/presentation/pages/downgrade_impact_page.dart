@@ -61,37 +61,33 @@ class DowngradeImpactPage extends ConsumerWidget {
             
             const SizedBox(height: 32),
             
-            // 4. Action Section
-            Text(
-              '🎯 Persiapan Downgrade',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Pilih tenant yang akan tetap aktif setelah trial berakhir.',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
-            ),
-            const SizedBox(height: 20),
-            
-            // 4.5 Swap Used Banner (NEW - show if swap already used)
-            if (user.swapUsed == true && 
-                (user.paymentStatus == 'trial' || user.isFree))
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: SwapUsedBanner(user: user),
+            // 4. Action Section - ONLY show if swap NOT used
+            // If swap used, skip this section (upgrade CTA is enough)
+            if (user.swapUsed != true) ...[
+              Text(
+                '🎯 Persiapan Downgrade',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
               ),
+              const SizedBox(height: 8),
+              Text(
+                'Pilih tenant yang akan tetap aktif setelah trial berakhir.',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
+              ),
+              const SizedBox(height: 20),
+              
+              // 5. Tenant Selection Card - MODERN
+              if (tenantsState.tenants.length > 2)
+                _buildTenantSelectionCard(context, tenantsState.tenants)
+              else
+                _buildAutoSelectedCard(context, tenantsState.tenants.length),
+              
+              const SizedBox(height: 24),
+            ],
             
-            // 5. Tenant Selection Card - MODERN
-            // ONLY show if swap NOT used yet (otherwise show purple banner above)
-            if (user.swapUsed != true && tenantsState.tenants.length > 2)
-              _buildTenantSelectionCard(context, tenantsState.tenants)
-            else if (user.swapUsed != true && tenantsState.tenants.length <= 2)
-              _buildAutoSelectedCard(context, tenantsState.tenants.length),
-            
-            const SizedBox(height: 24),
+            // Swap banner removed - upgrade CTA is enough
             
             // 6. Upgrade CTA - MODERN
             _buildUpgradeCard(context),

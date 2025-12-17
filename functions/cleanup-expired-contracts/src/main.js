@@ -45,6 +45,7 @@ export default async ({ req, res, log, error }) => {
     const usersCollectionId = process.env.USERS_COLLECTION_ID || 'users';
     const ordersCollectionId = process.env.ORDERS_COLLECTION_ID || 'orders';
     const productsCollectionId = process.env.PRODUCTS_COLLECTION_ID || 'products';
+    const tenantsCollectionId = process.env.TENANTS_COLLECTION_ID || 'tenants';
     const invitationCodesCollectionId = process.env.INVITATION_CODES_COLLECTION_ID || 'invitation_codes';
 
     const summary = {
@@ -105,27 +106,39 @@ export default async ({ req, res, log, error }) => {
         summary.checked = usersResponse.documents.length;
         log(`📊 Found ${summary.checked} users with expired contracts`);
 
-        if (summary.checked === 0) {
-            log('✅ No expired contracts found. Cleanup complete.');
-            return res.json({
-                success: true,
-                message: 'No expired contracts to cleanup',
-                summary: summary
-            }, 200);
-        }
+        // CHANGED: No early return! Continue to other cleanup tasks even if no expired contracts
+        // Product limits, trial downgrades, etc. still need to run
 
-        // Step 2: Process each expired user
+        // Step 2: Process each expired user (with 3-month grace period)
+        const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        log(`📅 Grace period threshold: ${threeMonthsAgo.toISOString()} (3 months ago)`);
+
         for (const userDoc of usersResponse.documents) {
             const userId = userDoc.$id;
             const authUserId = userDoc.user_id;
             const userRole = userDoc.role;
             const userSubRole = userDoc.sub_role;
             const tenantId = userDoc.tenant_id;
-            const contractEndDate = userDoc.contract_end_date;
+            const contractEndDate = new Date(userDoc.contract_end_date);
             const userInfo = `${userDoc.username || userDoc.email} (${userRole})`;
 
             log(`\n📋 Processing user: ${userInfo}`);
-            log(`   Contract expired: ${contractEndDate}`);
+            log(`   Contract expired: ${userDoc.contract_end_date}`);
+
+            // NEW: Check if grace period (3 months) has passed
+            if (contractEndDate > threeMonthsAgo) {
+                const daysRemaining = Math.ceil((contractEndDate.getTime() - threeMonthsAgo.getTime()) / (1000 * 60 * 60 * 24));
+                log(`   ⏳ Grace period active: ${daysRemaining} days remaining before deletion`);
+                summary.skipped++;
+                summary.skippedUsers.push({
+                    userId: userId,
+                    username: userDoc.username,
+                    reason: `Grace period - ${daysRemaining} days remaining`
+                });
+                continue; // Skip deletion, grace period not over yet
+            }
+
+            log(`   🔴 Grace period expired (3+ months) - proceeding with deletion`);
 
             // Filter by role - only delete tenant and business owner (not staff directly)
             if (userRole !== 'tenant' && userRole !== 'owner_bussines' && userRole !== 'owner_business') {
@@ -401,7 +414,7 @@ export default async ({ req, res, log, error }) => {
                 invitationCodesCollectionId,
                 [
                     Query.equal('status', 'active'),
-                    Query.lessThan('created_at', new Date(now.getTime() - 5 * 60 * 60 * 1000).toISOString())
+                    Query.lessThan('$createdAt', new Date(now.getTime() - 5 * 60 * 60 * 1000).toISOString())
                 ]
             );
 
@@ -434,7 +447,6 @@ export default async ({ req, res, log, error }) => {
                 databaseId,
                 usersCollectionId,
                 [
-                    Query.equal('subscription_tier', 'premium'),
                     Query.equal('payment_status', 'trial'),
                     Query.lessThan('subscription_expires_at', now.toISOString())
                 ]
@@ -450,11 +462,8 @@ export default async ({ req, res, log, error }) => {
                         usersCollectionId,
                         user.$id,
                         {
-                            subscription_tier: 'free',
-                            payment_status: 'expired',
-                            swap_available_until: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                            swap_used: false,
-                            selection_finalized: false
+                            payment_status: 'free'
+                            // Removed fields: swap_available_until, selection_finalized (not in schema)
                         }
                     );
 
@@ -500,6 +509,9 @@ export default async ({ req, res, log, error }) => {
         }
 
         // ========== FINALIZE TENANT SELECTION (SWAP DEADLINE) ==========
+        // COMMENTED OUT: Fields swap_available_until and selection_finalized don't exist in schema
+        // Implement later when these fields are added
+        /*
         log('\nFinalizing tenant selections (swap deadline passed)...');
         try {
             const swapDeadlinePassed = await databases.listDocuments(
@@ -508,7 +520,7 @@ export default async ({ req, res, log, error }) => {
                 [
                     Query.lessThan('swap_available_until', now.toISOString()),
                     Query.equal('selection_finalized', false),
-                    Query.equal('subscription_tier', 'free')
+                    Query.equal('payment_status', 'free')
                 ]
             );
 
@@ -559,6 +571,314 @@ export default async ({ req, res, log, error }) => {
         } catch (e) {
             error(`   Failed swap finalization: ${e.message}`);
         }
+        */
+        log('\n⏭️  Swap finalization: Skipped (feature not implemented in schema yet)');
+        summary.swapDeadlines = { checked: 0, finalized: 0 };
+
+        // ========== AUTO-DEACTIVATE EXCESS PRODUCTS (D-0 ENFORCEMENT) ==========
+        log('\n📦 Checking product limits for free tier users...');
+        try {
+            const freeTierUsers = await databases.listDocuments(
+                databaseId,
+                usersCollectionId,
+                [
+                    Query.equal('payment_status', ['free', 'expired']),
+                    Query.equal('role', ['owner_business', 'owner_bussines'])
+                ]
+            );
+
+            summary.productLimits = { checked: 0, deactivated: 0, tenantsProcessed: 0 };
+
+            log(`   Found ${freeTierUsers.documents.length} free tier users`);
+
+            for (const user of freeTierUsers.documents) {
+                const PRODUCT_LIMIT = 15; // Free tier limit
+
+                // Get user's selected tenants
+                const selectedTenantIds = user.selected_tenant_ids || [];
+
+                if (selectedTenantIds.length === 0) {
+                    continue; // Skip if no tenants
+                }
+
+                for (const tenantId of selectedTenantIds) {
+                    try {
+                        // Get all ACTIVE products for this tenant
+                        const productsResponse = await databases.listDocuments(
+                            databaseId,
+                            productsCollectionId,
+                            [
+                                Query.equal('tenant_id', tenantId),
+                                Query.equal('is_active', true),
+                                Query.limit(100) // Safety limit
+                            ]
+                        );
+
+                        const activeCount = productsResponse.documents.length;
+                        summary.productLimits.checked++;
+
+                        if (activeCount > PRODUCT_LIMIT) {
+                            const excessCount = activeCount - PRODUCT_LIMIT;
+                            log(`\n   ⚠️  Tenant ${tenantId}: ${activeCount}/${PRODUCT_LIMIT} products (excess: ${excessCount})`);
+                            log(`   🎲 Random-selecting ${excessCount} products to deactivate...`);
+
+                            // RANDOM SELECTION (user requested)
+                            // Shuffle array for random selection
+                            const shuffledProducts = productsResponse.documents
+                                .sort(() => Math.random() - 0.5);
+
+                            // Deactivate random products
+                            for (let i = 0; i < excessCount; i++) {
+                                const product = shuffledProducts[i];
+
+                                try {
+                                    await databases.updateDocument(
+                                        databaseId,
+                                        productsCollectionId,
+                                        product.$id,
+                                        {
+                                            is_available: false  // Use existing field only
+                                            // Removed: deactivated_at (doesn't exist)
+                                            // Removed: deactivation_reason (doesn't exist)
+                                        }
+                                    );
+
+                                    summary.productLimits.deactivated++;
+                                    log(`     ✅ Deactivated: ${product.name} (set is_available=false)`);
+                                } catch (e) {
+                                    error(`     ❌ Failed to deactivate ${product.name}: ${e.message}`);
+                                    summary.errors++;
+                                }
+                            }
+
+                            summary.productLimits.tenantsProcessed++;
+                        } else {
+                            log(`   ✅ Tenant ${tenantId}: ${activeCount}/${PRODUCT_LIMIT} products (OK)`);
+                        }
+
+                    } catch (e) {
+                        error(`   ❌ Failed to process tenant ${tenantId}: ${e.message}`);
+                        summary.errors++;
+                    }
+                }
+            }
+
+            log(`\n   📊 Product Limit Summary:`);
+            log(`     Tenants checked: ${summary.productLimits.checked}`);
+            log(`     Tenants processed: ${summary.productLimits.tenantsProcessed}`);
+            log(`     Products deactivated: ${summary.productLimits.deactivated}`);
+
+        } catch (e) {
+            error(`   ❌ Failed product limit check: ${e.message}`);
+        }
+
+        // ========== AUTO-DEACTIVATE EXCESS STAFF (FREE TIER) ==========
+        log('\n👥 Checking staff limits for free tier tenants...');
+        try {
+            const staffCollectionId = process.env.STAFF_COLLECTION_ID || 'staff';
+            const freeTierUsers = await databases.listDocuments(
+                databaseId,
+                usersCollectionId,
+                [
+                    Query.equal('payment_status', ['free', 'expired']),
+                    Query.equal('role', ['owner_business', 'owner_bussines'])
+                ]
+            );
+
+            summary.staffLimits = { checked: 0, deactivated: 0, tenantsProcessed: 0 };
+
+            log(`   Found ${freeTierUsers.documents.length} free tier business owners`);
+
+            for (const user of freeTierUsers.documents) {
+                const STAFF_LIMIT = 1; // Free tier limit per tenant
+
+                // Get ALL tenants owned by this BO
+                const tenantsResponse = await databases.listDocuments(
+                    databaseId,
+                    tenantsCollectionId,
+                    [Query.equal('owner_id', user.$id)]
+                );
+
+                if (tenantsResponse.documents.length === 0) {
+                    continue; // Skip if no tenants
+                }
+
+                for (const tenant of tenantsResponse.documents) {
+                    const tenantId = tenant.$id;
+                    try {
+                        // Get all ACTIVE staff for this tenant (excluding owner)
+                        const staffResponse = await databases.listDocuments(
+                            databaseId,
+                            usersCollectionId,
+                            [
+                                Query.equal('tenant_id', tenantId),
+                                Query.equal('sub_role', 'staff'),
+                                Query.equal('is_active', true),
+                                Query.limit(100) // Safety limit
+                            ]
+                        );
+
+                        const activeCount = staffResponse.documents.length;
+                        summary.staffLimits.checked++;
+
+                        if (activeCount > STAFF_LIMIT) {
+                            const excessCount = activeCount - STAFF_LIMIT;
+                            log(`\n   ⚠️  Tenant ${tenantId}: ${activeCount}/${STAFF_LIMIT} staff (excess: ${excessCount})`);
+                            log(`   🎲 Random-selecting ${excessCount} staff to deactivate...`);
+
+                            // RANDOM SELECTION (similar to products)
+                            const shuffledStaff = staffResponse.documents
+                                .sort(() => Math.random() - 0.5);
+
+                            // Deactivate random staff
+                            for (let i = 0; i < excessCount; i++) {
+                                const staff = shuffledStaff[i];
+
+                                try {
+                                    await databases.updateDocument(
+                                        databaseId,
+                                        usersCollectionId,
+                                        staff.$id,
+                                        {
+                                            is_active: false,
+                                            disabled_reason: 'auto_staff_limit_exceeded'
+                                        }
+                                    );
+
+                                    summary.staffLimits.deactivated++;
+                                    log(`     ✅ Deactivated: ${staff.username || staff.email} (role: ${staff.sub_role})`);
+                                } catch (e) {
+                                    error(`     ❌ Failed to deactivate ${staff.username}: ${e.message}`);
+                                    summary.errors++;
+                                }
+                            }
+
+                            summary.staffLimits.tenantsProcessed++;
+                        } else {
+                            log(`   ✅ Tenant ${tenantId}: ${activeCount}/${STAFF_LIMIT} staff (OK)`);
+                        }
+
+                    } catch (e) {
+                        error(`   ❌ Failed to process tenant ${tenantId}: ${e.message}`);
+                        summary.errors++;
+                    }
+                }
+            }
+
+            log(`\n   📊 Staff Limit Summary:`);
+            log(`     Tenants checked: ${summary.staffLimits.checked}`);
+            log(`     Tenants processed: ${summary.staffLimits.tenantsProcessed}`);
+            log(`     Staff deactivated: ${summary.staffLimits.deactivated}`);
+
+        } catch (e) {
+            error(`   ❌ Failed staff limit check: ${e.message}`);
+        }
+
+        // ========== AUTO-DEACTIVATE EXCESS TENANT USERS (FREE TIER) ==========
+        log('\n👤 Checking tenant user limits for free tier business owners...');
+        try {
+            const freeTierUsers = await databases.listDocuments(
+                databaseId,
+                usersCollectionId,
+                [
+                    Query.equal('payment_status', ['free', 'expired']),
+                    Query.equal('role', ['owner_business', 'owner_bussines'])
+                ]
+            );
+
+            summary.tenantUserLimits = { checked: 0, deactivated: 0, tenantsProcessed: 0 };
+
+            log(`   Found ${freeTierUsers.documents.length} free tier business owners`);
+
+            for (const user of freeTierUsers.documents) {
+                const TENANT_USER_LIMIT = 1; // Free tier: 1 active user per tenant
+
+                // Get ALL tenants owned by this BO
+                const tenantsResponse = await databases.listDocuments(
+                    databaseId,
+                    tenantsCollectionId,
+                    [Query.equal('owner_id', user.$id)]
+                );
+
+                if (tenantsResponse.documents.length === 0) {
+                    continue; // Skip if no tenants
+                }
+
+                for (const tenant of tenantsResponse.documents) {
+                    const tenantId = tenant.$id;
+                    try {
+                        // Get all ACTIVE tenant users for this tenant (NOT staff!)
+                        const tenantUsersResponse = await databases.listDocuments(
+                            databaseId,
+                            usersCollectionId,
+                            [
+                                Query.equal('tenant_id', tenantId),
+                                Query.equal('role', 'tenant'),
+                                Query.or([
+                                    Query.isNull('sub_role'),
+                                    Query.equal('sub_role', '')
+                                ]), // Only users WITHOUT staff sub_role
+                                Query.equal('is_active', true),
+                                Query.limit(100) // Safety limit
+                            ]
+                        );
+
+                        const activeCount = tenantUsersResponse.documents.length;
+                        summary.tenantUserLimits.checked++;
+
+                        if (activeCount > TENANT_USER_LIMIT) {
+                            const excessCount = activeCount - TENANT_USER_LIMIT;
+                            log(`\n   ⚠️  Tenant ${tenantId}: ${activeCount}/${TENANT_USER_LIMIT} tenant users (excess: ${excessCount})`);
+                            log(`   🎲 Random-selecting ${excessCount} users to deactivate...`);
+
+                            // RANDOM SELECTION (same algorithm as products/staff)
+                            const shuffledUsers = tenantUsersResponse.documents
+                                .sort(() => Math.random() - 0.5);
+
+                            // Deactivate random users
+                            for (let i = 0; i < excessCount; i++) {
+                                const tenantUser = shuffledUsers[i];
+
+                                try {
+                                    await databases.updateDocument(
+                                        databaseId,
+                                        usersCollectionId,
+                                        tenantUser.$id,
+                                        {
+                                            is_active: false,
+                                            disabled_reason: 'auto_tenant_user_limit_exceeded'
+                                        }
+                                    );
+
+                                    summary.tenantUserLimits.deactivated++;
+                                    log(`     ✅ Deactivated: ${tenantUser.username || tenantUser.email}`);
+                                } catch (e) {
+                                    error(`     ❌ Failed to deactivate ${tenantUser.username}: ${e.message}`);
+                                    summary.errors++;
+                                }
+                            }
+
+                            summary.tenantUserLimits.tenantsProcessed++;
+                        } else {
+                            log(`   ✅ Tenant ${tenantId}: ${activeCount}/${TENANT_USER_LIMIT} tenant users (OK)`);
+                        }
+
+                    } catch (e) {
+                        error(`   ❌ Failed to process tenant ${tenantId}: ${e.message}`);
+                        summary.errors++;
+                    }
+                }
+            }
+
+            log(`\n   📊 Tenant User Limit Summary:`);
+            log(`     Tenants checked: ${summary.tenantUserLimits.checked}`);
+            log(`     Tenants processed: ${summary.tenantUserLimits.tenantsProcessed}`);
+            log(`     Users deactivated: ${summary.tenantUserLimits.deactivated}`);
+
+        } catch (e) {
+            error(`   ❌ Failed tenant user limit check: ${e.message}`);
+        }
+
 
         // Final summary
         summary.endTime = new Date().toISOString();
@@ -568,8 +888,8 @@ export default async ({ req, res, log, error }) => {
         log(`   ⏱️  Duration: ${duration}s`);
         log(`   📋 Total checked: ${summary.checked}`);
         log(`   ⏰ Expired: ${summary.expired}`);
+        log(`   ⏳ In grace period: ${summary.skipped} (3-month grace active)`);
         log(`   ✅ Deleted: ${summary.deleted}`);
-        log(`   ⏭️  Skipped: ${summary.skipped}`);
         log(`   ❌ Errors: ${summary.errors}`);
         log('\n📦 Cascaded Data Deleted:');
         log(`   🏪 Tenants: ${summary.cascadedData.tenants}`);
@@ -582,12 +902,21 @@ export default async ({ req, res, log, error }) => {
         log('\nTrial Subscriptions:');
         log(`   Checked: ${summary.trials.checked}`);
         log(`   Downgraded: ${summary.trials.downgraded}`);
-        log(`   Auto-selected: ${summary.trials.autoSelected}`);
+        log(`   Auto - selected: ${summary.trials.autoSelected}`);
         log('\nSwap Deadlines:');
         log(`   Checked: ${summary.swapDeadlines.checked}`);
         log(`   Finalized: ${summary.swapDeadlines.finalized}`);
         log('\nTenants:');
         log(`   Deactivated: ${summary.tenants.deactivated}`);
+        log('\nProduct Limits (Free Tier):');
+        log(`   Tenants checked: ${summary.productLimits?.checked || 0}`);
+        log(`   Products deactivated: ${summary.productLimits?.deactivated || 0}`);
+        log('\nStaff Limits (Free Tier):');
+        log(`   Tenants checked: ${summary.staffLimits?.checked || 0}`);
+        log(`   Staff deactivated: ${summary.staffLimits?.deactivated || 0}`);
+        log('\nTenant User Limits (Free Tier):');
+        log(`   Tenants checked: ${summary.tenantUserLimits?.checked || 0}`);
+        log(`   Users deactivated: ${summary.tenantUserLimits?.deactivated || 0}`);
 
         if (summary.errors > 0) {
             log('\n⚠️  Partial success - some deletions failed');
@@ -601,12 +930,12 @@ export default async ({ req, res, log, error }) => {
         log('\n✅ Cleanup completed successfully');
         return res.json({
             success: true,
-            message: `Cleanup completed. Deleted ${summary.deleted} expired users.`,
+            message: `Cleanup completed.Deleted ${summary.deleted} expired users.`,
             summary: summary
         }, 200);
 
     } catch (err) {
-        error(`❌ Function error: ${err.message}`);
+        error(`❌ Function error: ${err.message} `);
         error(err.stack);
 
         summary.endTime = new Date().toISOString();

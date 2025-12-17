@@ -219,6 +219,23 @@ class _AddStaffDialogState extends ConsumerState<AddStaffDialog> {
     final functions = ref.read(appwriteFunctionsProvider);
 
     try {
+      // 🔒 FORCE CHECK: Verify user still active before critical operation
+      print('🔒 [FORCE CHECK] Verifying active status before CREATE staff...');
+      final authNotifier = ref.read(authProvider.notifier);
+      final deactivatedInfo = await authNotifier.checkUserActiveStatus();
+      if (deactivatedInfo != null) {
+        print('⚠️ [FORCE CHECK] User deactivated! Blocking create operation.');
+        print('🚪 [FORCE CHECK] Auto-logout triggered...');
+        await authNotifier.logout();
+        
+        if (mounted) {
+          setState(() => _isLoading = false);
+          Navigator.pop(context);
+        }
+        return;
+      }
+      print('✅ [FORCE CHECK] User active, proceeding with create...');
+      
       // Call Appwrite Function to create staff
       final response = await functions.createExecution(
         functionId: 'create-user',

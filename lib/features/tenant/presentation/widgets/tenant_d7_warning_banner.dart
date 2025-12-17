@@ -16,8 +16,10 @@ class TenantD7WarningBanner extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Only show if owner is in trial
-    if (ownerUser.paymentStatus != 'trial') {
+    // Show if owner is in trial, premium, or active (approaching expiry)
+    if (ownerUser.paymentStatus != 'trial' && 
+        ownerUser.paymentStatus != 'premium' && 
+        ownerUser.paymentStatus != 'active') {
       return const SizedBox.shrink();
     }
 
@@ -60,7 +62,7 @@ class TenantD7WarningBanner extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'ℹ️ Trial Owner Berakhir dalam $daysRemaining Hari',
+                     'ℹ️ ${ownerUser.paymentStatus == 'trial' ? 'Trial' : 'Premium'} Owner Berakhir dalam $daysRemaining Hari',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.blue.shade900,

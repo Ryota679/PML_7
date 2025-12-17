@@ -210,7 +210,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                   ),
                 ),
                 
-                // Show uploaded image URL (preview disabled to prevent crash)
+                // Show uploaded image success indicator (URL hidden for security)
                 if (_uploadedImageUrl != null || _imageUrlController.text.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Container(
@@ -236,15 +236,12 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(
-                                _uploadedImageUrl ?? _imageUrlController.text,
-                                style: const TextStyle(
-                                  fontSize: 11,
+                              const Text(
+                                'Gambar telah ter-upload',
+                                style: TextStyle(
+                                  fontSize: 12,
                                   color: Colors.grey,
-                                  fontFamily: 'monospace',
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
                               const Text(
@@ -386,7 +383,8 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
         maxSizeKB: 500,
       );
       
-      AppLogger.info('📥 Upload result: ${uploadedUrl ?? "cancelled"}');
+      // Don't log URL for security - endpoint should not be exposed
+      AppLogger.info('📥 Upload completed successfully');
 
       if (!mounted) {
         AppLogger.warning('⚠️ Widget unmounted during upload, aborting state update');

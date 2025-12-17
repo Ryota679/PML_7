@@ -15,6 +15,7 @@ import '../../../../core/providers/appwrite_provider.dart';
 import '../../../../core/config/appwrite_config.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../providers/tenant_subscription_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 /// Product Management Page for Tenant
@@ -36,6 +37,11 @@ class _ProductManagementPageState
     super.initState();
     // Load data on init
     Future.microtask(() => _loadData());
+    
+    // Check for over-limit dialog after page loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowOverlimitDialog();
+    });
   }
 
   void _loadData() {
@@ -61,11 +67,55 @@ class _ProductManagementPageState
 
     final categoriesState = ref.watch(tenantCategoriesProvider(user!.tenantId!));
     final productsState = ref.watch(tenantProductsProvider(user.tenantId!));
+    final subscriptionStatus = ref.watch(tenantSubscriptionStatusProvider);
+
+    // Count active products
+    final activeProductCount = productsState.products.where((p) => p.isAvailable).length;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Kelola Menu'),
         actions: [
+          // Counter badge
+          subscriptionStatus.when(
+            data: (status) {
+              if (!status.isBusinessOwnerFreeTier) return const SizedBox.shrink();
+              
+              final isAtLimit = activeProductCount >= status.productLimit;
+              final badgeColor = isAtLimit ? Colors.orange : Colors.green;
+              
+              return Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: badgeColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: badgeColor, width: 1.5),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isAtLimit ? Icons.warning_amber : Icons.check_circle,
+                      color: badgeColor,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '$activeProductCount/${status.productLimit}',
+                      style: TextStyle(
+                        color: badgeColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
           IconButton(
             icon: const Icon(Icons.category),
             onPressed: () => _handleCategoryButton(context),
@@ -75,7 +125,7 @@ class _ProductManagementPageState
             icon: const Icon(Icons.refresh),
             onPressed: _loadData,
             tooltip: 'Refresh',
-         ),
+          ),
         ],
       ),
       body: _buildBody(categoriesState, productsState),
@@ -344,17 +394,23 @@ class _ProductManagementPageState
           );
         }
 
-        // Under limit but still FREE TIER - cannot CREATE (Phase 3 enforcement)
-        // Phase 3 Policy: View + Delete Only (no CREATE/UPDATE for free tier)
+        // Count ACTIVE products (not total)
+        final activeProductCount = productsState.products.where((p) => p.isAvailable).length;
+        
+        // Under limit: Allow CREATE
+        if (activeProductCount < status.productLimit) {
+          return FloatingActionButton.extended(
+            onPressed: () => _showProductDialog(context),
+            icon: const Icon(Icons.add),
+            label: const Text('Tambah Produk'),
+          );
+        }
+        
+        // At limit: Show upgrade button (swap logic via toggle still works)
         return FloatingActionButton.extended(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => const UpgradeDialog(isBusinessOwner: false),
-            );
-          },
-          icon: const Icon(Icons.lock_outline),
-          label: Text('Upgrade untuk Tambah'),
+          onPressed: () => _showProductLimitDialog(context, status),
+          icon: const Icon(Icons.lock),
+          label: Text('Limit ${status.productLimit} Produk'),
           backgroundColor: Colors.orange.shade700,
         );
       },
@@ -445,12 +501,85 @@ class _ProductManagementPageState
   }
 
   Future<void> _toggleProductAvailability(String productId, bool isAvailable) async {
+    print('🔄 [TOGGLE] Starting toggle for product: $productId, target: ${isAvailable ? "ON" : "OFF"}');
+    
     final user = ref.read(authProvider).user;
-    if (user?.tenantId == null) return;
+    if (user?.tenantId == null) {
+      print('❌ [TOGGLE] No user or tenant ID');
+      return;
+    }
 
+    // If turning OFF, always allow
+    if (!isAvailable) {
+      print('✅ [TOGGLE] Turning OFF - always allowed');
+      await ref
+          .read(tenantProductsProvider(user!.tenantId!).notifier)
+          .toggleProductAvailability(productId, isAvailable);
+      print('✅ [TOGGLE] OFF complete');
+      return;
+    }
+
+    // If turning ON, check limit ONLY if BO is free tier
+    print('🔍 [TOGGLE] Turning ON - checking BO tier...');
+    final subscriptionStatus = await ref.read(tenantSubscriptionStatusProvider.future);
+    
+    // During premium/trial: Allow unlimited swap (no enforcement)
+    if (!subscriptionStatus.isBusinessOwnerFreeTier) {
+      print('✅ [TOGGLE] BO Premium/Trial - Unlimited swap allowed');
+      await ref
+          .read(tenantProductsProvider(user!.tenantId!).notifier)
+          .toggleProductAvailability(productId, isAvailable);
+      print('✅ [TOGGLE] ON complete (no limit check)');
+      return;
+    }
+    
+    // BO is free tier - enforce limit
+    print('🔍 [TOGGLE] BO Free Tier - Checking limit...');
+    print('📊 [TOGGLE] Subscription limit: ${subscriptionStatus.productLimit}');
+    
+    // Count current active products
+    final productsState = ref.read(tenantProductsProvider(user!.tenantId!));
+    final activeCount = productsState.products
+        .where((p) => p.isAvailable && p.id != productId)
+        .length;
+    
+    print('📊 [TOGGLE] Current active count: $activeCount');
+    
+    // Check if at limit
+    if (activeCount >= subscriptionStatus.productLimit) {
+      print('❌ [TOGGLE] BLOCKED - At limit ($activeCount/${subscriptionStatus.productLimit})');
+      
+      // Show simple snackbar warning
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.info_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '💡 Limit produk tercapai (${subscriptionStatus.productLimit}/${subscriptionStatus.productLimit}).\n\nUntuk mengaktifkan produk ini, nonaktifkan salah satu produk lain terlebih dahulu.',
+                    style: const TextStyle(fontSize: 13, height: 1.4),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.blue.shade700,
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return; // Don't allow toggle ON if at limit
+    }
+
+    // Allow toggle - within limit
+    print('✅ [TOGGLE] ALLOWED - Within limit ($activeCount/${subscriptionStatus.productLimit})');
     await ref
-        .read(tenantProductsProvider(user!.tenantId!).notifier)
+        .read(tenantProductsProvider(user.tenantId!).notifier)
         .toggleProductAvailability(productId, isAvailable);
+    print('✅ [TOGGLE] ON complete');
   }
   
   // Phase 4: Show product limit dialog with selection-aware messaging
@@ -629,6 +758,180 @@ class _ProductManagementPageState
                 color: Colors.grey.shade300,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // Issue #5: Check and show over-limit dialog
+  Future<void> _checkAndShowOverLimitDialog() async {
+    final user = ref.read(authProvider).user;
+    if (user?.tenantId == null) return;
+    
+    // IMPORTANT: Only auto-deactivate for tenant owner, NOT Business Owner
+    // BO viewing tenant products should not trigger auto-deactivation
+    // This prevents permission errors and ensures auto-deactivation happens
+    // when the actual tenant owner logs in after BO downgrade
+    if (user?.role != 'tenant') {
+      print('⏭️ [AUTO-DEACTIVATE] Skipped - User is not tenant owner (role: ${user?.role})');
+      return;
+    }
+    
+    final tenantId = user!.tenantId!;
+    
+    // 1. Check if user has permanently dismissed
+    final prefs = await SharedPreferences.getInstance();
+    final hideDialog = prefs.getBool('hide_overlimit_dialog_$tenantId') ?? false;
+    if (hideDialog) return;
+    
+    // 2. Get subscription status and products
+    final subscriptionStatus = await ref.read(tenantSubscriptionStatusProvider.future);
+    final productsState = ref.read(tenantProductsProvider(tenantId));
+    
+    // 3. Check if over limit
+    final activeProducts = productsState.products.where((p) => p.isAvailable).toList();
+    final activeCount = activeProducts.length;
+    
+    if (activeCount <= subscriptionStatus.productLimit) return;
+    
+    // 4. AUTO-DEACTIVATE excess products (random pick)
+    print('🔴 [AUTO-DEACTIVATE] Over limit! Active: $activeCount, Limit: ${subscriptionStatus.productLimit}');
+    final excessCount = activeCount - subscriptionStatus.productLimit;
+    print('🔴 [AUTO-DEACTIVATE] Need to deactivate: $excessCount products');
+    
+    // Shuffle and pick random products to deactivate
+    final shuffled = List.from(activeProducts)..shuffle();
+    final toDeactivate = shuffled.take(excessCount).toList();
+    
+    print('🔴 [AUTO-DEACTIVATE] Deactivating products:');
+    for (var product in toDeactivate) {
+      print('   • ${product.name} (${product.id})');
+      await ref
+          .read(tenantProductsProvider(tenantId).notifier)
+          .toggleProductAvailability(product.id, false);
+    }
+    
+    print('✅ [AUTO-DEACTIVATE] Complete! Deactivated $excessCount products');
+    
+    // 5. Show dialog (informational) - use CURRENT count after deactivation
+    final newActiveCount = subscriptionStatus.productLimit; // Now at limit
+    if (mounted) {
+      _showDeactivationDialog(activeCount, newActiveCount, subscriptionStatus.productLimit, tenantId);
+    }
+  }
+  
+  /// Check if should show over-limit dialog
+  /// Triggers when totalProducts > limit AND activeProducts <= limit
+  /// This indicates auto-deactivation occurred
+  Future<void> _checkAndShowOverlimitDialog() async {
+    try {
+      final user = ref.read(authProvider).user;
+      if (user?.tenantId == null) return;
+
+      // Check subscription status
+      final subscriptionStatus = await ref.read(tenantSubscriptionStatusProvider.future);
+      
+      // Only show for free tier
+      if (!subscriptionStatus.isBusinessOwnerFreeTier) return;
+
+      final tenantId = user!.tenantId!;
+      final limit = subscriptionStatus.productLimit; // 15 for selected, 10 for non-selected
+
+      // Check if user permanently dismissed this
+      final prefs = await SharedPreferences.getInstance();
+      final dismissed = prefs.getBool('hide_overlimit_dialog_$tenantId') ?? false;
+      if (dismissed) return;
+
+      // Check if dialog was shown recently (within 5 minutes to avoid spam)
+      final lastShown = prefs.getInt('last_overlimit_dialog_shown_$tenantId') ?? 0;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (now - lastShown < 5 * 60 * 1000) return; // 5 minutes cooldown
+
+      // Get current product count
+      final productsState = ref.read(tenantProductsProvider(tenantId));
+      final activeCount = productsState.products.where((p) => p.isAvailable).length;
+      final totalCount = productsState.products.length;
+
+      // Show dialog if user has more total products than limit
+      // This indicates deactivation happened
+      if (totalCount > limit && activeCount <= limit) {
+        AppLogger.info('Showing overlimit dialog: total=$totalCount, active=$activeCount, limit=$limit');
+        
+        // Save timestamp to prevent spam
+        await prefs.setInt('last_overlimit_dialog_shown_$tenantId', now);
+        
+        // Show dialog
+        if (mounted) {
+          _showDeactivationDialog(totalCount, activeCount, limit, tenantId);
+        }
+      }
+    } catch (e) {
+      AppLogger.error('Failed to check overlimit dialog', e);
+    }
+  }
+  
+  void _showDeactivationDialog(int originalCount, int currentCount, int limit, String tenantId) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.grey.shade800, width: 1),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.warning_amber,
+              color: Colors.orange.shade600,
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Produk Melebihi Limit',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+        'Anda memiliki $originalCount produk, limit $limit.\n\n'
+        'Beberapa produk telah dinonaktifkan otomatis. Sekarang ada $currentCount produk aktif.\n\n'
+        'Anda bisa swap produk aktif dengan toggle di halaman ini untuk mengatur produk mana yang tetap aktif.',
+        style: TextStyle(
+          color: Colors.grey.shade300,
+          fontSize: 14,
+          height: 1.5,
+        ),
+      ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              // Permanently dismiss
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('hide_overlimit_dialog_$tenantId', true);
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Jangan Ingatkan Lagi',
+              style: TextStyle(color: Colors.grey.shade400),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange.shade600,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: const Text('Mengerti'),
           ),
         ],
       ),

@@ -24,22 +24,40 @@ import 'pages/tenant_order_dashboard_page.dart';
 import 'pages/tenant_single_report_page.dart';
 import 'providers/current_tenant_provider.dart';
 import '../providers/tenant_subscription_provider.dart';
+import '../providers/product_provider.dart';
 import 'widgets/contact_owner_banner.dart';
+import 'widgets/expiry_warning_banner.dart';
 
 /// Tenant Dashboard
 /// 
 /// Dashboard untuk Tenant
-class TenantDashboard extends ConsumerWidget {
+class TenantDashboard extends ConsumerStatefulWidget {
   const TenantDashboard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TenantDashboard> createState() => _TenantDashboardState();
+}
+
+class _TenantDashboardState extends ConsumerState<TenantDashboard> {
+  @override
+  void initState() {
+    super.initState();
+    
+    // Check and auto-deactivate products if over limit
+    // Triggered by tenant owner or staff login
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _checkAndAutoDeactivateProducts();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(authProvider).user;
     final tenantAsync = ref.watch(currentTenantProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard Tenant'),
+        title: Text(user?.subRole == 'staff' ? 'Dashboard Staff' : 'Dashboard Tenant'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -55,20 +73,59 @@ class TenantDashboard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Phase 3: Free Tier Banner (Blue) - Shows at top for free tier
-            // Position: Below AppBar, Above Welcome Card
-            if (user != null && user.isFreeTier)
-              FreeTierBanner(
-                onUpgrade: () => showDialog(
-                  context: context,
-                  builder: (context) => const UpgradeDialog(
-                    isBusinessOwner: false,
-                  ),
-                ),
-              ),
+            // Phase 5: H-7 Expiry Warning Banner REMOVED
+            // Using TenantConsolidatedTrialBanner instead (better educational flow)
+            // See _buildTrialNotificationBanners() below
             
-            // Phase 4: Contact Owner Banner for Non-Selected Tenants
-            Consumer(
+            // Phase 3: Free Tier Banner (Blue) - HIDDEN for staff
+            // Staff don't manage subscriptions
+            if (user?.subRole != 'staff')
+              Consumer(
+              builder: (context, ref, _) {
+                if (user == null || !user.isFreeTier) return const SizedBox.shrink();
+                
+                // Check if in H-7 warning period
+                return ref.watch(tenantSubscriptionStatusProvider).when(
+                  data: (status) {
+                    final now = DateTime.now();
+                    
+                    // Check BO expiry
+                    if (status.businessOwnerExpiresAt != null) {
+                      final boDaysLeft = status.businessOwnerExpiresAt!.difference(now).inDays;
+                      if (boDaysLeft > 0 && boDaysLeft <= 7) {
+                        // In H-7 period, hide FreeTierBanner (BO still premium)
+                        return const SizedBox.shrink();
+                      }
+                    }
+                    
+                    // Check tenant expiry (if tenant has own premium)
+                    if (!user.isFreeTier && user.subscriptionExpiresAt != null) {
+                      final tenantDaysLeft = user.subscriptionExpiresAt!.difference(now).inDays;
+                      if (tenantDaysLeft > 0 && tenantDaysLeft <= 7) {
+                        // In H-7 period, hide FreeTierBanner (tenant still premium)
+                        return const SizedBox.shrink();
+                      }
+                    }
+                    
+                    // Not in warning period, show FreeTierBanner
+                    return FreeTierBanner(
+                      onUpgrade: () => showDialog(
+                        context: context,
+                        builder: (context) => const UpgradeDialog(
+                          isBusinessOwner: false,
+                        ),
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                );
+              },
+            ),
+            
+            // Phase 4: Contact Owner Banner - HIDDEN for staff
+            if (user?.subRole != 'staff')
+              Consumer(
               builder: (context, ref, _) {
                 final subscriptionStatus = ref.watch(tenantSubscriptionStatusProvider);
                 return subscriptionStatus.when(
@@ -101,7 +158,7 @@ class TenantDashboard extends ConsumerWidget {
                     Row(
                       children: [
                         Chip(
-                          label: Text(user?.role ?? ''),
+                          label: Text(user?.subRole == 'staff' ? 'staff' : (user?.role ?? '')),
                           avatar: const Icon(Icons.person, size: 16),
                         ),
                         const SizedBox(width: 8),
@@ -124,12 +181,39 @@ class TenantDashboard extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             
-            // D-7 & D-0 Tenant Notification Banners (NEW)
-            if (user != null)
+            // Staff Information Banner
+            if (user?.subRole == 'staff')
+              Card(
+                color: Colors.blue.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue.shade700),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Staff hanya dapat melihat dan mengupdate pesanan. Mereka tidak bisa mengelola menu atau staff lainnya.',
+                          style: TextStyle(
+                            color: Colors.blue.shade900,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (user?.subRole == 'staff')
+              const SizedBox(height: 16),
+            
+            // D-7 & D-0 Tenant Notification Banners - HIDDEN for staff
+            if (user != null && user.subRole != 'staff')
               _buildTrialNotificationBanners(context, ref, user),
             
-            // Grace Period Warning (if BO in grace period)
-            if (user != null)
+            // Grace Period Warning - HIDDEN for staff
+            if (user != null && user.subRole != 'staff')
               _buildGraceWarningBanner(context, ref, user),
             
             // Contract Status Card
@@ -170,23 +254,26 @@ class TenantDashboard extends ConsumerWidget {
                     );
                   },
                 ),
-                _buildMenuCard(
-                  context,
-                  icon: Icons.restaurant_menu,
-                  title: 'Menu',
-                  subtitle: 'Kelola menu produk',
-                  color: Colors.green,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ProductManagementPage(),
-                      ),
-                    );
-                  },
-                ),
-                // QR Code - Navigate to QR display page
-                tenantAsync.when(
+                // Menu - HIDDEN for staff
+                if (user?.subRole != 'staff')
+                  _buildMenuCard(
+                    context,
+                    icon: Icons.restaurant_menu,
+                    title: 'Menu',
+                    subtitle: 'Kelola menu produk',
+                    color: Colors.green,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ProductManagementPage(),
+                        ),
+                      );
+                    },
+                  ),
+                // QR Code - HIDDEN for staff
+                if (user?.subRole != 'staff')
+                  tenantAsync.when(
                   data: (tenant) => tenant != null
                       ? _buildMenuCard(
                           context,
@@ -217,19 +304,130 @@ class TenantDashboard extends ConsumerWidget {
                   ),
                   error: (_, __) => const SizedBox.shrink(),
                 ),
-                _buildMenuCard(
-                  context,
-                  icon: Icons.analytics,
-                  title: 'Laporan',
-                  subtitle: 'Lihat statistik',
-                  color: Colors.orange,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const TenantSingleReportPage(),
+                
+                // Laporan - LOCKED for free tier tenants, HIDDEN for staff
+                if (user?.subRole != 'staff')
+                  Consumer(
+                  builder: (context, ref, _) {
+                    final subscriptionStatus = ref.watch(tenantSubscriptionStatusProvider);
+                    
+                return subscriptionStatus.when(
+                  data: (status) {
+                    // Free tier: Show locked menu
+                    if (status.isBusinessOwnerFreeTier) {
+                      return Card(
+                        child: InkWell(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => const UpgradeDialog(
+                                isBusinessOwner: false,
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade300,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(Icons.analytics, color: Colors.grey.shade600, size: 28),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Text(
+                                            'Laporan',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Icon(Icons.lock, size: 16, color: Colors.grey.shade600),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Upgrade untuk akses',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    
+                    // Premium: Show normal menu
+                    return Card(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TenantSingleReportPage(),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.shade100,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(Icons.analytics, color: Colors.orange, size: 28),
+                              ),
+                              const SizedBox(width: 16),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Laporan',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      'Lihat statistik',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                );
                   },
                 ),
                 
@@ -354,6 +552,7 @@ class TenantDashboard extends ConsumerWidget {
     required String subtitle,
     required Color color,
     required VoidCallback onTap,
+    bool showBadge = false,
   }) {
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -364,17 +563,41 @@ class TenantDashboard extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  size: 32,
-                  color: color,
-                ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 32,
+                      color: color,
+                    ),
+                  ),
+                  // Warning badge
+                  if (showBadge)
+                    Positioned(
+                      right: -4,
+                      top: -4,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade600,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: const Icon(
+                          Icons.warning_amber,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 12),
               Text(
@@ -585,9 +808,11 @@ class TenantDashboard extends ConsumerWidget {
             
             if (ownerUser == null) return const SizedBox.shrink();
             
-            // Check if owner is in trial
-            if (ownerUser.paymentStatus != 'trial') {
-              print('  > Not in trial, skipping banner');
+            // Check if owner has active subscription (trial, premium, or active)
+            if (ownerUser.paymentStatus != 'trial' && 
+                ownerUser.paymentStatus != 'premium' && 
+                ownerUser.paymentStatus != 'active') {
+              print('  > Not in trial/premium, skipping banner');
               return const SizedBox.shrink();
             }
             
@@ -642,6 +867,85 @@ class TenantDashboard extends ConsumerWidget {
     );
   }
   
+  /// Check and auto-deactivate products if over limit
+  /// Triggered when tenant owner OR staff logs in
+  Future<void> _checkAndAutoDeactivateProducts() async {
+    final user = ref.read(authProvider).user;
+    if (user?.tenantId == null) return;
+    
+    // IMPORTANT: Only auto-deactivate for tenant owner OR staff
+    // BO viewing tenant products should not trigger auto-deactivation
+    // This prevents permission errors and ensures auto-deactivation happens
+    // when the actual tenant team logs in after BO downgrade
+    if (user?.role != 'tenant' && user?.subRole != 'staff') {
+      print('⏭️ [AUTO-DEACTIVATE] Skipped - User is not tenant team (role: ${user?.role}, sub_role: ${user?.subRole})');
+      return;
+    }
+    
+    final tenantId = user!.tenantId!;
+    
+    // Get subscription status and products
+    try {
+      final subscriptionStatus = await ref.read(tenantSubscriptionStatusProvider.future);
+      final productsState = ref.read(tenantProductsProvider(tenantId));
+      
+      // Check if over limit
+      final activeProducts = productsState.products.where((p) => p.isAvailable).toList();
+      final activeCount = activeProducts.length;
+      
+      if (activeCount <= subscriptionStatus.productLimit) {
+        print('✅ [AUTO-DEACTIVATE] Not needed - Products within limit ($activeCount/${subscriptionStatus.productLimit})');
+        return;
+      }
+      
+      // AUTO-DEACTIVATE excess products (random pick)
+      print('🔴 [AUTO-DEACTIVATE] Over limit! Active: $activeCount, Limit: ${subscriptionStatus.productLimit}');
+      final excessCount = activeCount - subscriptionStatus.productLimit;
+      print('🔴 [AUTO-DEACTIVATE] Need to deactivate: $excessCount products');
+      
+      // Shuffle and pick random products to deactivate
+      final shuffled = List.from(activeProducts)..shuffle();
+      final toDeactivate = shuffled.take(excessCount).toList();
+      
+      print('🔴 [AUTO-DEACTIVATE] Deactivating products:');
+      for (var product in toDeactivate) {
+        print('   • ${product.name} (${product.id})');
+        await ref
+            .read(tenantProductsProvider(tenantId).notifier)
+            .toggleProductAvailability(product.id, false);
+      }
+      
+      print('✅ [AUTO-DEACTIVATE] Complete! Deactivated $excessCount products');
+      
+      // Show notification
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '🔴 $excessCount produk telah dinonaktifkan otomatis karena melebihi limit ($activeCount → ${subscriptionStatus.productLimit})',
+            ),
+            backgroundColor: Colors.orange.shade700,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Lihat',
+              textColor: Colors.white,
+              onPressed: () {
+                // Navigate to Product Management
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProductManagementPage(),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ [AUTO-DEACTIVATE] Error: $e');
+    }
+  }
 
 }
 

@@ -315,9 +315,9 @@ class UserModel {
     );
   }
 
-  // Convenience getters for subscription
-  bool get isPremium => subscriptionTier == 'premium';
-  bool get isFree => subscriptionTier == 'free';
+  // Convenience getters for subscription (updated to use payment_status)
+  bool get isPremium => paymentStatus == 'premium' || paymentStatus == 'active';
+  bool get isFree => paymentStatus == 'free' || paymentStatus == null;
   bool get isTrialActive => paymentStatus == 'trial' && 
       subscriptionExpiresAt != null && 
       subscriptionExpiresAt!.isAfter(DateTime.now());
@@ -342,15 +342,15 @@ class UserModel {
   // ===== Phase 3: Enforcement Helpers =====
   
   /// Check if user is on free tier (for enforcement)
-  /// Free tier = not premium AND (no trial OR trial expired)
+  /// Free tier = not premium/active AND (no trial OR trial expired)
   bool get isFreeTier {
-    // If premium, not free tier
-    if (paymentStatus == 'premium') return false;
+    // If premium or active, not free tier
+    if (paymentStatus == 'premium' || paymentStatus == 'active') return false;
     
     // If trial and active, not free tier
     if (paymentStatus == 'trial' && isTrialActive) return false;
     
-    // Otherwise, free tier
+    // Otherwise, free tier (free/null or expired)
     return true;
   }
   

@@ -76,7 +76,9 @@ class BusinessOwnerDashboard extends ConsumerWidget {
           children: [
             // D-7 Selection Banner or Success Banner (NEW - educational flow)
             // Show success banner if ≤2 tenants, otherwise show selection banner
-            if (user != null && user.paymentStatus == 'trial') ...
+            if (user != null && (user.paymentStatus == 'trial' || 
+                user.paymentStatus == 'premium' || 
+                user.paymentStatus == 'active')) ...
               [
                 Consumer(
                   builder: (context, ref, child) {
@@ -104,26 +106,20 @@ class BusinessOwnerDashboard extends ConsumerWidget {
             if (user != null)
               ConsolidatedTrialWarningBanner(user: user),
             
-            // Swap Opportunity Banner (D-7 trial, after selection, swap NOT used yet)
+            // Swap Opportunity Banner (D-7, after selection, swap NOT used yet)
             if (user != null && 
-                user.paymentStatus == 'trial' &&
+                (user.paymentStatus == 'trial' || 
+                 user.paymentStatus == 'premium' || 
+                 user.paymentStatus == 'active') &&
                 user.selectionSubmittedAt != null &&
                 user.swapUsed != true &&
                 user.daysUntilTrialExpiry >= 0 &&
                 user.daysUntilTrialExpiry <= 7)
               SwapOpportunityBanner(user: user),
             
-            // Phase 3: Upgrade Banner (for free tier = trial expired)
-            // Show ONLY if truly free tier (not active trial)
-            if (user != null && user.isFreeTier)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: UpgradeBanner(
-                  message: 'Unlock unlimited tenants, users, dan edit data. Rp 149k/bulan',
-                  onUpgrade: () => _showUpgradeDialog(context),
-                  isBusinessOwner: true,
-                ),
-              ),
+            
+            // Free Tier Upgrade Banner removed - FreeTierBanner below is enough
+            // (Was showing duplicate purple banner)
             
             // Free Tier Upgrade Banner (for free tier users, NOT trial)
             if (user != null && user.isFree && user.paymentStatus != 'trial')

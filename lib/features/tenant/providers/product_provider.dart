@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/appwrite_provider.dart';
 import '../../../shared/models/product_model.dart';
 import '../data/product_repository.dart';
+import '../../auth/providers/auth_provider.dart';
 
 /// Provider for ProductRepository
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
@@ -39,8 +40,9 @@ class ProductState {
 class ProductNotifier extends StateNotifier<ProductState> {
   final ProductRepository _repository;
   final String tenantId;
+  final AuthNotifier? authNotifier;
 
-  ProductNotifier(this._repository, this.tenantId) : super(ProductState());
+  ProductNotifier(this._repository, this.tenantId, {this.authNotifier}) : super(ProductState());
 
   /// Load all products for the tenant
   Future<void> loadProducts() async {
@@ -92,6 +94,19 @@ class ProductNotifier extends StateNotifier<ProductState> {
     int? stock,
     int displayOrder = 0,
   }) async {
+    // 🔒 FORCE CHECK: Verify user still active before critical operation
+   if (authNotifier != null) {
+      print('🔒 [FORCE CHECK] Verifying active status before CREATE product...');
+      final deactivatedInfo = await authNotifier!.checkUserActiveStatus();
+      if (deactivatedInfo != null) {
+        print('⚠️ [FORCE CHECK] User deactivated! Blocking create operation.');
+        print('🚪 [FORCE CHECK] Auto-logout triggered...');
+        await authNotifier!.logout();
+        return false;
+      }
+      print('✅ [FORCE CHECK] User active, proceeding with create...');
+    }
+    
     try {
       final product = await _repository.createProduct(
         tenantId: tenantId,
@@ -128,6 +143,19 @@ class ProductNotifier extends StateNotifier<ProductState> {
     int? stock,
     int? displayOrder,
   }) async {
+    // 🔒 FORCE CHECK: Verify user still active before critical operation
+    if (authNotifier != null) {
+      print('🔒 [FORCE CHECK] Verifying active status before UPDATE product...');
+      final deactivatedInfo = await authNotifier!.checkUserActiveStatus();
+      if (deactivatedInfo != null) {
+        print('⚠️ [FORCE CHECK] User deactivated! Blocking update operation.');
+        print('🚪 [FORCE CHECK] Auto-logout triggered...');
+        await authNotifier!.logout();
+        return false;
+      }
+      print('✅ [FORCE CHECK] User active, proceeding with update...');
+    }
+    
     try {
       final updatedProduct = await _repository.updateProduct(
         productId: productId,
@@ -156,6 +184,19 @@ class ProductNotifier extends StateNotifier<ProductState> {
 
   /// Delete a product
   Future<bool> deleteProduct(String productId) async {
+    // 🔒 FORCE CHECK: Verify user still active before critical operation
+    if (authNotifier != null) {
+      print('🔒 [FORCE CHECK] Verifying active status before DELETE product...');
+      final deactivatedInfo = await authNotifier!.checkUserActiveStatus();
+      if (deactivatedInfo != null) {
+        print('⚠️ [FORCE CHECK] User deactivated! Blocking delete operation.');
+        print('🚪 [FORCE CHECK] Auto-logout triggered...');
+        await authNotifier!.logout();
+        return false;
+      }
+      print('✅ [FORCE CHECK] User active, proceeding with delete...');
+    }
+    
     try {
       await _repository.deleteProduct(productId);
 
@@ -222,5 +263,6 @@ final tenantProductsProvider = StateNotifierProvider.family<
     ProductState,
     String>((ref, tenantId) {
   final repository = ref.watch(productRepositoryProvider);
-  return ProductNotifier(repository, tenantId);
+  final authNotifier = ref.watch(authProvider.notifier);
+  return ProductNotifier(repository, tenantId, authNotifier: authNotifier);
 });

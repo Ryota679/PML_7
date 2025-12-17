@@ -1,7 +1,14 @@
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kantin_app/core/config/appwrite_config.dart';
+import 'package:kantin_app/features/auth/data/auth_repository.dart';
 import 'package:kantin_app/features/auth/providers/auth_provider.dart';
+import 'package:kantin_app/shared/models/user_model.dart';
+import 'package:kantin_app/shared/repositories/tenant_repository.dart';
+import 'package:kantin_app/features/tenant/providers/upgrade_token_provider.dart';
+import 'package:kantin_app/shared/widgets/deactivated_user_dialog.dart';
 
 /// Login Page
 /// 
@@ -18,6 +25,160 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _dialogShown = false; // Track if dialog has been shown
+
+  @override
+  void initState() {
+    super.initState();
+    // Check for deactivated user after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowDeactivatedDialog();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Check again when dependencies change (router redirects)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowDeactivatedDialog();
+    });
+  }
+
+  void _checkAndShowDeactivatedDialog() async {
+    if (!mounted) return;
+    
+    final authState = ref.read(authProvider);
+    
+    // If user is deactivated and dialog hasn't been shown yet
+    if (authState.isDeactivatedUser && authState.user != null && !_dialogShown) {
+      _dialogShown = true; // Mark as shown to prevent multiple dialogs
+      
+      print('🚨 [LOGIN] Auto-showing deactivated dialog after router redirect');
+      final user = authState.user!;
+      final userRole = (user.subRole == 'staff') ? 'staff' : 'tenant_user';
+      
+      await _showDeactivatedUserDialog(user, userRole);
+    }
+  }
+
+  Future<void> _showDeactivatedUserDialog(UserModel user, String userRole) async {
+    // Fetch owner data (tenant owner for staff, business owner for tenant_user)
+    String ownerName = 'Owner';
+    String ownerEmail = 'owner@example.com';
+    String ownerPhone = '628123456789';
+    
+    try {
+      if (userRole == 'staff' && user.tenantId != null) {
+        // Staff: fetch tenant owner data
+        print('📍 [LOGIN] Fetching tenant owner data for staff');
+        
+        final tenantRepo = ref.read(tenantRepositoryProvider);
+        final tenant = await tenantRepo.getTenantById(user.tenantId!);
+        
+        if (tenant != null) {
+          ownerName = tenant.name;
+          
+          // Fetch tenant owner user
+          final authRepo = ref.read(authRepositoryProvider);
+          final response = await authRepo.database.listDocuments(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: AppwriteConfig.usersCollectionId,
+            queries: [
+              Query.equal('role', 'tenant'),
+              Query.isNull('sub_role'),
+              Query.equal('tenant_id', user.tenantId!),
+              Query.limit(1),
+            ],
+          );
+          
+          if (response.documents.isNotEmpty) {
+            final ownerUser = UserModel.fromDocument(response.documents.first);
+            ownerEmail = ownerUser.email;
+            ownerPhone = ownerUser.phone ?? '628123456789';
+            print('✅ [LOGIN] Tenant owner data loaded: $ownerName');
+          }
+        }
+      } else if (userRole == 'tenant_user' && user.tenantId != null) {
+        // Tenant User: fetch business owner data
+        print('📍 [LOGIN] Fetching business owner data for tenant user');
+        
+        final tenantRepo = ref.read(tenantRepositoryProvider);
+        final tenant = await tenantRepo.getTenantById(user.tenantId!);
+        
+        if (tenant != null) {
+          // Fetch business owner using tenant.ownerId
+          final authRepo = ref.read(authRepositoryProvider);
+          final response = await authRepo.database.listDocuments(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: AppwriteConfig.usersCollectionId,
+            queries: [
+              Query.equal('user_id', tenant.ownerId),
+              Query.limit(1),
+            ],
+          );
+          
+          if (response.documents.isNotEmpty) {
+            final businessOwner = UserModel.fromDocument(response.documents.first);
+            ownerName = businessOwner.fullName;
+            ownerEmail = businessOwner.email;
+            ownerPhone = businessOwner.phone ?? '628123456789';
+            print('✅ [LOGIN] Business owner data loaded: $ownerName');
+          }
+        }
+      }
+    } catch (e) {
+      print('⚠️ [LOGIN] Failed to fetch owner data: $e');
+      // Continue with default values
+    }
+    
+    if (!mounted) return;
+    
+    // Store the page context before showing dialog
+    final pageContext = context;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => DeactivatedUserDialog(
+        userRole: userRole,
+        ownerName: ownerName,
+        ownerEmail: ownerEmail,
+        ownerPhone: ownerPhone,
+        onLogout: () {
+          print('🔴 [LOGOUT] Button clicked - starting logout flow');
+          
+          // CRITICAL: Clear the deactivated flag FIRST
+          print('🔴 [LOGOUT] Clearing deactivated flag...');
+          ref.read(authProvider.notifier).clearDeactivatedFlag();
+          _dialogShown = false;
+          print('✅ [LOGOUT] Flag cleared');
+          
+          // Navigate immediately (no delay, no async)
+          print('🚀 [LOGOUT] Navigating to /guest immediately');
+          pageContext.go('/guest');
+        },
+        onUpgrade: userRole == 'tenant_user' ? () {
+          // Generate secure token for payment page access
+          print('📱 [UPGRADE] Tenant user wants to upgrade');
+          
+          final token = ref.read(upgradeTokenProvider.notifier).generateToken(
+            userId: user.userId, // Use userId (non-nullable) not id
+            userEmail: user.email,
+          );
+          
+          // DON'T clear flag yet - need it for router detection
+          // Flag will be cleared by payment page after successful load
+          _dialogShown = false;
+          
+          // Navigate to public payment page with token
+          final paymentUrl = '/payment/tenant-upgrade?token=$token';
+          print('🚀 [UPGRADE] Navigating to: $paymentUrl');
+          pageContext.go(paymentUrl);
+        } : null, // Staff doesn't have upgrade option
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -39,14 +200,73 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (!mounted) return;
 
     if (!success) {
-      final error = ref.read(authProvider).error;
+      print('🔍 [LOGIN] Login failed, checking reason...');
+      final authState = ref.read(authProvider);
+      
+      print('🔍 [LOGIN] isDeactivatedUser: ${authState.isDeactivatedUser}');
+      print('🔍 [LOGIN] user: ${authState.user?.username}');
+      
+      // Check if login failed due to deactivated user
+      if (authState.isDeactivatedUser && authState.user != null) {
+        print('🚨 [LOGIN] Deactivated user detected in login_page!');
+        final user = authState.user!;
+        final userRole = (user.subRole == 'staff') ? 'staff' : 'tenant_user';
+        
+        print('📱 [LOGIN] Showing deactivated dialog for role: $userRole');
+        
+        // Show deactivated dialog
+        if (!mounted) {
+          print('⚠️ [LOGIN] Widget not mounted!');
+          return;
+        }
+        
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => DeactivatedUserDialog(
+            userRole: userRole,
+            // Use dummy data for now
+            ownerName: userRole == 'staff' 
+                ? 'Tenant Owner Demo' 
+                : 'Business Owner Demo',
+            ownerEmail: userRole == 'staff'
+                ? 'tenant@example.com'
+                : 'bo@example.com',
+            ownerPhone: userRole == 'staff'
+                ? '628987654321'
+                : '628123456789',
+            onLogout: () async {
+              // Already logged out in auth_provider, just close dialog
+              Navigator.of(context).pop();
+            },
+            onUpgrade: null,
+          ),
+        );
+        print('✅ [LOGIN] Dialog closed');
+        
+        // CRITICAL: Clear the deactivated flag after dialog is dismissed
+        // This allows the router to navigate away normally
+        if (mounted) {
+          ref.read(authProvider.notifier).clearDeactivatedFlag();
+          print('✅ [LOGIN] Deactivated flag cleared');
+        }
+        return;
+      }
+      
+      // Normal error (wrong password, etc)
+      print('⚠️ [LOGIN] Normal error, showing snackbar');
+      final error = authState.error;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error ?? 'Login gagal'),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
+      return;
     }
+
+    // Login success - proceed normally (remove old check)
+    print('✅ [LOGIN] Login successful, proceeding to dashboard');
   }
 
   @override

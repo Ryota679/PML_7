@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../providers/tenant_subscription_provider.dart';
 
-/// Banner shown to non-selected tenants to contact their Business Owner
+/// Unified Free Tier Banner for all free tier tenants
+/// Shows same messaging for selected & non-selected tenants
+/// Difference is only in counter: 15 vs 10 product limit
 class ContactOwnerBanner extends StatelessWidget {
   final TenantSubscriptionStatus subscriptionStatus;
   
@@ -12,100 +14,105 @@ class ContactOwnerBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Only show for non-selected tenants under free tier BO
-    if (subscriptionStatus.isBusinessOwnerFreeTier && !subscriptionStatus.isTenantSelected) {
-      return Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.orange.shade800,
-              Colors.deepOrange.shade700,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.orange.withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+    // User feedback: Remove duplicate banner
+    // Keep only first FreeTierBanner, this one hidden
+    // Counter shown only in Kelola Menu AppBar
+    return const SizedBox.shrink();
+  }
+
+  void _showUpgradeInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF101010),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: Colors.grey.shade900, width: 1),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.workspace_premium, color: Colors.teal, size: 28),
+            SizedBox(width: 12),
+            Text(
+              'Upgrade ke Premium',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
-        child: Column(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.warning_amber_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    'Status: Non-Prioritas',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
             Text(
-              'Akses terbatas (Limit: ${subscriptionStatus.productLimit} produk)',
-              style: const TextStyle(
-                color: Colors.white,
+              'Dapatkan akses unlimited untuk semua fitur:',
+              style: TextStyle(
+                color: Colors.grey.shade300,
                 fontSize: 14,
                 height: 1.4,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Tenant ini belum dipilih sebagai prioritas oleh pemilik bisnis dalam mode Free Tier.',
+            const SizedBox(height: 16),
+            _buildFeatureItem('✅ Unlimited produk'),
+            _buildFeatureItem('✅ Unlimited staff'),
+            _buildFeatureItem('✅ Unlimited categories'),
+            _buildFeatureItem('✅ Analytics premium'),
+            const SizedBox(height: 16),
+            Text(
+              'Cara upgrade:',
               style: TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-                height: 1.4,
+                color: Colors.grey.shade300,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => _showContactDialog(context),
-              icon: const Icon(Icons.phone, size: 18),
-              label: const Text('Hubungi Pemilik'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.deepOrange.shade700,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+            const SizedBox(height: 8),
+            Text(
+              subscriptionStatus.isTenantSelected
+                  ? '• Upgrade akun Anda sendiri, atau\n• Hubungi pemilik bisnis untuk upgrade'
+                  : '• Hubungi pemilik bisnis untuk upgrade, atau\n• Upgrade akun Anda sendiri',
+              style: TextStyle(
+                color: Colors.grey.shade400,
+                fontSize: 13,
+                height: 1.5,
               ),
             ),
           ],
         ),
-      );
-    }
-    
-    // Don't show for selected tenants or premium BO
-    return const SizedBox.shrink();
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(foregroundColor: Colors.grey),
+            child: const Text('Tutup'),
+          ),
+          if (!subscriptionStatus.isTenantSelected)
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _showContactDialog(context);
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.teal),
+              child: const Text('Hubungi Owner'),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+        ),
+      ),
+    );
   }
 
   void _showContactDialog(BuildContext context) {

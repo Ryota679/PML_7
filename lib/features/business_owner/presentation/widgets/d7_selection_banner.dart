@@ -17,8 +17,10 @@ class D7SelectionBanner extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Only show for trial users
-    if (user.paymentStatus != 'trial') {
+    // Show for trial, premium, or active users approaching expiry
+    if (user.paymentStatus != 'trial' && 
+        user.paymentStatus != 'premium' && 
+        user.paymentStatus != 'active') {
       return const SizedBox.shrink();
     }
 
@@ -108,7 +110,7 @@ class D7SelectionBanner extends ConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Trial berakhir dalam $daysRemaining hari',
+                            '${user.paymentStatus == 'trial' ? 'Trial' : 'Premium'} berakhir dalam $daysRemaining hari',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                   color: _getCountdownColor(daysRemaining),
                                   fontWeight: FontWeight.w600,

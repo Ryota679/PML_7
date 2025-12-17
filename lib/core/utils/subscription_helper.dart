@@ -6,24 +6,26 @@ import 'package:kantin_app/shared/models/user_model.dart';
 class SubscriptionHelper {
   /// Check if user is on free tier (not trial, not premium)
   static bool isFreeTier(UserModel user) {
-    // Free tier: payment_status is null, 'free', or trial expired
+    // Free tier: payment_status is null, 'free', or subscription expired
     if (user.paymentStatus == null || user.paymentStatus == 'free') {
       return true;
     }
     
-    // If trial, check if expired
-    if (user.paymentStatus == 'trial') {
+    // If trial, premium, or active - check if expired
+    if (user.paymentStatus == 'trial' || 
+        user.paymentStatus == 'premium' || 
+        user.paymentStatus == 'active') {
       if (user.subscriptionExpiresAt == null) return false;
       
       final expiresAt = DateTime.parse(user.subscriptionExpiresAt!);
       final now = DateTime.now();
       
-      // Trial expired = free tier
+      // Subscription expired = free tier
       return now.isAfter(expiresAt);
     }
     
-    // Premium or other statuses
-    return false;
+    // Other statuses = free tier
+    return true;
   }
   
   /// Check if user can create/edit content (not on free tier)
@@ -36,9 +38,11 @@ class SubscriptionHelper {
     return !isFreeTier(user);
   }
   
-  /// Check if user is on trial (active, not expired)
-  static bool isActiveTrial(UserModel user) {
-    if (user.paymentStatus != 'trial') return false;
+  /// Check if user has active subscription (trial, premium, or active - not expired)
+  static bool hasActiveSubscription(UserModel user) {
+    if (user.paymentStatus != 'trial' && 
+        user.paymentStatus != 'premium' && 
+        user.paymentStatus != 'active') return false;
     if (user.subscriptionExpiresAt == null) return false;
     
     final expiresAt = DateTime.parse(user.subscriptionExpiresAt!);
@@ -52,9 +56,11 @@ class SubscriptionHelper {
     return user.paymentStatus == 'premium';
   }
   
-  /// Get days remaining in trial (returns 0 if not trial or expired)
-  static int getDaysRemainingInTrial(UserModel user) {
-    if (user.paymentStatus != 'trial') return 0;
+  /// Get days remaining in subscription (returns 0 if not subscribed or expired)
+  static int getDaysRemainingInSubscription(UserModel user) {
+    if (user.paymentStatus != 'trial' && 
+        user.paymentStatus != 'premium' && 
+        user.paymentStatus != 'active') return 0;
     if (user.subscriptionExpiresAt == null) return 0;
     
     final expiresAt = DateTime.parse(user.subscriptionExpiresAt!);
@@ -67,19 +73,19 @@ class SubscriptionHelper {
   
   /// Get tier display name
   static String getTierName(UserModel user) {
-    if (isPremium(user)) return 'Premium';
-    if (isActiveTrial(user)) return 'Trial';
+    if (user.paymentStatus == 'premium' || user.paymentStatus == 'active') return 'Premium';
+    if (hasActiveSubscription(user) && user.paymentStatus == 'trial') return 'Trial';
     return 'Free';
   }
   
   /// Check if Business Owner can access feature based on ownership
   /// Used for features that require ownership checks (e.g., tenant management by BO)
   static bool canAccessAsOwner(UserModel currentUser, String ownerId) {
-    // Premium can always access
-    if (isPremium(currentUser)) return true;
+    // Premium/Active can always access
+    if (currentUser.paymentStatus == 'premium' || currentUser.paymentStatus == 'active') return true;
     
-    // Active trial can always access
-    if (isActiveTrial(currentUser)) return true;
+    // Active subscription (trial) can always access
+    if (hasActiveSubscription(currentUser)) return true;
     
     // Free tier: can only VIEW (handled by canEdit/canCreate separately)
     // For now, allow access but restrict actions

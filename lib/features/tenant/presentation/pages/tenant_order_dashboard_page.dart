@@ -7,6 +7,7 @@ import 'package:kantin_app/core/providers/appwrite_provider.dart';
 import 'package:kantin_app/shared/models/order_model.dart';
 import 'package:kantin_app/shared/repositories/order_repository.dart';
 import 'package:kantin_app/features/tenant/providers/tenant_orders_provider.dart';
+import 'package:kantin_app/features/auth/providers/auth_provider.dart';
 
 /// Tenant Order Dashboard Page
 /// 
@@ -870,6 +871,23 @@ class _TenantOrderDashboardPageState
     );
 
     try {
+      // 🔒 FORCE CHECK: Verify user still active before critical operation
+      print('🔒 [FORCE CHECK] Verifying active status before UPDATE order status...');
+      final authNotifier = ref.read(authProvider.notifier);
+      final deactivatedInfo = await authNotifier.checkUserActiveStatus();
+      if (deactivatedInfo != null) {
+        print('⚠️ [FORCE CHECK] User deactivated! Blocking order update.');
+        print('🚪 [FORCE CHECK] Auto-logout triggered...');
+        await authNotifier.logout();
+        
+        if (!mounted) return;
+        // Close loading dialog
+        Navigator.pop(context);
+        // Router will auto-redirect to login
+        return;
+      }
+      print('✅ [FORCE CHECK] User active, proceeding with order update...');
+      
       // Update order status via repository
       final databases = ref.read(appwriteDatabasesProvider);
       final orderRepo = OrderRepository(databases);

@@ -57,6 +57,74 @@ class _TenantUserManagementPageState
         title: Text(widget.isSelectionMode 
             ? 'Pilih User yang Tetap Aktif' 
             : 'Kelola User Tenant'),
+        // NEW: Show active user count badge
+        bottom: !widget.isSelectionMode ? PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Consumer(
+            builder: (context, ref, _) {
+              final userState = ref.watch(myTenantUsersProvider);
+              final authUser = ref.watch(authProvider).user;
+              
+              if (authUser == null || userState.users.isEmpty) return const SizedBox.shrink();
+              
+              // Filter by selected tenant if applicable
+              final relevantUsers = _selectedTenantId == null
+                  ? userState.users.where((u) => u.subRole == null || u.subRole!.isEmpty).toList()
+                  : userState.users.where((u) => 
+                      u.tenantId == _selectedTenantId && 
+                      (u.subRole == null || u.subRole!.isEmpty)
+                    ).toList();
+              
+              final activeCount = relevantUsers.where((u) => u.isActive).length;
+              final totalCount = relevantUsers.length;
+              final limit = authUser.isFreeTier ? 1 : 999;
+              
+              final isAtLimit = authUser.isFreeTier && activeCount >= limit;
+              
+              // Show tenant name if filtered
+              final tenantName = _selectedTenantId != null
+                  ? ref.watch(myTenantsProvider).tenants
+                      .firstWhere((t) => t.id == _selectedTenantId, orElse: () => null as dynamic)
+                      ?.name
+                  : null;
+              
+              return Container(
+                padding: const EdgeInsets.all(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isAtLimit ? Colors.orange.shade50 : Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isAtLimit ? Colors.orange.shade200 : Colors.blue.shade200,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.people,
+                        size: 16,
+                        color: isAtLimit ? Colors.orange.shade700 : Colors.blue.shade700,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        tenantName != null
+                            ? '$tenantName: $activeCount/${authUser.isFreeTier ? limit : '∞'} Active'
+                            : '$totalCount Users ($activeCount active)',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isAtLimit ? Colors.orange.shade900 : Colors.blue.shade900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ) : null,
         actions: [
           if (widget.isSelectionMode)
             IconButton(
@@ -89,7 +157,26 @@ class _TenantUserManagementPageState
                 ),
               ],
             ),
-      // FAB removed as requested
+      // FAB: Show for premium BO, hide for free tier
+      floatingActionButton: widget.isSelectionMode 
+          ? null 
+          : Consumer(
+              builder: (context, ref, _) {
+                final user = ref.watch(authProvider).user;
+                
+                // Show FAB if BO is premium (not free tier)
+                if (user != null && !user.isFreeTier) {
+                  return FloatingActionButton.extended(
+                    onPressed: () => _showAssignUserDialog(context),
+                    icon: const Icon(Icons.person_add),
+                    label: const Text('Tambah User'),
+                  );
+                }
+                
+                // Hide for free tier
+                return const SizedBox.shrink();
+              },
+            ),
     );
   }
 
@@ -261,7 +348,6 @@ class _TenantUserManagementPageState
             onRemove: () => _confirmRemoveUser(context, user),
             onDelete: () => _confirmDeleteUser(context, user),
             onToggleStatus: (isActive) => _toggleUserStatus(user, isActive),
-            onActivate: () => _showUpgradeDialog(context, tenant),
           );
         },
       ),
@@ -566,6 +652,30 @@ class _TenantUserManagementPageState
   }
 
   Future<void> _toggleUserStatus(UserModel user, bool isActive) async {
+    // NEW: Validate free tier limits before activation
+    if (isActive) {
+      final authUser = ref.read(authProvider).user;
+      if (authUser != null && authUser.isFreeTier) {
+        // Count currently active tenant users for this tenant
+        final allUsers = ref.read(myTenantUsersProvider).users;
+        final activeUsersInTenant = allUsers.where((u) => 
+          u.tenantId == user.tenantId && 
+          u.isActive && 
+          (u.subRole == null || u.subRole!.isEmpty) // Tenant users only, not staff
+        ).length;
+        
+        final limit = 1; // Free tier: 1 active user per tenant
+        
+        if (activeUsersInTenant >= limit) {
+          // Show upgrade dialog
+          if (mounted) {
+            _showUpgradeDialog(context, null);
+          }
+          return; // Don't activate
+        }
+      }
+    }
+    
     final success = await ref
         .read(myTenantUsersProvider.notifier)
         .toggleUserStatus(user.id!, isActive);

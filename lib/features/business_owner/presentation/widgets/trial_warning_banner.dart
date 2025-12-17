@@ -17,8 +17,10 @@ class TrialWarningBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Only show for trial users
-    if (user.paymentStatus != 'trial') {
+    // Show for trial, premium, or active users approaching expiry  
+    if (user.paymentStatus != 'trial' &&
+        user.paymentStatus != 'premium' && 
+        user.paymentStatus != 'active') {
       return const SizedBox.shrink();
     }
 
@@ -49,22 +51,22 @@ class TrialWarningBanner extends StatelessWidget {
       textColor = Colors.red.shade900;
       icon = Icons.error_outline;
       title = daysRemaining == 0 
-          ? 'Trial berakhir hari ini!' 
-          : 'Trial berakhir besok!';
+          ? '${user.paymentStatus == 'trial' ? 'Trial' : 'Premium'} berakhir hari ini!' 
+          : '${user.paymentStatus == 'trial' ? 'Trial' : 'Premium'} berakhir besok!';
       message = 'Upgrade ke PREMIUM sekarang untuk tetap menggunakan semua fitur';
     } else if (daysRemaining <= 3) {
       // D-3: Orange / Warning
       backgroundColor = Colors.orange.shade50;
       textColor = Colors.orange.shade900;
       icon = Icons.warning_amber;
-      title = 'Trial berakhir dalam $daysRemaining hari';
+      title = '${user.paymentStatus == 'trial' ? 'Trial' : 'Premium'} berakhir dalam $daysRemaining hari';
       message = 'Jangan sampai kehilangan akses! Upgrade ke PREMIUM sekarang';
     } else {
       // D-7: Yellow / Info
       backgroundColor = Colors.amber.shade50;
       textColor = Colors.amber.shade900;
       icon = Icons.info_outline;
-      title = 'Trial berakhir dalam $daysRemaining hari';
+      title = '${user.paymentStatus == 'trial' ? 'Trial' : 'Premium'} berakhir dalam $daysRemaining hari';
       message = 'Nikmati fitur premium selamanya dengan berlangganan';
     }
 

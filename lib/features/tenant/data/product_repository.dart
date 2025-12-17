@@ -104,6 +104,7 @@ class ProductRepository {
           'stock': stock,
           'display_order': displayOrder,
         },
+        // No document-level permissions - rely on collection permissions (Users role)
       );
 
       final product = ProductModel.fromDocument(response);
