@@ -761,6 +761,181 @@ class GenerateInvitationDialog extends StatefulWidget {
 
 ---
 
+### **4.6 Error Handling UI**
+
+**File:** `lib/features/tenant/presentation/pages/enter_tenant_code_page.dart`
+
+Handle semua error cases dengan dialog yang user-friendly:
+
+```dart
+class EnterTenantCodePage extends StatefulWidget {
+  final TextEditingController _codeController = TextEditingController();
+  bool _isLoading = false;
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Masukkan Kode Tenant')),
+      body: Padding(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          children: [
+            TextField(
+              controller: _codeController,
+              decoration: InputDecoration(
+                labelText: 'Kode Undangan',
+                hintText: 'TN-123456',
+              ),
+            ),
+            SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _submitCode,
+              child: _isLoading 
+                ? CircularProgressIndicator()
+                : Text('Submit'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Future<void> _submitCode() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final code = _codeController.text.trim();
+      
+      // Validate format
+      if (!InvitationCodeGenerator.validate(code)) {
+        _showErrorDialog(
+          title: '❌ Format Salah',
+          message: 'Format kode harus: TN-XXXXXX\n(6 digit angka)',
+        );
+        return;
+      }
+      
+      // Check code in database
+      final invitation = await databases.listDocuments(
+        databaseId: 'kantin-db',
+        collectionId: 'invitation_codes',
+        queries: [
+          Query.equal('code', code),
+          Query.equal('type', 'tenant'),
+        ],
+      );
+      
+      if (invitation.documents.isEmpty) {
+        _showErrorDialog(
+          title: '⚠️ Kode Tidak Valid',
+          message: 'Kode tidak ditemukan.\nPastikan kode yang Anda masukkan benar.',
+        );
+        return;
+      }
+      
+      final inv = invitation.documents.first;
+      
+      // Check if already used
+      if (inv.data['status'] == 'used') {
+        _showErrorDialog(
+          title: '🔒 Kode Sudah Digunakan',
+          message: 'Kode ini sudah digunakan oleh user lain.\n'
+                   'Silakan minta kode baru dari Owner.',
+        );
+        return;
+      }
+      
+      // Check expiry
+      final expiryTime = DateTime.parse(inv.data['expires_at']);
+      final now = DateTime.now();
+      
+      if (expiryTime.isBefore(now)) {
+        final expired = now.difference(expiryTime);
+        _showErrorDialog(
+          title: '⏰ Kode Kadaluarsa',
+          message: 'Kode sudah expired ${expired.inHours} jam yang lalu.\n\n'
+                   'Kode undangan hanya berlaku 5 jam.\n'
+                   'Silakan minta kode baru dari Owner.',
+        );
+        return;
+      }
+      
+      // Success! Link user to tenant
+      await _linkUserToTenant(inv);
+      
+    } catch (e) {
+      _showErrorDialog(
+        title: '⚠️ Terjadi Kesalahan',
+        message: 'Error: ${e.toString()}',
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+  
+  void _showErrorDialog({
+    required String title,
+    required String message,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Future<void> _linkUserToTenant(Document invitation) async {
+    final user = await account.get();
+    
+    // Update user
+    await databases.updateDocument(
+      databaseId: 'kantin-db',
+      collectionId: 'users',
+      documentId: user.$id,
+      data: {
+        'tenant_id': invitation.data['tenant_id'],
+        'is_active': true,
+      },
+    );
+    
+    // Mark code as used
+    await databases.updateDocument(
+      databaseId: 'kantin-db',
+      collectionId: 'invitation_codes',
+      documentId: invitation.$id,
+      data: {
+        'status': 'used',
+        'used_by': user.$id,
+        'used_at': DateTime.now().toIso8601String(),
+      },
+    );
+    
+    // Success! Navigate to dashboard
+    context.go('/tenant-dashboard');
+  }
+}
+```
+
+**Error Types Handled:**
+
+| Error | Title | Message |
+|-------|-------|---------|
+| **Invalid format** | ❌ Format Salah | Format kode harus: TN-XXXXXX |
+| **Code not found** | ⚠️ Kode Tidak Valid | Kode tidak ditemukan |
+| **Already used** | 🔒 Kode Sudah Digunakan | Kode sudah digunakan oleh user lain |
+| **Expired** | ⏰ Kode Kadaluarsa | Kode expired X jam yang lalu |
+| **Generic error** | ⚠️ Terjadi Kesalahan | Error: [detail] |
+
+---
+
 ## 5. Migration Plan
 
 ### **Phase 1: Implement Google OAuth** (Week 1-2)
@@ -772,12 +947,23 @@ class GenerateInvitationDialog extends StatefulWidget {
 - [ ] Invitation code system
 - [ ] New registration flows
 - [ ] Code entry pages
+- [ ] Error handling UI for invitation codes:
+  - [ ] Invalid format dialog (❌ Format Salah)
+  - [ ] Code not found dialog (⚠️ Kode Tidak Valid)
+  - [ ] Already used dialog (🔒 Kode Sudah Digunakan)
+  - [ ] Expired code dialog (⏰ Kode Kadaluarsa)
+  - [ ] Generic error dialog
 
 **Test:**
 - [ ] Owner registration with Google
 - [ ] Tenant self-registration with code
 - [ ] Staff self-registration with code
 - [ ] Universal login
+- [ ] Error handling:
+  - [ ] Invalid format → Error dialog shown
+  - [ ] Non-existent code → Error dialog shown
+  - [ ] Expired code (>5 hours) → Error dialog with time info
+  - [ ] Already used code → Error dialog shown
 
 ---
 
@@ -798,8 +984,21 @@ rm lib/features/business_owner/.../assign_user_dialog.dart
 - [ ] Delete `create-user` function from Functions console
 
 **Update UI:**
-- [ ] Remove "Create Tenant" button → Replace with "Generate Invitation"
-- [ ] Remove "Create Staff" button → Replace with "Generate Invitation"
+
+**Owner Dashboard - Kelola Tenant:**
+- [ ] **KEEP** "Create Tenant" button (masih diperlukan untuk membuat tenant baru)
+- [ ] **ADD** "Generate Invitation" button/option untuk setiap tenant di list
+  - Saat diklik, muncul popup dengan kode undangan
+  - Kode berlaku selama 5 jam
+  - Format: TN-XXXXXX untuk tenant, ST-XXXXXX untuk staff
+
+**Owner Dashboard - Kelola User:**
+- [ ] **REMOVE** "Create User" functionality → Replace dengan sistem invitation code
+- [ ] User baru harus self-register menggunakan kode undangan
+
+**Tenant Dashboard - Kelola Staff:**
+- [ ] **REMOVE** "Create Staff" button → Replace with "Generate Invitation"
+- [ ] Staff baru harus self-register menggunakan kode undangan (ST-XXXXXX)
 
 **Keep:**
 - ✅ Email/password login (for existing users)
@@ -842,8 +1041,20 @@ rm lib/features/business_owner/.../assign_user_dialog.dart
 
 **Edge Cases:**
 - [ ] User cancels Google picker (no crash)
-- [ ] Invalid code entered (show error)
-- [ ] Expired code entered (show error)
+- [ ] Invalid code format entered:
+  - [ ] Show "❌ Format Salah" dialog
+  - [ ] Dialog explains correct format (TN-XXXXXX)
+  - [ ] User can close and retry
+- [ ] Non-existent code entered:
+  - [ ] Show "⚠️ Kode Tidak Valid" dialog
+  - [ ] User can close and retry
+- [ ] Expired code entered (>5 hours old):
+  - [ ] Show "⏰ Kode Kadaluarsa" dialog
+  - [ ] Dialog shows how long ago it expired
+  - [ ] Dialog suggests requesting new code
+- [ ] Already used code entered:
+  - [ ] Show "🔒 Kode Sudah Digunakan" dialog
+  - [ ] Dialog suggests requesting new code
 - [ ] Existing email/password user can still login
 
 ---
