@@ -1,0 +1,16 @@
+{
+    "name": "create-user",
+    "version": "1.0.0",
+    "description": "Unified function to create tenant and staff users",
+    "main": "src/main.js",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"No tests yet\""
+    },
+    "dependencies": {
+        "node-appwrite": "^13.0.0"
+    },
+    "devDependencies": {},
+    "author": "",
+    "license": "MIT"
+}
