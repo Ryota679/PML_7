@@ -1,0 +1,16 @@
+{
+    "name": "delete-user",
+    "version": "1.0.0",
+    "description": "Delete user with cascading cleanup",
+    "main": "src/main.js",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "node-appwrite": "^13.0.0"
+    },
+    "devDependencies": {},
+    "author": "",
+    "license": "ISC"
+}

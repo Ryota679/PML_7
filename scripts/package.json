@@ -1,0 +1,12 @@
+{
+    "name": "kantin-app-scripts",
+    "version": "1.0.0",
+    "description": "Utility scripts for Kantin App",
+    "private": true,
+    "scripts": {
+        "fix-permissions": "node fix_product_permissions.js"
+    },
+    "dependencies": {
+        "node-appwrite": "^13.0.0"
+    }
+}
