@@ -64,6 +64,8 @@ app.*.map.json
 *.pem
 *.p12
 *.keystore
+*.jks
+key.properties
 secrets/
 credentials/
 
@@ -119,6 +121,29 @@ deploy_*.log
 deployment_*.log
 
 # ===================================
+# Scripts Directory (CRITICAL - Contains API Keys!)
+# ===================================
+
+# Node modules in scripts (reinstallable via npm install)
+scripts/node_modules/
+scripts/.npm/
+scripts/package-lock.json
+
+# Environment variables with API keys
+scripts/.env
+scripts/.env.local
+scripts/.env.*.local
+
+# JavaScript files with hardcoded API keys
+scripts/*_with_keys.js
+scripts/clear_product_permissions.js
+scripts/clear_storage_permissions.js
+scripts/fix_product_permissions.js
+
+# PowerShell scripts that may contain credentials
+scripts/*_credentials.ps1
+
+# ===================================
 # APK / AAB / Build Artifacts (LARGE FILES!)
 # ===================================
 
@@ -163,6 +188,10 @@ debug_*.md
 local_*.md
 test_connection.dart
 test_*.dart
+
+# Debug files with hardcoded credentials (CRITICAL!)
+debug_admin.dart
+lib/debug_admin_page.dart
 
 # ===================================
 # Logs & Debug Files

@@ -1,12 +1,14 @@
 {
-    "name": "kantin-app-scripts",
+    "name": "kantin-scripts",
     "version": "1.0.0",
-    "description": "Utility scripts for Kantin App",
-    "private": true,
+    "description": "Appwrite administration scripts for Kantin App",
     "scripts": {
-        "fix-permissions": "node fix_product_permissions.js"
+        "clear-products": "node clear_product_permissions_secure.js",
+        "clear-storage": "node clear_storage_permissions_secure.js",
+        "fix-permissions": "node fix_product_permissions_secure.js"
     },
     "dependencies": {
-        "node-appwrite": "^13.0.0"
+        "node-appwrite": "^13.0.0",
+        "dotenv": "^16.0.0"
     }
 }
