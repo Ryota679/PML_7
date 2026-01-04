@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kantin_app/features/tenant/providers/billing_provider.dart';
 
 /// Tenant Selected Banner
 /// 
@@ -86,7 +87,7 @@ class TenantSelectedBanner extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             FilledButton.icon(
-              onPressed: () => _showUpgradeDialog(context),
+              onPressed: () => _showUpgradeDialog(context, ref),
               icon: const Icon(Icons.stars, size: 18),
               label: const Text('Upgrade ke Premium (Rp 49k/bln)'),
               style: FilledButton.styleFrom(
@@ -99,7 +100,7 @@ class TenantSelectedBanner extends ConsumerWidget {
     );
   }
 
-  void _showUpgradeDialog(BuildContext context) {
+  void _showUpgradeDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -156,18 +157,47 @@ class TenantSelectedBanner extends ConsumerWidget {
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Navigate to payment page
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Fitur pembayaran akan segera tersedia!'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
+              _triggerPurchase(context, ref);
             },
             child: const Text('Upgrade Sekarang'),
           ),
         ],
       ),
+    );
+  }
+
+  void _triggerPurchase(BuildContext context, WidgetRef ref) {
+    print('[SELECTED_TENANT] Upgrade button clicked');
+    
+    final billingAsyncValue = ref.read(billingServiceProvider);
+    
+    if (!billingAsyncValue.hasValue) {
+      print('[SELECTED_TENANT] Billing not ready yet');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Memuat produk...')),
+      );
+      return;
+    }
+    
+    final billingState = billingAsyncValue.value!;
+    print('[SELECTED_TENANT] Products available: ${billingState.products.length}');
+    
+    if (!billingState.isAvailable || billingState.products.isEmpty) {
+      print('[SELECTED_TENANT] No products available');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Produk langganan tidak tersedia')),
+      );
+      return;
+    }
+    
+    print('[SELECTED_TENANT] Triggering purchase for premium_tenant_monthly');
+    
+    // Trigger purchase
+    ref.read(billingServiceProvider.notifier).purchaseSubscription('premium_tenant_monthly');
+    
+    // Show feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Membuka Google Play Billing...')),
     );
   }
 

@@ -26,6 +26,8 @@ import 'package:kantin_app/features/registration/presentation/business_owner_reg
 import 'package:kantin_app/features/registration/presentation/registration_selection_page.dart';
 import 'package:kantin_app/features/tenant/presentation/pages/inactive_tenant_page.dart';
 import 'package:kantin_app/features/tenant/presentation/pages/tenant_upgrade_payment_page.dart';
+import 'package:kantin_app/features/business_owner/presentation/pages/owner_upgrade_payment_page.dart';
+import 'package:kantin_app/features/tenant/presentation/pages/authenticated_tenant_upgrade_page.dart';
 import 'package:kantin_app/features/tenant/presentation/tenant_dashboard.dart';
 import 'package:kantin_app/shared/widgets/loading_widget.dart';
 
@@ -305,6 +307,16 @@ if (kDebugMode) print('✅ [ROUTER] Allowing deactivated user to access payment 
           final token = state.uri.queryParameters['token']!;
           return TenantUpgradePaymentPage(token: token);
         },
+      ),
+      // Owner upgrade payment page (protected - requires auth)
+      GoRoute(
+        path: '/owner-upgrade',
+        builder: (context, state) => const OwnerUpgradePaymentPage(),
+      ),
+      // Tenant upgrade payment page (protected - requires auth)
+      GoRoute(
+        path: '/tenant-upgrade',
+        builder: (context, state) => const AuthenticatedTenantUpgradePage(),
       ),
       GoRoute(
         path: '/admin',

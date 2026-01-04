@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kantin_app/features/auth/providers/auth_provider.dart';
 import 'package:kantin_app/features/tenant/providers/upgrade_token_provider.dart';
+import 'package:kantin_app/features/tenant/providers/billing_provider.dart';
 
 /// Public payment page for tenant premium upgrade
 /// Accessible without authentication via secure token
@@ -153,8 +154,8 @@ if (kDebugMode) print('✅ [PAYMENT] Token validated for: ${tokenData.userEmail}
             _buildBenefits(),
             const SizedBox(height: 32),
 
-            // Payment Button (Placeholder)
-            _buildPaymentButton(),
+            // Payment Section
+            _buildBillingSection(),
             const SizedBox(height: 16),
 
             // Return to Login
@@ -165,6 +166,109 @@ if (kDebugMode) print('✅ [PAYMENT] Token validated for: ${tokenData.userEmail}
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBillingSection() {
+    final billingStateVal = ref.watch(billingServiceProvider);
+
+    return billingStateVal.when(
+      data: (billingState) {
+        if (!billingState.isAvailable) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Google Play Billing tidak tersedia di perangkat ini.',
+                style: TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }
+
+        if (billingState.products.isEmpty) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                   CircularProgressIndicator(),
+                   SizedBox(height: 8),
+                   Text('Memuat produk langganan...'),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Filter specifically for Tenant Product
+        final tenantProducts = billingState.products.where((p) => p.id == 'premium_tenant_monthly');
+
+        if (tenantProducts.isEmpty) {
+             // Fallback UI if specifically tenant product is missing but others exist
+             return const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('Paket Tenant tidak ditemukan di Google Play.'),
+                ),
+             );
+        }
+
+        final product = tenantProducts.first;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.green.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.green),
+          ),
+          child: Column(
+            children: [
+              const Icon(
+                Icons.android,
+                color: Colors.green,
+                size: 32,
+              ),
+              // ... existing UI code ...
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                   // Pass the specific product ID
+                   ref.read(billingServiceProvider.notifier).purchaseSubscription(product.id);
+                },
+                icon: const Icon(Icons.shopping_cart),
+                label: Text('Langganan ${product.price}'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                  textStyle: const TextStyle(fontSize: 16),
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () {
+                  ref.read(billingServiceProvider.notifier).restorePurchases();
+                },
+                child: const Text('Pulihkan Pembelian (Restore)'),
+              ),
+            ],
+          ),
+        );
+      },
+      error: (err, stack) => Card(
+        color: Colors.red.shade50,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text('Error: $err'),
+        ),
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
     );
   }
 
@@ -196,7 +300,7 @@ if (kDebugMode) print('✅ [PAYMENT] Token validated for: ${tokenData.userEmail}
                 ),
                 const SizedBox(width: 4),
                 const Text(
-                  '99.000',
+                  '49.000',
                   style: TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
@@ -325,7 +429,6 @@ if (kDebugMode) print('✅ [PAYMENT] Token validated for: ${tokenData.userEmail}
 
   Widget _buildBenefits() {
     final benefits = [
-      'Unlimited staff members',
       'Unlimited products',
       'Unlimited categories',
       'Real-time menu updates',
@@ -364,56 +467,6 @@ if (kDebugMode) print('✅ [PAYMENT] Token validated for: ${tokenData.userEmail}
               ),
             )),
       ],
-    );
-  }
-
-  Widget _buildPaymentButton() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.amber.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber),
-      ),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.info_outline,
-            color: Colors.amber,
-            size: 32,
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Payment Gateway Integration',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Integrasi payment gateway (Midtrans/Xendit) akan ditambahkan segera',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: null, // Disabled for now
-            icon: const Icon(Icons.payment),
-            label: const Text('Bayar Sekarang'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 32,
-                vertical: 16,
-              ),
-              textStyle: const TextStyle(fontSize: 16),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

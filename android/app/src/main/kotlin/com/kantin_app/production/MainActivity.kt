@@ -1,4 +1,4 @@
-package com.example.kantin_app
+package com.kantin_app.production
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:kantin_app/features/tenant/providers/billing_provider.dart';
 
 ///  Upgrade dialog shown when free tier users try to access premium features
 /// 
 /// Phase 3: Converts free tier users by showing premium benefits
-class UpgradeDialog extends StatelessWidget {
+class UpgradeDialog extends ConsumerWidget {
   final bool isBusinessOwner;
   final String? businessOwnerEmail;
   final String? businessOwnerPhone;
@@ -16,7 +19,7 @@ class UpgradeDialog extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Dialog(
       backgroundColor: const Color(0xFF101010), // Hitam legam (Pitch Black variation)
       shape: RoundedRectangleBorder(
@@ -121,7 +124,7 @@ class UpgradeDialog extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Rp ${isBusinessOwner ? '149' : '49'},000/bulan',
+                    'Rp ${isBusinessOwner ? '99' : '49'},000/bulan',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -137,9 +140,9 @@ class UpgradeDialog extends StatelessWidget {
             
             // Actions
             if (isBusinessOwner)
-              ..._buildBusinessOwnerActions(context)
+              ..._buildBusinessOwnerActions(context, ref)
             else
-              ..._buildTenantActions(context),
+              ..._buildTenantActions(context, ref),
           ],
         ),
       ),
@@ -194,10 +197,10 @@ class UpgradeDialog extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildBusinessOwnerActions(BuildContext context) {
+  List<Widget> _buildBusinessOwnerActions(BuildContext context, WidgetRef ref) {
     return [
       ElevatedButton(
-        onPressed: () => _contactSales(context),
+        onPressed: () => _upgradeOwner(context, ref),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.cyan.shade900,
           foregroundColor: Colors.white,
@@ -208,7 +211,7 @@ class UpgradeDialog extends StatelessWidget {
           ),
         ),
         child: const Text(
-          'Hubungi Sales',
+          'Upgrade Sekarang',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -229,11 +232,11 @@ class UpgradeDialog extends StatelessWidget {
     ];
   }
 
-  List<Widget> _buildTenantActions(BuildContext context) {
+  List<Widget> _buildTenantActions(BuildContext context, WidgetRef ref) {
     return [
       // Option 1: Upgrade sendiri
       ElevatedButton(
-        onPressed: () => _contactSales(context),
+        onPressed: () => _upgradeTenant(context, ref),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.cyan.shade900, // Reduced intensity like prompt
           foregroundColor: Colors.white,
@@ -290,16 +293,99 @@ class UpgradeDialog extends StatelessWidget {
     ];
   }
 
-  void _contactSales(BuildContext context) {
-    // TODO: Implement actual sales contact (WhatsApp, email, etc.)
-    // For now, show a placeholder
+  void _upgradeOwner(BuildContext context, WidgetRef ref) {
+    print('[UPGRADE_DIALOG] Owner upgrade button clicked');
+    
+    final billingAsyncValue = ref.read(billingServiceProvider);
+    
+    print('[UPGRADE_DIALOG] AsyncValue state: ${billingAsyncValue.runtimeType}');
+    
+    // Check if data is available
+    if (!billingAsyncValue.hasValue) {
+      print('[UPGRADE_DIALOG] Billing not ready yet');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Memuat produk...')),
+      );
+      return;
+    }
+    
+    final billingState = billingAsyncValue.value!;
+    print('[UPGRADE_DIALOG] BillingState.isAvailable: ${billingState.isAvailable}');
+    print('[UPGRADE_DIALOG] BillingState.products.length: ${billingState.products.length}');
+    
+    if (!billingState.isAvailable || billingState.products.isEmpty) {
+      print('[UPGRADE_DIALOG] No products available');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Produk langganan tidak tersedia')),
+      );
+      return;
+    }
+    
+    print('[UPGRADE_DIALOG] Triggering purchase for owner_pro_monthly');
+    // Close dialog first
     Navigator.of(context).pop();
+    
+    // Trigger purchase
+    ref.read(billingServiceProvider.notifier).purchaseSubscription('owner_pro_monthly');
+    
+    // Show feedback
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Fitur pembayaran akan segera tersedia!'),
-        backgroundColor: Colors.teal,
-      ),
+      const SnackBar(content: Text('Membuka Google Play Billing...')),
     );
+  }
+
+  void _upgradeTenant(BuildContext context, WidgetRef ref) {
+    print('[UPGRADE_DIALOG] Upgrade button clicked');
+    
+    final billingAsyncValue = ref.read(billingServiceProvider);
+    
+    print('[UPGRADE_DIALOG] AsyncValue state: ${billingAsyncValue.runtimeType}');
+    
+    // Check if data is available
+    if (!billingAsyncValue.hasValue) {
+      print('[UPGRADE_DIALOG] Billing not ready yet');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Memuat produk...')),
+      );
+      return;
+    }
+    
+    final billingState = billingAsyncValue.value!;
+    print('[UPGRADE_DIALOG] BillingState.isAvailable: ${billingState.isAvailable}');
+    print('[UPGRADE_DIALOG] BillingState.products.length: ${billingState.products.length}');
+    
+    if (!billingState.isAvailable || billingState.products.isEmpty) {
+      print('[UPGRADE_DIALOG] No products available');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Produk langganan tidak tersedia')),
+      );
+      return;
+    }
+    
+    print('[UPGRADE_DIALOG] Triggering purchase for premium_tenant_monthly');
+    // Close dialog first
+    Navigator.of(context).pop();
+    
+    // Trigger purchase
+    ref.read(billingServiceProvider.notifier).purchaseSubscription('premium_tenant_monthly');
+    
+    // Show feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Membuka Google Play Billing...')),
+    );
+  }
+
+  void _contactSales(BuildContext context) {
+    // Navigate to payment page based on user type
+    Navigator.of(context).pop(); // Close dialog first
+    
+    if (isBusinessOwner) {
+      // Navigate to Owner upgrade payment page
+      context.push('/owner-upgrade');
+    } else {
+      // Navigate to Tenant upgrade payment page
+      context.push('/tenant-upgrade');
+    }
   }
 
   void _contactBusinessOwner(BuildContext context) {
